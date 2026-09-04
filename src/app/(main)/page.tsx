@@ -117,12 +117,21 @@ export default function HomePage() {
 
           {/* Hero CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
-            <Link href="/login">
+            <Link href="/daftar">
               <Button
                 variant="primary"
                 size="lg"
                 className="w-full sm:w-auto shadow-lg shadow-forest-900/15"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                Daftar Calon Siswa
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 Masuk ke Portal Anggota
               </Button>
@@ -133,7 +142,7 @@ export default function HomePage() {
                 size="lg"
                 className="w-full sm:w-auto bg-white/60 dark:bg-stone-900/60 backdrop-blur-sm"
               >
-                Profil & Sejarah Organisasi
+                Profil & Sejarah
               </Button>
             </Link>
           </div>
@@ -253,6 +262,15 @@ export default function HomePage() {
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/daftar">
+              <Button
+                variant="primary"
+                size="lg"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg"
+              >
+                Daftar Calon Siswa Baru
+              </Button>
+            </Link>
             <Link href="/login">
               <Button
                 variant="secondary"

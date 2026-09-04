@@ -208,20 +208,20 @@ create policy "anggota_update_admin_only" on anggota
 
 -- riwayat_tahap, tes_kesehatan: sensitif — anggota baca milik sendiri
 create policy "riwayat_tahap_select_own_or_admin" on riwayat_tahap
-    for select using (anggota_id = current_anggota_id() or is_admin());
+    for select using (anggota_id = current_anggota_id() or is_panitia_or_admin());
 create policy "riwayat_tahap_write_admin" on riwayat_tahap
-    for insert with check (is_admin());
+    for insert with check (is_panitia_or_admin());
 create policy "riwayat_tahap_update_admin" on riwayat_tahap
-    for update using (is_admin()) with check (is_admin());
+    for update using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 create policy "riwayat_tahap_delete_admin" on riwayat_tahap
     for delete using (is_admin());
 
 create policy "tes_kesehatan_select_own_or_admin" on tes_kesehatan
-    for select using (anggota_id = current_anggota_id() or is_admin());
+    for select using (anggota_id = current_anggota_id() or is_panitia_or_admin());
 create policy "tes_kesehatan_insert_own_or_admin" on tes_kesehatan
-    for insert with check (anggota_id = current_anggota_id() or is_admin());
+    for insert with check (anggota_id = current_anggota_id() or is_panitia_or_admin());
 create policy "tes_kesehatan_update_admin" on tes_kesehatan
-    for update using (is_admin()) with check (is_admin());
+    for update using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 create policy "tes_kesehatan_delete_admin" on tes_kesehatan
     for delete using (is_admin());
 

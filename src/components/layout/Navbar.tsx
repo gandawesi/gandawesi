@@ -28,6 +28,7 @@ export function Navbar() {
   const guestNavLinks = [
     { href: '/', label: 'Beranda' },
     { href: '/tentang', label: 'Tentang' },
+    { href: '/daftar', label: 'Pendaftaran' },
   ];
 
   return (
