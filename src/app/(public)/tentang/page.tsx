@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import {
@@ -13,8 +13,10 @@ import {
   Award,
   Users,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import { APP_NAME, APP_SUBTITLE } from '@/lib/constants';
+import { getKontenStatis } from '@/lib/actions/content';
 
 export const metadata: Metadata = {
   title: 'Tentang Gandawesi — Sejarah, Visi, Misi & Kode Etik',
@@ -22,11 +24,16 @@ export const metadata: Metadata = {
     'Profil lengkap organisasi mahasiswa pecinta alam Gandawesi Fakultas Pendidikan Teknologi dan Kejuruan (FPTI) Universitas Pendidikan Indonesia.',
 };
 
-export default function TentangPage() {
-  const visi =
+export default async function TentangPage() {
+  const [visiMisiData, sejarahData] = await Promise.all([
+    getKontenStatis('visi-misi'),
+    getKontenStatis('sejarah'),
+  ]);
+
+  const defaultVisi =
     'Menjadi organisasi mahasiswa pecinta alam yang unggul, berintegritas tinggi, berdaya saing dalam eksplorasi alam terbuka, serta konsisten dalam melestarikan lingkungan hidup demi peradaban manusia yang harmonis dengan alam.';
 
-  const misi = [
+  const defaultMisi = [
     'Menyelenggarakan pendidikan kaderisasi berjenjang yang disiplin, aman, dan berstandar keselamatan tinggi.',
     'Mengembangkan kecakapan navigasi darat, rimba gunung, survival, dan manajemen ekspedisi bagi seluruh anggota.',
     'Melaksanakan program konservasi sumber daya alam, rehabilitasi hutan, dan edukasi lingkungan di masyarakat.',
@@ -38,6 +45,8 @@ export default function TentangPage() {
     'Pecinta Alam Indonesia sadar bahwa alam beserta isinya adalah ciptaan Tuhan Yang Maha Esa.',
     'Pecinta Alam Indonesia sebagai bagian dari masyarakat Indonesia sadar akan tanggung jawabnya kepada Tuhan, bangsa, dan tanah air.',
     'Pecinta Alam Indonesia sadar bahwa segenap pecinta alam adalah saudara sebagai sesama makhluk yang mencintai alam sebagai ciptaan Yang Maha Esa.',
+    'Pecinta Alam Indonesia merasa terpanggil untuk melestarikan alam beserta isinya serta menggunakan sumber daya alam secara bijaksana.',
+    'Pecinta Alam Indonesia menyatakan bahwa pengabdian kepada alam adalah sarana pengabdian kepada Tuhan, bangsa, dan tanah air.',
   ];
 
   return (
@@ -64,8 +73,8 @@ export default function TentangPage() {
           <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 font-mono">
             Visi Organisasi
           </h2>
-          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-            {visi}
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line">
+            {visiMisiData?.konten ? visiMisiData.konten.split('### Misi')[0].replace('### Visi', '').trim() : defaultVisi}
           </p>
         </Card>
 
@@ -77,9 +86,9 @@ export default function TentangPage() {
             Misi Organisasi
           </h2>
           <ul className="space-y-2.5 text-xs sm:text-sm text-stone-600 dark:text-stone-300">
-            {misi.map((m, idx) => (
+            {defaultMisi.map((m, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-forest-100 dark:bg-forest-950 text-forest-700 text-xs font-bold shrink-0 flex items-center justify-center mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-forest-100 dark:bg-forest-900 text-forest-800 dark:text-forest-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                   {idx + 1}
                 </span>
                 <span>{m}</span>
@@ -89,56 +98,66 @@ export default function TentangPage() {
         </Card>
       </div>
 
-      {/* Sejarah Singkat */}
-      <Card className="p-8 space-y-4">
+      {/* Sejarah Perjalanan */}
+      <Card glass className="p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-forest-100 dark:bg-forest-900 text-forest-700 dark:text-forest-300 flex items-center justify-center">
-            <Mountain className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-forest-800 text-white flex items-center justify-center">
+            <Mountain className="w-5 h-5 text-forest-200" />
           </div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 font-mono">
-            Sejarah & Semangat Gandawesi
-          </h2>
+          <div>
+            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 font-mono">
+              Sejarah & Nilai Dasar Gandawesi
+            </h2>
+            <p className="text-xs text-stone-500">
+              Lebih dari tiga dekade mengabdi untuk kelestarian alam nusantara
+            </p>
+          </div>
         </div>
-        <div className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 space-y-3 leading-relaxed">
-          <p>
-            Gandawesi lahir dari semangat kebersamaan para mahasiswa Fakultas Pendidikan Teknologi dan Kejuruan (FPTI) Universitas Pendidikan Indonesia yang memiliki panggilan jiwa untuk menjelajahi keindahan alam nusantara sekaligus menempa diri dalam kerasnya alam terbuka.
-          </p>
-          <p>
-            Nama <strong>Gandawesi</strong> melambangkan kekuatan karakter sekeras besi yang dipadukan dengan kepekaan dan kearifan menjaga keseimbangan alam. Lebih dari tiga dekade perjalanan, Gandawesi telah melahirkan puluhan angkatan kader pecinta alam yang aktif berkontribusi di bidang kepetualangan, pendidikan, penelitian lingkungan, serta Search and Rescue (SAR).
-          </p>
-          <p>
-            Tradisi kaderisasi kami dirawat secara ketat: dari tahap Calon Siswa, masa penggemblengan Siswa, ujian kelayakan lapangan Medan Operasi, pengabdian satu tahun PPNIA, hingga penganugerahan Nomor Induk Anggota (NIA) resmi bagi Anggota Biasa.
-          </p>
+
+        <div className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed space-y-4 whitespace-pre-line">
+          {sejarahData?.konten || `Gandawesi didirikan di lingkungan Fakultas Pendidikan Teknologi dan Kejuruan (FPTK / FPTI) Universitas Pendidikan Indonesia (UPI) Bandung oleh para mahasiswa pecinta rimba yang terpanggil untuk mengintegrasikan keilmuan keteknikan dan kecintaan mendalam terhadap kelestarian alam nusantara.
+
+Nama "Gandawesi" melambangkan ketangguhan jiwa layaknya wesi (besi) dan keharuman budi pekerti (ganda) dalam mengarungi belantara, mendaki puncak gunung tertinggi, menelusuri lorong terdalam bumi, serta mengarungi jeram sungai terderas di Indonesia.
+
+Hingga saat ini, Gandawesi telah melahirkan lebih dari 32 angkatan resmi yang mengabdi di berbagai bidang kepecintaalaman, riset lingkungan, mitigasi bencana, dan pemetaan geografis.`}
         </div>
       </Card>
 
       {/* Kode Etik Pecinta Alam */}
-      <Card className="p-8 bg-forest-900 text-white rounded-3xl space-y-6">
+      <div className="rounded-3xl bg-forest-950 text-white p-8 md:p-10 space-y-6 border border-forest-900 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/10 text-forest-200 flex items-center justify-center">
-            <Shield className="w-5 h-5" />
-          </div>
+          <Shield className="w-6 h-6 text-forest-400" />
           <h2 className="text-xl font-bold font-mono tracking-wider text-forest-100">
-            Kode Etik Pecinta Alam Indonesia
+            KODE ETIK PECINTA ALAM INDONESIA
           </h2>
         </div>
-        <div className="space-y-4 text-xs sm:text-sm text-forest-100/90 leading-relaxed">
-          {kodeEtik.map((point, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-              <span className="font-bold text-forest-300 font-mono text-sm">{index + 1}.</span>
-              <p>{point}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm text-forest-200/90 leading-relaxed">
+          {kodeEtik.map((etik, idx) => (
+            <div key={idx} className="flex items-start gap-3 p-3.5 rounded-2xl bg-forest-900/50 border border-forest-800/60">
+              <span className="font-mono font-bold text-forest-400 shrink-0">0{idx + 1}.</span>
+              <p>{etik}</p>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
-      {/* Bottom CTA */}
-      <div className="text-center pt-4">
-        <Link href="/login">
-          <Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
-            Masuk ke Portal Anggota
-          </Button>
-        </Link>
+      {/* Call to action */}
+      <div className="text-center space-y-4 pt-4">
+        <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 font-mono">
+          Tertarik Bergabung dengan Keluarga Besar Gandawesi?
+        </h3>
+        <div className="flex items-center justify-center gap-3">
+          <Link href="/daftar">
+            <Button size="md" className="bg-forest-800 hover:bg-forest-900 text-white gap-2 font-bold text-xs">
+              Daftar Calon Siswa Diklat <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Link href="/ekspedisi">
+            <Button variant="outline" size="md" className="text-xs font-bold">
+              Lihat Rekam Jejak Ekspedisi
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

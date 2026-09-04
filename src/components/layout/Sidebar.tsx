@@ -49,6 +49,7 @@ export function Sidebar() {
     { href: '/dashboard/ppnia', label: 'Program PPNIA', icon: BookOpen },
     { href: '/dashboard/event', label: 'Kalender Kegiatan', icon: Calendar },
     { href: '/dashboard/inventaris', label: 'Peminjaman Alat', icon: Package },
+    { href: '/dashboard/artikel', label: 'Artikel Saya', icon: FileText },
     { href: '/dashboard/iuran', label: 'Status Iuran', icon: Wallet },
   ];
 

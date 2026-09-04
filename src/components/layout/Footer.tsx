@@ -39,11 +39,26 @@ export function Footer() {
               Kaderisasi
             </h5>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400">
-              <li>Pendaftaran Calon Siswa</li>
-              <li>Pendidikan Tahap Siswa</li>
-              <li>Medan Operasi (Diklat Alam)</li>
-              <li>PPNIA & Penomoran NIA</li>
-              <li>Anggota Luar Biasa & Alumni</li>
+              <li>
+                <Link href="/daftar" className="hover:text-forest-600 transition-colors">
+                  Pendaftaran Calon Siswa
+                </Link>
+              </li>
+              <li>
+                <Link href="/artikel" className="hover:text-forest-600 transition-colors">
+                  Warta & Laporan Ekspedisi
+                </Link>
+              </li>
+              <li>
+                <Link href="/ekspedisi" className="hover:text-forest-600 transition-colors">
+                  Galeri Peta Rute Alam
+                </Link>
+              </li>
+              <li>
+                <Link href="/donasi" className="hover:text-forest-600 transition-colors">
+                  Sponsorship & Donasi
+                </Link>
+              </li>
             </ul>
           </div>
 
