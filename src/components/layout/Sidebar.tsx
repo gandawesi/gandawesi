@@ -49,6 +49,7 @@ export function Sidebar() {
     { href: '/dashboard/admin/import', label: 'Impor Data CSV', icon: FileSpreadsheet },
     { href: '/dashboard/admin/roles', label: 'Kelola Hak Akses', icon: UserCog },
     { href: '/dashboard/admin/calon-siswa', label: 'Calon Anggota', icon: ClipboardList },
+    { href: '/dashboard/admin/siswa', label: 'Tahap Siswa (DP)', icon: Award },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
     { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },

@@ -262,13 +262,13 @@ create policy "presensi_kaderisasi_delete_admin" on presensi_kaderisasi
 
 create policy "materi_select_authenticated" on materi
     for select using (auth.role() = 'authenticated' or is_admin());
-create policy "materi_write_admin" on materi
-    for all using (is_admin()) with check (is_admin());
+create policy "materi_write_panitia_or_admin" on materi
+    for all using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 
 create policy "soal_post_test_select_authenticated" on soal_post_test
     for select using (auth.role() = 'authenticated' or is_admin());
-create policy "soal_post_test_write_admin" on soal_post_test
-    for all using (is_admin()) with check (is_admin());
+create policy "soal_post_test_write_panitia_or_admin" on soal_post_test
+    for all using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 
 -- kunci_jawaban_post_test: rahasia, HANYA admin yang boleh akses langsung.
 -- Evaluasi jawaban siswa dilakukan aman di server via RPC submit_post_test().
@@ -552,6 +552,7 @@ where a.status_keanggotaan not in ('dicabut');
 grant select on v_anggota_direktori to authenticated;
 grant execute on function search_unclaimed_anggota to authenticated;
 grant execute on function update_profil_anggota to authenticated;
+grant execute on function submit_post_test to authenticated;
 
 -- ============================================================
 -- CATATAN
