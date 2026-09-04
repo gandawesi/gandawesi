@@ -5,6 +5,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'status' | 'role' | 'default' | 'success' | 'warning' | 'danger';
   status?: MemberStatus;
   role?: FunctionalRole;
+  subLabel?: string;
   size?: 'sm' | 'md';
   dot?: boolean;
 }
@@ -14,6 +15,7 @@ export function Badge({
   variant = 'default',
   status,
   role,
+  subLabel,
   size = 'md',
   dot = false,
   className = '',
@@ -25,7 +27,8 @@ export function Badge({
   if (status) {
     const colors = MEMBER_STATUS_COLORS[status] || MEMBER_STATUS_COLORS.calon_siswa;
     styleClasses = `${colors.bg} ${colors.text} ${colors.border}`;
-    label = label || MEMBER_STATUS_LABELS[status] || status;
+    const baseLabel = MEMBER_STATUS_LABELS[status] || status;
+    label = label || (subLabel ? `${baseLabel} ${subLabel}` : baseLabel);
   } else if (role) {
     styleClasses = 'bg-forest-50 text-forest-800 border-forest-200 dark:bg-forest-950/60 dark:text-forest-300 dark:border-forest-800';
     label = label || USER_ROLE_LABELS[role] || role;

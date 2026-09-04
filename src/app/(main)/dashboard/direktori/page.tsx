@@ -203,7 +203,15 @@ export default function DirektoriPage() {
                       name={member.nama}
                       size="lg"
                     />
-                    <Badge status={member.status_keanggotaan} size="sm" />
+                    <Badge
+                      status={member.status_keanggotaan}
+                      subLabel={
+                        member.status_keanggotaan === 'anggota_muda' && member.nama_angkatan
+                          ? member.nama_angkatan
+                          : undefined
+                      }
+                      size="sm"
+                    />
                   </div>
 
                   <h3 className="text-sm font-bold text-stone-900 dark:text-white line-clamp-1 group-hover:text-forest-600 dark:group-hover:text-forest-400 transition-colors">

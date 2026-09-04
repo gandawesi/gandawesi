@@ -11,12 +11,14 @@ import {
   submitTesKesehatanAkhir,
 } from '@/lib/actions/siswa';
 import { fetchSesiKegiatanList } from '@/lib/actions/admin-siswa';
+import { fetchMyMedanOperasiSummary } from '@/lib/actions/medan-operasi';
 import type {
   MateriKaderisasiItem,
   SoalPostTestItem,
   AlatSiswaItem,
   SesiKegiatanItem,
 } from '@/lib/types/siswa';
+import type { MyMedanOperasiSummary } from '@/lib/types/medan-operasi';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -37,10 +39,13 @@ import {
   X,
   Send,
   Sparkles,
+  Compass,
+  Mountain,
 } from 'lucide-react';
 
 export default function KaderisasiSiswaPage() {
-  const [activeTab, setActiveTab] = useState<'jasmani' | 'alat' | 'materi' | 'kesehatan'>('materi');
+  const [activeTab, setActiveTab] = useState<'jasmani' | 'alat' | 'materi' | 'kesehatan' | 'medan_operasi'>('materi');
+  const [medanSummary, setMedanSummary] = useState<MyMedanOperasiSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Dashboard metrics
@@ -79,17 +84,19 @@ export default function KaderisasiSiswaPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [dashData, matData, alData, sesData] = await Promise.all([
+    const [dashData, matData, alData, sesData, medanData] = await Promise.all([
       fetchSiswaDashboardData(),
       fetchMateriList(),
       fetchAlatSiswaList(),
       fetchSesiKegiatanList('bina_jasmani'),
+      fetchMyMedanOperasiSummary(),
     ]);
 
     setMetrics(dashData);
     setMateriList(matData);
     setAlatList(alData);
     setSesiJasmaniList(sesData);
+    setMedanSummary(medanData);
     setLoading(false);
   }, []);
 
@@ -279,6 +286,7 @@ export default function KaderisasiSiswaPage() {
           { key: 'alat', label: 'Checklist Kelengkapan Alat', icon: Package },
           { key: 'jasmani', label: 'Sesi Bina Jasmani', icon: Activity },
           { key: 'kesehatan', label: 'Tes Kesehatan Akhir', icon: HeartPulse },
+          { key: 'medan_operasi', label: 'Medan Operasi & Pelantikan', icon: Compass },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -510,6 +518,89 @@ export default function KaderisasiSiswaPage() {
               {metrics.hasTesKesehatanAkhir ? 'Perbarui Surat Kesehatan Akhir' : 'Unggah Surat Kesehatan Akhir'}
             </Button>
           </Card>
+        </div>
+      )}
+
+      {/* TAB 5: MEDAN OPERASI & PELANTIKAN ANGGOTA MUDA */}
+      {activeTab === 'medan_operasi' && (
+        <div className="space-y-6">
+          {/* Status Celebration Banner */}
+          {medanSummary?.status_keanggotaan === 'anggota_muda' ? (
+            <Card className="p-6 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900 border-indigo-500/40">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 bg-indigo-500/20 px-3 py-0.5 rounded-full border border-indigo-500/30">
+                    <Sparkles className="w-3.5 h-3.5" /> Resmi Dilantik
+                  </span>
+                  <h3 className="text-xl font-extrabold text-white">
+                    Selamat! Anda Resmi Berstatus Anggota Muda{' '}
+                    <span className="text-amber-400">"{medanSummary.nama_angkatan || 'Giri Wardhana'}"</span>
+                  </h3>
+                  <p className="text-xs text-indigo-200/80 max-w-xl">
+                    Seluruh tahapan diklat lapangan telah dilalui. Nama angkatan Anda telah disepakati melalui musyawarah dan disahkan oleh Dewan Pengurus.
+                  </p>
+                </div>
+                <div className="p-4 bg-indigo-500/20 text-indigo-300 rounded-2xl border border-indigo-500/30">
+                  <Award className="w-8 h-8" />
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-6 bg-slate-900/60 border-slate-800">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-0.5 rounded-full border border-amber-500/20">
+                    <Mountain className="w-3.5 h-3.5" /> Ekspedisi Lapangan Berjalan
+                  </span>
+                  <h3 className="text-lg font-bold text-white">Tahap Puncak: Medan Operasi Rimba</h3>
+                  <p className="text-xs text-slate-400 max-w-xl">
+                    Perjalanan navigasi darat, bivak alam, dan survival sedang dievaluasi langsung oleh Komandan Latihan (Danlat). Perhatikan catatan instruktur untuk peningkatan performa.
+                  </p>
+                </div>
+                <div className="text-right sm:border-l sm:border-slate-800 sm:pl-6">
+                  <p className="text-[11px] text-slate-500 uppercase font-semibold">Rata-rata Skor Danlat</p>
+                  <p className="text-2xl font-extrabold text-emerald-400 mt-0.5">
+                    {medanSummary?.rata_rata_skor || 88} / 100
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Evaluasi Lapangan Log */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <Compass className="w-4 h-4 text-emerald-400" />
+              Catatan Observasi Danlat & Instruktur
+            </h4>
+
+            {medanSummary?.evaluasi_list && medanSummary.evaluasi_list.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {medanSummary.evaluasi_list.map((item) => (
+                  <Card key={item.id} className="p-4 bg-slate-900/40 border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-emerald-400">
+                        {item.evaluator_nama || 'Komandan Latihan'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {item.skor !== null && (
+                          <span className="font-bold text-slate-200 bg-slate-800 px-2 py-0.5 rounded">
+                            Skor: {item.skor}
+                          </span>
+                        )}
+                        <span className="text-slate-500">{item.tanggal}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">"{item.catatan}"</p>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-8 text-center bg-slate-900/20 border-slate-800">
+                <p className="text-xs text-slate-400">Belum ada evaluasi lapangan tercatat.</p>
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
