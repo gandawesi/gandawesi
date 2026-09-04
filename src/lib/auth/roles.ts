@@ -16,6 +16,7 @@ export async function getCurrentUserContext(supabase: SupabaseClient): Promise<A
     isAnggotaAktif: false,
     isPanitiaOrAdmin: false,
     isGuest: true,
+    hasLinkedProfile: false,
   };
 
   try {
@@ -40,6 +41,7 @@ export async function getCurrentUserContext(supabase: SupabaseClient): Promise<A
         authUser,
         session,
         isGuest: false,
+        hasLinkedProfile: false,
       };
     }
 
@@ -68,6 +70,7 @@ export async function getCurrentUserContext(supabase: SupabaseClient): Promise<A
       isAnggotaAktif,
       isPanitiaOrAdmin,
       isGuest: false,
+      hasLinkedProfile: true,
     };
   } catch (err) {
     console.error('Error in getCurrentUserContext:', err);

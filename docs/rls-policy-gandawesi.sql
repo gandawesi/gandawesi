@@ -550,6 +550,8 @@ where a.status_keanggotaan not in ('dicabut');
 
 -- Berikan izin akses SELECT view kepada seluruh user yang terotentikasi
 grant select on v_anggota_direktori to authenticated;
+grant execute on function search_unclaimed_anggota to authenticated;
+grant execute on function update_profil_anggota to authenticated;
 
 -- ============================================================
 -- CATATAN

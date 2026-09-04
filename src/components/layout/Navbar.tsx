@@ -150,12 +150,28 @@ export function Navbar() {
                       Dashboard
                     </Link>
                     <Link
-                      href="/dashboard#profil"
+                      href="/dashboard/profil"
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-forest-50 dark:hover:bg-forest-950/50 rounded-xl transition-colors"
                     >
                       <User className="w-3.5 h-3.5 text-forest-600" />
                       Profil Saya
+                    </Link>
+                    <Link
+                      href="/dashboard/direktori"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-forest-50 dark:hover:bg-forest-950/50 rounded-xl transition-colors"
+                    >
+                      <LayoutDashboard className="w-3.5 h-3.5 text-forest-600 opacity-70" />
+                      Direktori Anggota
+                    </Link>
+                    <Link
+                      href="/dashboard/klaim"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-xl transition-colors"
+                    >
+                      <Shield className="w-3.5 h-3.5 text-amber-600" />
+                      Klaim Akun Anggota
                     </Link>
                     {isAdmin && (
                       <span className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl my-0.5">

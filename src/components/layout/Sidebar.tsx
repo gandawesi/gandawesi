@@ -18,15 +18,26 @@ import {
   LogOut,
   ChevronRight,
   ClipboardList,
+  User,
+  UserCheck,
+  FileSpreadsheet,
+  UserCog,
 } from 'lucide-react';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { authUser, profile, isAdmin, isPanitiaOrAdmin, signOut } = useAuth();
+  const { authUser, profile, isAdmin, isPanitiaOrAdmin, hasLinkedProfile, signOut } = useAuth();
 
   const mainNavItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard/profil', label: 'Profil Saya', icon: User },
     { href: '/dashboard/direktori', label: 'Direktori Anggota', icon: Users },
+    {
+      href: '/dashboard/klaim',
+      label: 'Klaim Akun',
+      icon: UserCheck,
+      badge: !hasLinkedProfile ? 'Aktivasi' : undefined,
+    },
     { href: '/dashboard/kaderisasi', label: 'Alur Kaderisasi', icon: Award },
     { href: '/dashboard/event', label: 'Kalender Kegiatan', icon: Calendar },
     { href: '/dashboard/inventaris', label: 'Peminjaman Alat', icon: Package },
@@ -34,6 +45,9 @@ export function Sidebar() {
   ];
 
   const adminNavItems = [
+    { href: '/dashboard/admin/klaim', label: 'Verifikasi Klaim', icon: UserCheck },
+    { href: '/dashboard/admin/import', label: 'Impor Data CSV', icon: FileSpreadsheet },
+    { href: '/dashboard/admin/roles', label: 'Kelola Hak Akses', icon: UserCog },
     { href: '/dashboard/admin/calon-siswa', label: 'Calon Anggota', icon: ClipboardList },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
@@ -99,7 +113,14 @@ export function Sidebar() {
                     <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-forest-600 dark:text-forest-400'}`} />
                     <span>{item.label}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-70" />}
+                  <div className="flex items-center gap-1.5">
+                    {item.badge && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-white animate-pulse">
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-70" />}
+                  </div>
                 </Link>
               );
             })}

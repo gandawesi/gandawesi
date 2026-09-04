@@ -734,6 +734,42 @@ begin
 end;
 $$;
 
+-- RPC function: cari anggota yang belum klaim akun (untuk form klaim akun)
+-- Mengembalikan kolom publik yang aman (tanpa PII seperti no_hp, alamat, dll)
+create or replace function search_unclaimed_anggota(
+    p_query text default '',
+    p_angkatan_id uuid default null
+)
+returns table (
+    id uuid,
+    nama text,
+    nomor_angkatan integer,
+    nama_angkatan text,
+    status_keanggotaan text,
+    jurusan text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select
+        a.id,
+        a.nama,
+        ang.nomor_angkatan,
+        ang.nama_angkatan,
+        a.status_keanggotaan::text,
+        a.jurusan
+    from anggota a
+    left join angkatan ang on ang.id = a.angkatan_id
+    where a.auth_user_id is null
+      and a.status_keanggotaan not in ('dicabut')
+      and (p_query = '' or a.nama ilike '%' || p_query || '%')
+      and (p_angkatan_id is null or a.angkatan_id = p_angkatan_id)
+    order by ang.nomor_angkatan desc nulls last, a.nama asc
+    limit 30;
+$$;
+
 -- RPC function: generate tagihan iuran bulanan untuk seluruh anggota aktif
 -- Berjalan idempoten (on conflict do nothing) berdasarkan tarif_iuran yang berlaku
 create or replace function generate_tagihan_iuran_bulanan(p_periode text default to_char(current_date, 'YYYY-MM'))

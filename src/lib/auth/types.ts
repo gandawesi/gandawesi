@@ -52,4 +52,5 @@ export interface AppUserContext {
   isAnggotaAktif: boolean;
   isPanitiaOrAdmin: boolean;
   isGuest: boolean;
+  hasLinkedProfile: boolean;
 }

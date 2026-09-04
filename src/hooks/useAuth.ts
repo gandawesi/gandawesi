@@ -17,6 +17,7 @@ export function useAuth() {
     isAnggotaAktif: false,
     isPanitiaOrAdmin: false,
     isGuest: true,
+    hasLinkedProfile: false,
   });
 
   const refreshUser = useCallback(async () => {
@@ -65,6 +66,7 @@ export function useAuth() {
       isAnggotaAktif: false,
       isPanitiaOrAdmin: false,
       isGuest: true,
+      hasLinkedProfile: false,
     });
   };
 
