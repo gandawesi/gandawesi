@@ -19,7 +19,7 @@ export function MobileNav() {
     { href: '/dashboard/direktori', label: 'Direktori', icon: Users },
     { href: '/dashboard/event', label: 'Kegiatan', icon: Calendar },
     { href: '/dashboard/iuran', label: 'Iuran', icon: Wallet },
-    { href: '/dashboard#profil', label: 'Profil', icon: User },
+    { href: '/dashboard/profil', label: 'Profil', icon: User },
   ];
 
   return (
