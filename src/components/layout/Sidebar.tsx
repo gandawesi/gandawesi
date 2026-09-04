@@ -63,6 +63,8 @@ export function Sidebar() {
     { href: '/dashboard/admin/nia', label: 'Sidang Akhir & NIA (DP)', icon: Award },
     { href: '/dashboard/admin/governance', label: 'Struktur & ALB (Governance)', icon: Building },
     { href: '/dashboard/admin/sertifikat', label: 'Penerbitan Sertifikat', icon: FileCheck },
+    { href: '/dashboard/admin/event', label: 'Kelola Event', icon: Calendar },
+    { href: '/dashboard/admin/inventaris', label: 'Inventaris & Logistik', icon: Package },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
     { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },
