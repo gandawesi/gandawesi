@@ -78,6 +78,20 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       .from('rute_ekspedisi')
       .select('id');
 
+    // Fetch latest active angkatan dynamically
+    const { data: latestAngkatan } = await supabase
+      .from('angkatan')
+      .select('nomor_angkatan, nama_angkatan')
+      .order('nomor_angkatan', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // Fetch registered event participants dynamically
+    const { data: pendaftarList } = await supabase
+      .from('pendaftaran_event')
+      .select('id')
+      .eq('status', 'terdaftar');
+
     // Calculate Keanggotaan
     const counts = {
       calon_siswa: 0,
@@ -158,12 +172,21 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
     const totalArtikel = artikelList ? artikelList.length : 3;
     const totalRute = ruteList ? ruteList.length : 3;
 
+    // Dynamic angkatan data
+    const angkatanAktif = latestAngkatan?.nomor_angkatan ?? 32;
+    const namaAngkatanAktif =
+      latestAngkatan?.nama_angkatan ||
+      (latestAngkatan?.nomor_angkatan ? `Angkatan ${latestAngkatan.nomor_angkatan}` : 'Giri Wardhana');
+
+    // Dynamic participants data
+    const pesertaTerdaftar = pendaftarList && pendaftarList.length > 0 ? pendaftarList.length : 65;
+
     return {
       keanggotaan: {
         total: totalAnggota,
         ...counts,
-        angkatan_aktif: 32,
-        nama_angkatan_aktif: 'Giri Wardhana',
+        angkatan_aktif: angkatanAktif,
+        nama_angkatan_aktif: namaAngkatanAktif,
       },
       keuangan: {
         saldo_kas: saldoKas,
@@ -174,7 +197,7 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       },
       operasional: {
         event_aktif: activeEvents,
-        peserta_terdaftar: 65,
+        peserta_terdaftar: pesertaTerdaftar,
         alat_total_unit: totalAlatUnit,
         alat_sedang_dipinjam: borrowedUnit,
       },

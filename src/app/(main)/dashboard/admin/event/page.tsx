@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { useToast } from '@/components/ui/Toast';
 import {
   EventItem,
   CreateEventPayload,
@@ -38,6 +39,7 @@ import {
 } from '@/lib/actions/event';
 
 export default function AdminEventPage() {
+  const toast = useToast();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -187,8 +189,9 @@ export default function AdminEventPage() {
         setParticipants((prev) =>
           prev.map((p) => (p.anggota_id === anggotaId ? { ...p, hadir: nextHadir } : p))
         );
+        toast.success(nextHadir ? 'Presensi dicatat: Hadir' : 'Presensi diubah: Tidak Hadir');
       } else {
-        alert(res.error || 'Gagal memperbarui presensi');
+        toast.error(res.error || 'Gagal memperbarui presensi');
       }
     });
   };

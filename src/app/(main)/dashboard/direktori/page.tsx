@@ -10,14 +10,13 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import { Pagination } from '@/components/ui/Pagination';
 import {
   Users,
   Search,
   Filter,
   GraduationCap,
   Shield,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
 } from 'lucide-react';
 
@@ -260,33 +259,14 @@ export default function DirektoriPage() {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Sebelumnya
-              </Button>
-
-              <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                {page} / {totalPages}
-              </span>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                Selanjutnya
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={totalCount}
+            pageSize={12}
+            className="mt-6"
+          />
         </div>
       )}
     </div>

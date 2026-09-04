@@ -39,7 +39,7 @@ export default function AdminSertifikatPage() {
     anggota_id: '',
     jenis: 'Kelulusan PPNIA & Pengukuhan NIA',
     judul: 'Piagam Pengukuhan Anggota Biasa & Kelulusan PPNIA',
-    nomor_sertifikat: `0${Math.floor(Math.random() * 90 + 10)}/SK-NIA/GW-FPTI/XII/2025`,
+    nomor_sertifikat: '012/SK-NIA/GW-FPTI/XII/2025',
     tanggal_terbit: new Date().toISOString().split('T')[0],
     file: '',
     deskripsi: 'Dinyatakan telah menuntaskan seluruh kewajiban pembinaan dan evaluasi kaderisasi.',
@@ -59,11 +59,20 @@ export default function AdminSertifikatPage() {
       setForm((p) => ({ ...p, anggota_id: allMembers[0].id }));
     }
     setLoading(false);
-  }, []);
+  }, [form.anggota_id]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleOpenModal = () => {
+    const randomNum = Math.floor(Math.random() * 90 + 10);
+    setForm((p) => ({
+      ...p,
+      nomor_sertifikat: `0${randomNum}/SK-NIA/GW-FPTI/XII/2025`,
+    }));
+    setShowModal(true);
+  };
 
   const handleIssue = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +140,7 @@ export default function AdminSertifikatPage() {
 
           <Button
             variant="primary"
-            onClick={() => setShowModal(true)}
+            onClick={handleOpenModal}
             className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shrink-0 shadow-lg cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Terbitkan Sertifikat Baru

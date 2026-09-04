@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Badge } from '@/components/ui/Badge';
+import { Pagination } from '@/components/ui/Pagination';
 import {
   Wallet,
   ArrowDownLeft,
@@ -56,6 +57,12 @@ export default function AdminKeuanganPage() {
   // Filters
   const [iuranFilter, setIuranFilter] = useState<'all' | 'menunggak' | 'lunas'>('all');
   const [iuranSearch, setIuranSearch] = useState('');
+
+  // Pagination
+  const [kasPage, setKasPage] = useState(1);
+  const KAS_PAGE_SIZE = 8;
+  const [iuranPage, setIuranPage] = useState(1);
+  const IURAN_PAGE_SIZE = 8;
 
   // Modals State
   const [showKasModal, setShowKasModal] = useState(false);
@@ -412,7 +419,9 @@ export default function AdminKeuanganPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 dark:divide-stone-800/80">
-                  {summary.transaksi_list.map((t) => (
+                  {summary.transaksi_list
+                    .slice((kasPage - 1) * KAS_PAGE_SIZE, kasPage * KAS_PAGE_SIZE)
+                    .map((t) => (
                     <tr key={t.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-900/30">
                       <td className="py-3 px-4 font-mono text-stone-500">{t.tanggal}</td>
                       <td className="py-3 px-4">
@@ -464,6 +473,15 @@ export default function AdminKeuanganPage() {
               </table>
             </div>
           </Card>
+
+          {/* Pagination Buku Kas */}
+          <Pagination
+            currentPage={kasPage}
+            totalPages={Math.ceil((summary.transaksi_list.length || 0) / KAS_PAGE_SIZE) || 1}
+            onPageChange={setKasPage}
+            totalItems={summary.transaksi_list.length}
+            pageSize={KAS_PAGE_SIZE}
+          />
         </div>
       )}
 
@@ -486,7 +504,10 @@ export default function AdminKeuanganPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-xl text-xs font-bold">
                 <button
-                  onClick={() => setIuranFilter('all')}
+                  onClick={() => {
+                    setIuranFilter('all');
+                    setIuranPage(1);
+                  }}
                   className={`px-3 py-1 rounded-lg transition-all ${
                     iuranFilter === 'all' ? 'bg-white dark:bg-stone-900 shadow-sm text-emerald-500' : 'text-stone-400'
                   }`}
@@ -494,7 +515,10 @@ export default function AdminKeuanganPage() {
                   Semua
                 </button>
                 <button
-                  onClick={() => setIuranFilter('menunggak')}
+                  onClick={() => {
+                    setIuranFilter('menunggak');
+                    setIuranPage(1);
+                  }}
                   className={`px-3 py-1 rounded-lg transition-all ${
                     iuranFilter === 'menunggak' ? 'bg-white dark:bg-stone-900 shadow-sm text-amber-500' : 'text-stone-400'
                   }`}
@@ -502,7 +526,10 @@ export default function AdminKeuanganPage() {
                   Menunggak
                 </button>
                 <button
-                  onClick={() => setIuranFilter('lunas')}
+                  onClick={() => {
+                    setIuranFilter('lunas');
+                    setIuranPage(1);
+                  }}
                   className={`px-3 py-1 rounded-lg transition-all ${
                     iuranFilter === 'lunas' ? 'bg-white dark:bg-stone-900 shadow-sm text-emerald-500' : 'text-stone-400'
                   }`}
@@ -517,7 +544,10 @@ export default function AdminKeuanganPage() {
                   type="text"
                   placeholder="Cari anggota / periode..."
                   value={iuranSearch}
-                  onChange={(e) => setIuranSearch(e.target.value)}
+                  onChange={(e) => {
+                    setIuranSearch(e.target.value);
+                    setIuranPage(1);
+                  }}
                   className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-xs"
                 />
               </div>
@@ -538,7 +568,9 @@ export default function AdminKeuanganPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 dark:divide-stone-800/80">
-                  {filteredIuran.map((i) => (
+                  {filteredIuran
+                    .slice((iuranPage - 1) * IURAN_PAGE_SIZE, iuranPage * IURAN_PAGE_SIZE)
+                    .map((i) => (
                     <tr key={i.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-900/30">
                       <td className="py-3 px-4">
                         <p className="font-bold text-stone-900 dark:text-stone-100">{i.anggota_nama}</p>
@@ -591,6 +623,15 @@ export default function AdminKeuanganPage() {
               </table>
             </div>
           </Card>
+
+          {/* Pagination Iuran */}
+          <Pagination
+            currentPage={iuranPage}
+            totalPages={Math.ceil(filteredIuran.length / IURAN_PAGE_SIZE) || 1}
+            onPageChange={setIuranPage}
+            totalItems={filteredIuran.length}
+            pageSize={IURAN_PAGE_SIZE}
+          />
         </div>
       )}
 
