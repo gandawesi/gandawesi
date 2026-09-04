@@ -1,0 +1,481 @@
+%% ============================================================
+%% ERD Gandawesi — Mermaid Entity Relationship Diagram
+%% Berdasarkan schema-gandawesi.sql (versi final)
+%% Total: 28 tabel
+%% ============================================================
+
+erDiagram
+
+    %% ============================================================
+    %% 1. KEANGGOTAAN INTI
+    %% ============================================================
+
+    angkatan {
+        uuid id PK
+        integer nomor_angkatan UK
+        text nama_angkatan
+        integer tahun
+        timestamptz created_at
+    }
+
+    periode_pendaftaran {
+        uuid id PK
+        uuid angkatan_id FK
+        date tanggal_buka
+        date tanggal_tutup
+        text status "buka | tutup"
+        text catatan
+        timestamptz created_at
+    }
+
+    anggota {
+        uuid id PK
+        uuid auth_user_id FK "UK, nullable - Supabase Auth"
+        text nama
+        text email UK
+        uuid angkatan_id FK
+        uuid periode_pendaftaran_id FK "nullable"
+        text status_keanggotaan "calon_siswa | siswa | medan_operasi | anggota_muda | anggota_biasa | anggota_luar_biasa | anggota_kehormatan | dicabut"
+        text nia UK "nullable - diisi manual"
+        boolean is_admin "default false"
+        text tempat_lahir
+        date tanggal_lahir
+        text jenis_kelamin "L | P"
+        text no_hp
+        text alamat
+        text nim
+        text jurusan
+        text foto_profil "path Storage"
+        text file_persetujuan_ortu "path Storage"
+        date tanggal_berubah_status
+        text catatan_status
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    riwayat_tahap {
+        uuid id PK
+        uuid anggota_id FK
+        text tahap "calon_siswa | siswa | medan_operasi"
+        text status "dalam_proses | lolos | gugur"
+        uuid approved_by FK "nullable - anggota"
+        date tanggal
+        text catatan
+        timestamptz created_at
+    }
+
+    tes_kesehatan {
+        uuid id PK
+        uuid anggota_id FK
+        text jenis "awal | akhir"
+        text catatan_panitia
+        text file_surat_dokter "path Storage"
+        date tanggal
+        timestamptz created_at
+    }
+
+    klaim_akun {
+        uuid id PK
+        uuid auth_user_id FK
+        uuid anggota_id FK "UK"
+        text status "menunggu | disetujui | ditolak"
+        text catatan_admin
+        uuid diproses_oleh FK
+        timestamptz diproses_pada
+        timestamptz created_at
+    }
+
+    user_roles {
+        uuid id PK
+        uuid anggota_id FK
+        text role "admin | ketua_organisasi | ketua_medan_operasi | danlat | ketua_dp | pengurus_dp | panitia"
+        date periode_mulai
+        date periode_selesai
+        boolean is_active
+        timestamptz created_at
+    }
+
+    %% Relasi Keanggotaan Inti
+    angkatan ||--o{ periode_pendaftaran : "buka pendaftaran"
+    angkatan ||--o{ anggota : "anggota per angkatan"
+    periode_pendaftaran ||--o{ anggota : "mendaftar lewat"
+    anggota ||--o{ riwayat_tahap : "riwayat tahap"
+    anggota ||--o{ riwayat_tahap : "approved_by"
+    anggota ||--o{ tes_kesehatan : "tes kesehatan"
+    anggota ||--o| klaim_akun : "klaim akun"
+    anggota ||--o{ user_roles : "punya role"
+
+    %% ============================================================
+    %% 2. KADERISASI: SESI, PRESENSI, MATERI, ALAT
+    %% ============================================================
+
+    materi {
+        uuid id PK
+        text judul
+        uuid angkatan_id FK "nullable"
+        date tanggal
+        timestamptz created_at
+    }
+
+    sesi_kegiatan {
+        uuid id PK
+        text jenis_kegiatan "bina_jasmani | pematerian | presentasi | pendakian | ekspedisi"
+        text judul
+        uuid materi_id FK "nullable"
+        uuid angkatan_id FK "nullable"
+        date tanggal
+        text catatan
+        timestamptz created_at
+    }
+
+    presensi_kaderisasi {
+        uuid id PK
+        uuid anggota_id FK
+        uuid sesi_kegiatan_id FK
+        boolean hadir
+        text catatan
+        timestamptz created_at
+    }
+
+    soal_post_test {
+        uuid id PK
+        uuid materi_id FK
+        text pertanyaan
+        jsonb pilihan
+    }
+
+    kunci_jawaban_post_test {
+        uuid soal_id PK, FK
+        text jawaban_benar
+    }
+
+    hasil_post_test {
+        uuid id PK
+        uuid anggota_id FK
+        uuid materi_id FK
+        numeric skor
+        timestamptz dikerjakan_pada
+    }
+
+    alat_siswa {
+        uuid id PK
+        uuid anggota_id FK
+        text nama_alat
+        text jenis "pribadi | kelompok"
+        text sumber "beli | pinjam_luar | pinjam_gandawesi"
+        text status "lengkap | belum"
+        date tanggal_kembali
+    }
+
+    %% Relasi Kaderisasi
+    angkatan ||--o{ materi : "materi per angkatan"
+    materi ||--o{ sesi_kegiatan : "sesi pematerian"
+    angkatan ||--o{ sesi_kegiatan : "sesi per angkatan"
+    sesi_kegiatan ||--o{ presensi_kaderisasi : "presensi per sesi"
+    anggota ||--o{ presensi_kaderisasi : "kehadiran"
+    materi ||--o{ soal_post_test : "soal per materi"
+    soal_post_test ||--|| kunci_jawaban_post_test : "kunci jawaban (admin)"
+    materi ||--o{ hasil_post_test : "hasil per materi"
+    anggota ||--o{ hasil_post_test : "mengerjakan"
+    anggota ||--o{ alat_siswa : "checklist alat"
+
+    %% ============================================================
+    %% 3. EVALUASI (MEDAN OPERASI & PPNIA)
+    %% ============================================================
+
+    evaluasi_individu {
+        uuid id PK
+        uuid anggota_id FK
+        uuid evaluator_id FK "nullable"
+        text tahap "medan_operasi | ppnia"
+        numeric skor "nullable"
+        text catatan
+        date tanggal
+        timestamptz created_at
+    }
+
+    evaluasi_kelompok {
+        uuid id PK
+        uuid angkatan_id FK
+        uuid evaluator_id FK "nullable"
+        text tahap "medan_operasi | ppnia"
+        text catatan
+        date tanggal
+        timestamptz created_at
+    }
+
+    evaluasi_berkala {
+        uuid id PK
+        uuid anggota_id FK
+        text periode
+        text status "aman | perlu_perhatian | kritis"
+        text catatan
+        timestamptz created_at
+    }
+
+    presentasi {
+        uuid id PK
+        uuid anggota_id FK
+        text jenis "pra_ekspedisi | pasca_ekspedisi"
+        date tanggal
+        text file "path Storage"
+        text catatan
+    }
+
+    rencana_ekspedisi {
+        uuid id PK
+        uuid pengaju_id FK
+        text deskripsi
+        text lokasi
+        date tanggal
+        text status_approval "diajukan | disetujui | ditolak"
+    }
+
+    peserta_ekspedisi {
+        uuid id PK
+        uuid rencana_ekspedisi_id FK
+        uuid anggota_id FK
+    }
+
+    kriteria_evaluasi {
+        uuid id PK
+        text nama_kriteria
+        text periode
+        timestamptz created_at
+    }
+
+    nilai_evaluasi {
+        uuid id PK
+        uuid anggota_id FK
+        uuid kriteria_id FK
+        numeric skor
+        text catatan
+    }
+
+    %% Relasi Evaluasi
+    anggota ||--o{ evaluasi_individu : "dievaluasi"
+    anggota ||--o{ evaluasi_individu : "evaluator"
+    angkatan ||--o{ evaluasi_kelompok : "eval kelompok"
+    anggota ||--o{ evaluasi_kelompok : "evaluator"
+    anggota ||--o{ evaluasi_berkala : "eval berkala"
+    anggota ||--o{ presentasi : "presentasi"
+    anggota ||--o{ rencana_ekspedisi : "mengajukan"
+    rencana_ekspedisi ||--o{ peserta_ekspedisi : "peserta"
+    anggota ||--o{ peserta_ekspedisi : "ikut ekspedisi"
+    kriteria_evaluasi ||--o{ nilai_evaluasi : "nilai per kriteria"
+    anggota ||--o{ nilai_evaluasi : "dinilai"
+
+    %% ============================================================
+    %% 4. GOVERNANCE & JABATAN
+    %% ============================================================
+
+    jabatan_organisasi {
+        uuid id PK
+        uuid anggota_id FK
+        text jabatan
+        date periode_mulai
+        date periode_selesai
+        text catatan "termasuk hasil pemilihan"
+        timestamptz created_at
+    }
+
+    dewan_penasehat {
+        uuid id PK
+        uuid anggota_id FK
+        date periode_mulai
+        date periode_selesai
+    }
+
+    lpj {
+        uuid id PK
+        uuid anggota_id FK
+        text jenis "kepengurusan | kegiatan"
+        uuid terkait_id "FK longgar"
+        text file "path Storage"
+        date tanggal
+    }
+
+    %% Relasi Governance
+    anggota ||--o{ jabatan_organisasi : "menjabat"
+    anggota ||--o{ dewan_penasehat : "menjadi DP"
+    anggota ||--o{ lpj : "penanggung jawab"
+
+    %% ============================================================
+    %% 5. KEUANGAN
+    %% ============================================================
+
+    tarif_iuran {
+        uuid id PK
+        text status_keanggotaan "UK bersama berlaku_sejak"
+        numeric nominal
+        date berlaku_sejak "UK bersama status"
+    }
+
+    iuran {
+        uuid id PK
+        uuid anggota_id FK
+        text periode
+        numeric nominal
+        text status_bayar "lunas | menunggak"
+        date tanggal_bayar
+    }
+
+    event {
+        uuid id PK
+        text nama
+        text jenis
+        text lokasi
+        date tanggal
+        date tanggal_selesai
+        integer kuota
+        text deskripsi
+        boolean is_public "default false"
+        text status "upcoming | ongoing | selesai | batal"
+        timestamptz created_at
+    }
+
+    transaksi_kas {
+        uuid id PK
+        text tipe "masuk | keluar"
+        text kategori
+        numeric nominal
+        uuid event_id FK "nullable"
+        text bukti "path Storage"
+        text keterangan
+        date tanggal
+    }
+
+    event_anggaran {
+        uuid id PK
+        uuid event_id FK
+        numeric rab
+        numeric realisasi
+        text status "draft | disetujui"
+    }
+
+    sponsorship {
+        uuid id PK
+        text nama_sponsor
+        text jenis "sponsorship | donasi"
+        numeric nominal
+        uuid event_id FK "nullable"
+        date tanggal
+    }
+
+    %% Relasi Keuangan
+    anggota ||--o{ iuran : "tagihan iuran"
+    event ||--o{ transaksi_kas : "transaksi event"
+    event ||--o| event_anggaran : "anggaran"
+    event ||--o{ sponsorship : "sponsor event"
+
+    %% ============================================================
+    %% 6. EVENT & ARTIKEL
+    %% ============================================================
+
+    pendaftaran_event {
+        uuid id PK
+        uuid anggota_id FK
+        uuid event_id FK
+        text status "terdaftar | batal"
+    }
+
+    presensi_event {
+        uuid id PK
+        uuid anggota_id FK
+        uuid event_id FK
+        boolean hadir
+    }
+
+    artikel {
+        uuid id PK
+        uuid penulis_id FK
+        text judul
+        text slug UK
+        text konten
+        text kategori "berita | laporan_ekspedisi | tips"
+        text thumbnail "path Storage"
+        text status "draft | review | published"
+        timestamptz tanggal_publish
+        timestamptz created_at
+    }
+
+    %% Relasi Event & Artikel
+    anggota ||--o{ pendaftaran_event : "mendaftar"
+    event ||--o{ pendaftaran_event : "peserta"
+    anggota ||--o{ presensi_event : "hadir"
+    event ||--o{ presensi_event : "kehadiran"
+    anggota ||--o{ artikel : "menulis"
+
+    %% ============================================================
+    %% 7. INVENTARIS
+    %% ============================================================
+
+    alat {
+        uuid id PK
+        text nama_alat
+        text kategori
+        text kondisi "baik | rusak_ringan | rusak_berat"
+        integer stok
+    }
+
+    peminjaman_alat {
+        uuid id PK
+        uuid anggota_id FK
+        uuid alat_id FK
+        integer jumlah "default 1"
+        date tanggal_pinjam
+        date tanggal_kembali
+        text status "diajukan | disetujui | dipinjam | dikembalikan | ditolak"
+        uuid approved_by FK "nullable - anggota"
+    }
+
+    %% Relasi Inventaris
+    anggota ||--o{ peminjaman_alat : "meminjam"
+    anggota ||--o{ peminjaman_alat : "approved_by"
+    alat ||--o{ peminjaman_alat : "dipinjam"
+
+    %% ============================================================
+    %% 8. ACHIEVEMENT
+    %% ============================================================
+
+    kta {
+        uuid id PK
+        uuid anggota_id FK
+        text nia
+        date tanggal_terbit
+        text file "path Storage"
+    }
+
+    sertifikat {
+        uuid id PK
+        uuid anggota_id FK
+        text jenis
+        date tanggal_terbit
+        text file "path Storage"
+    }
+
+    %% Relasi Achievement
+    anggota ||--o{ kta : "KTA digital"
+    anggota ||--o{ sertifikat : "sertifikat"
+
+    %% ============================================================
+    %% 9. KONTEN PUBLIK
+    %% ============================================================
+
+    konten_statis {
+        uuid id PK
+        text slug UK "mis: visi-misi, sejarah"
+        text judul
+        text konten
+        timestamptz updated_at
+    }
+
+    rute_ekspedisi {
+        uuid id PK
+        text nama
+        text lokasi
+        date tanggal
+        text deskripsi
+        text peserta "deskripsi text"
+        text_array foto
+    }
