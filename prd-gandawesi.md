@@ -115,17 +115,29 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 
 ## 7. Non-Functional Requirements
 
-- **NFR-1 Keamanan**: Data sensitif (tes kesehatan, data pribadi calon anggota) harus dilindungi dengan role-based access control; disarankan menerapkan Row Level Security jika memakai Supabase
-- **NFR-2 Ketersediaan Data**: Riwayat status dan evaluasi anggota tidak boleh hilang meski status berubah (histori tetap disimpan, bukan overwrite)
-- **NFR-3 Aksesibilitas**: Post-test dan presensi harus bisa diakses dari perangkat mobile (anggota mengisi lewat HP)
-- **NFR-4 Fleksibilitas Aturan**: Kriteria evaluasi dan tarif iuran harus dapat diubah oleh admin tanpa perlu perubahan kode/database (data-driven, bukan hardcoded)
+- **NFR-1 Keamanan**: Menerapkan Row Level Security (RLS) PostgreSQL secara komprehensif di Supabase, memastikan enkapsulasi data per peran/ID pengguna, perlindungan PII, dan pencegahan self-approval/privilege escalation di tingkat database.
+- **NFR-2 Ketersediaan & Retensi Data**: Riwayat status, kaderisasi, evaluasi, dan keuangan anggota tidak boleh hilang meski status berubah. Seluruh relasi riwayat permanen dilindungi dengan constraint `ON DELETE RESTRICT`; operasi hard delete dilarang via API dan digantikan mekanisme soft-delete status (`'dicabut'`).
+- **NFR-3 Aksesibilitas**: Post-test dan presensi harus dapat diakses cepat dan responsif dari perangkat mobile (anggota mengisi lewat HP).
+- **NFR-4 Fleksibilitas Aturan**: Kriteria evaluasi dan tarif iuran harus dapat diubah oleh pengurus tanpa perubahan kode/skema database (data-driven, bukan hardcoded).
+
+### 7.1 Ringkasan Arsitektur Keamanan & Perlindungan Data
+
+Sistem menerapkan prinsip *defense-in-depth* di level database engine (PostgreSQL/Supabase):
+1. **Isolasi PII (Personally Identifiable Information)**: Kolom sensitif pada tabel `anggota` (`no_hp`, `alamat`, `tempat_lahir`, `file_persetujuan_ortu`, `catatan_status`) dikunci oleh policy RLS hanya untuk pemilik akun (`auth_user_id = auth.uid()`) dan admin. Direktori anggota untuk publik/rekan anggota dilayani melalui secure view `v_anggota_direktori` (`security_invoker = false`) yang hanya mengekspos kolom publik aman.
+2. **Kerahasiaan Kunci Jawaban Ujian**: Kunci jawaban post-test disimpan di tabel terpisah `kunci_jawaban_post_test` (hanya bisa diakses admin). Soal disajikan ke siswa tanpa kolom kunci, dan penilaian dikalkulasi di server via RPC `submit_post_test()`.
+3. **Pencegahan Self-Approval / Privilege Escalation**: Seluruh formulir pengajuan anggota (`peminjaman_alat`, `artikel`, `rencana_ekspedisi`, `klaim_akun`) diproteksi dengan `WITH CHECK` yang mengunci status awal (`'diajukan'`, `'draft'`, `'menunggu'`) sehingga anggota tidak dapat menyuntikkan status persetujuan secara sepihak.
+4. **Perlindungan Riwayat Permanen**: Menghapus policy hard delete (`DELETE FROM anggota`) dan memasang `ON DELETE RESTRICT` pada semua entitas audit kaderisasi & keuangan.
+5. **Integritas Otomatis via Trigger & Transaksi**: Penegakan kuota event, sinkronisasi stok alat (`SELECT ... FOR UPDATE`), sinkronisasi kenaikan status kaderisasi (`riwayat_tahap` $\rightarrow$ `anggota`), dan pencatatan kas otomatis dari sponsorship ditangani langsung oleh database trigger.
 
 ## 8. Ketergantungan & Referensi
 
-- **Dokumen Spesifikasi Fitur** (`spesifikasi-fitur-gandawesi.md`) — rincian lengkap tiap tahap keanggotaan dan modul fitur
-- **ERD** (`erd-gandawesi.mermaid`) — struktur relasi antar entitas (28 tabel, 9 section)
-- **Skema SQL** (`schema-gandawesi.sql`) — DDL PostgreSQL/Supabase siap pakai, termasuk RPC function `update_profil_anggota()`
-- **RLS Policy** (`rls-policy-gandawesi.sql`) — Row Level Security policies + helper functions (`is_admin()`, `has_role()`, `is_panitia_or_admin()`)
+- **Dokumen Spesifikasi Fitur** (`spesifikasi-fitur-gandawesi.md`) — rincian lengkap tiap tahap keanggotaan, aturan bisnis, dan pemetaan peran sistem (`user_roles`)
+- **ERD** (`erd-gandawesi.mermaid`) — struktur relasi antar entitas (29 tabel, 9 section)
+- **Skema SQL** (`schema-gandawesi.sql`) — DDL PostgreSQL/Supabase siap pakai, mencakup:
+  - RPC functions: `update_profil_anggota()`, `submit_post_test()`, `generate_tagihan_iuran_bulanan()`
+  - Triggers bisnis: `trg_sync_status_kaderisasi`, `trg_anggota_nia_promosi`, `trg_validate_kta_penerbitan`, `trg_check_kuota_event`, `trg_sync_stok_peminjaman`, `trg_sponsorship_ke_kas`, `trg_proses_klaim_akun`
+  - 17 indeks performa untuk foreign key dan lookup RLS auth
+- **RLS Policy** (`rls-policy-gandawesi.sql`) — Row Level Security policies + helper functions (`is_admin()`, `has_role()`, `is_panitia_or_admin()`, `is_anggota_aktif()`, `is_unclaimed_anggota()`) serta secure view `v_anggota_direktori`
 - **Sprint Plan** (`sprint-plan-gandawesi.md`) — rencana pengerjaan 12 sprint (~3 bulan)
 - **Supabase Storage Buckets** — didefinisikan di catatan implementasi `schema-gandawesi.sql` (avatars, documents, slides, articles, certificates, receipts, expeditions)
 

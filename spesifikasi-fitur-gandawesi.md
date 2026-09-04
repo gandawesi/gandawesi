@@ -22,17 +22,37 @@ Website ini melayani tiga jenis pengguna utama: **Guest** (publik), **Admin/Peng
 ### Admin / Pengurus (CMS)
 - Kelola seluruh alur pendaftaran & kaderisasi
 - Kelola event, artikel, inventaris alat, keuangan
-- Approve/reject di titik-titik keputusan tertentu
+- Approve/reject di titik-titik keputusan tertentu sesuai role fungsional
 
 ### Anggota (dengan beberapa status — lihat Bagian 3)
 - Status keanggotaan, NIA, dan riwayat kaderisasi terlihat di akun sendiri
 - KTA digital (khusus yang sudah punya NIA)
 - Ikut & daftar event
 - Riwayat kegiatan pribadi & sertifikat
-- Akses direktori anggota
+- Akses direktori anggota (via secure view publik)
 - Peminjaman inventaris alat
 - Submit draft artikel/laporan ekspedisi
 - Cek & bayar status iuran
+
+---
+
+## 2.1 Role Akses Granular Sistem (`user_roles`)
+
+Untuk mendukung wewenang persetujuan yang terdesentralisasi namun aman, sistem memisahkan **Status Keanggotaan** (jalur kaderisasi) dengan **Role Fungsional** (hak akses sistem). Hak akses granular dikelola dalam tabel `user_roles` dengan 7 peran resmi:
+
+| Role (`user_roles.role`) | Nama Peran | Deskripsi & Wewenang Utama | Titik Keputusan / Approval |
+|---|---|---|---|
+| `admin` | Super Admin | Akses penuh ke seluruh CMS, manajemen akun/role, konfigurasi tarif, dan penutupan buku kas | Seluruh modul sistem |
+| `ketua_organisasi` | Ketua Organisasi | Pimpinan tertinggi organisasi, pengawasan umum & LPJ tahunan | Kepengurusan & evaluasi umum |
+| `ketua_medan_operasi` | Ketua Medan Operasi | Penanggung jawab operasional diklat lapangan | Approval kelulusan Calon Siswa $\rightarrow$ Siswa |
+| `danlat` | Komandan Latihan | Instruktur utama lapangan saat Medan Operasi | Pengisian evaluasi individu & kelompok lapangan |
+| `ketua_dp` | Ketua Dewan Pengurus | Pimpinan badan eksekutif Dewan Pengurus | Approval kelulusan Siswa $\rightarrow$ Medan Operasi |
+| `pengurus_dp` | Pengurus DP | Anggota aktif Dewan Pengurus | Evaluasi berkala PPNIA & approval akhir PPNIA $\rightarrow$ Anggota Biasa |
+| `panitia` | Panitia Kaderisasi | Tim operasional pelaksana diklat | Input presensi kegiatan, catatan kesehatan, & checklist alat |
+
+> **Prinsip Arsitektur:**
+> 1. **Temporal & Multi-Role:** Setiap role memiliki masa berlaku (`periode_mulai` s.d. `periode_selesai`) dan flag `is_active`. Satu anggota bisa memegang beberapa role sekaligus (misalnya `pengurus_dp` merangkap `panitia`).
+> 2. **Fallback Bootstrap:** Anggota pertama dapat memanfaatkan flag `is_admin = true` di tabel `anggota` untuk inisialisasi awal sebelum tabel `user_roles` terisi.
 
 ---
 
