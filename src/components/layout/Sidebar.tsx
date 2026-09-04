@@ -25,6 +25,8 @@ import {
   Compass,
   BookOpen,
   ShieldAlert,
+  Building,
+  FileCheck,
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -34,6 +36,8 @@ export function Sidebar() {
   const mainNavItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/profil', label: 'Profil Saya', icon: User },
+    { href: '/dashboard/kta', label: 'KTA Digital Resmi', icon: Award },
+    { href: '/dashboard/sertifikat', label: 'Sertifikat Saya', icon: FileCheck },
     { href: '/dashboard/direktori', label: 'Direktori Anggota', icon: Users },
     {
       href: '/dashboard/klaim',
@@ -57,6 +61,8 @@ export function Sidebar() {
     { href: '/dashboard/admin/medan-operasi', label: 'Medan Operasi (Danlat)', icon: Compass },
     { href: '/dashboard/admin/ppnia', label: 'PPNIA (Dewan Pengurus)', icon: ShieldAlert },
     { href: '/dashboard/admin/nia', label: 'Sidang Akhir & NIA (DP)', icon: Award },
+    { href: '/dashboard/admin/governance', label: 'Struktur & ALB (Governance)', icon: Building },
+    { href: '/dashboard/admin/sertifikat', label: 'Penerbitan Sertifikat', icon: FileCheck },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
     { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },
