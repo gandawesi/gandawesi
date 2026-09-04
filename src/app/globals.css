@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  --color-forest-50: #f2fbf6;
+  --color-forest-100: #e0f6eb;
+  --color-forest-200: #c2edd8;
+  --color-forest-300: #93debd;
+  --color-forest-400: #5dc69e;
+  --color-forest-500: #34aa81;
+  --color-forest-600: #248b68;
+  --color-forest-700: #1d6e53;
+  --color-forest-800: #195844;
+  --color-forest-900: #164839;
+  --color-forest-950: #092820;
+
+  --color-moss-50: #f3f8f4;
+  --color-moss-100: #e3ede6;
+  --color-moss-200: #c7dbce;
+  --color-moss-300: #a0c2ac;
+  --color-moss-400: #74a385;
+  --color-moss-500: #518563;
+  --color-moss-600: #3f6a4d;
+  --color-moss-700: #34543f;
+  --color-moss-800: #2c4434;
+  --color-moss-900: #26392d;
+  --color-moss-950: #121e17;
+
+  --color-earth-50: #fbf8f5;
+  --color-earth-100: #f5eeea;
+  --color-earth-200: #ebded5;
+  --color-earth-300: #dbc4b6;
+  --color-earth-400: #c6a290;
+  --color-earth-500: #b28570;
+  --color-earth-600: #9d6e59;
+  --color-earth-700: #815645;
+  --color-earth-800: #6b473b;
+  --color-earth-900: #593d33;
+  --color-earth-950: #301f19;
+}
+
+:root {
+  --background: #fbfbf8;
+  --foreground: #1a241f;
+  --card: #ffffff;
+  --card-foreground: #1a241f;
+  --card-border: #e3e8e4;
+  --muted: #f2f5f3;
+  --muted-foreground: #5e6d64;
+  --accent: #1d6e53;
+  --accent-foreground: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #080d0a;
+    --foreground: #edf2ee;
+    --card: #0f1814;
+    --card-foreground: #edf2ee;
+    --card-border: #1c2b23;
+    --muted: #15221b;
+    --muted-foreground: #8ea296;
+    --accent: #34aa81;
+    --accent-foreground: #080d0a;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background: rgba(15, 24, 20, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(227, 232, 228, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(18, 40, 32, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-card {
+    background: rgba(15, 24, 20, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(28, 43, 35, 0.8);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Mountain peak gradient glow */
+.bg-topo-gradient {
+  background: radial-gradient(circle at 50% -20%, rgba(52, 170, 129, 0.15), transparent 70%),
+              radial-gradient(circle at 90% 40%, rgba(178, 133, 112, 0.08), transparent 50%);
+}
