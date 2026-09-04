@@ -56,6 +56,7 @@ export function Sidebar() {
     { href: '/dashboard/admin/siswa', label: 'Tahap Siswa (DP)', icon: Award },
     { href: '/dashboard/admin/medan-operasi', label: 'Medan Operasi (Danlat)', icon: Compass },
     { href: '/dashboard/admin/ppnia', label: 'PPNIA (Dewan Pengurus)', icon: ShieldAlert },
+    { href: '/dashboard/admin/nia', label: 'Sidang Akhir & NIA (DP)', icon: Award },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
     { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },

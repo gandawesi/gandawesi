@@ -6,7 +6,9 @@ import {
   submitPresentasiPPNIA,
   submitRencanaEkspedisi,
 } from '@/lib/actions/ppnia';
+import { fetchMyEvaluasiAkhirSummary } from '@/lib/actions/evaluasi-nia';
 import type { MyPPNIASummary } from '@/lib/types/ppnia';
+import type { MyEvaluasiAkhirSummary } from '@/lib/types/evaluasi-nia';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
@@ -29,12 +31,19 @@ import {
   Sparkles,
   ShieldCheck,
   Compass,
+  GraduationCap,
+  QrCode,
+  Printer,
 } from 'lucide-react';
 
+import { useAuth } from '@/hooks/useAuth';
+
 export default function PPNIAPortalPage() {
+  const { profile } = useAuth();
   const [summary, setSummary] = useState<MyPPNIASummary | null>(null);
+  const [evalAkhir, setEvalAkhir] = useState<MyEvaluasiAkhirSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'presentasi' | 'ekspedisi'>('presentasi');
+  const [activeTab, setActiveTab] = useState<'presentasi' | 'ekspedisi' | 'sidang_nia'>('presentasi');
 
   // Presentasi Form State
   const [presForm, setPresForm] = useState({
@@ -59,8 +68,12 @@ export default function PPNIAPortalPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const data = await fetchMyPPNIASummary();
-    setSummary(data);
+    const [ppniaData, evalData] = await Promise.all([
+      fetchMyPPNIASummary(),
+      fetchMyEvaluasiAkhirSummary(),
+    ]);
+    setSummary(ppniaData);
+    setEvalAkhir(evalData);
     setLoading(false);
   }, []);
 
@@ -130,9 +143,16 @@ export default function PPNIAPortalPage() {
               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
                 <Compass className="w-3.5 h-3.5" /> Program PPNIA (~1 Tahun)
               </span>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                Anggota Muda {summary.nama_angkatan ? `(${summary.nama_angkatan})` : ''}
-              </span>
+              {evalAkhir?.nia ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  Resmi Anggota Biasa: {evalAkhir.nia}
+                </span>
+              ) : (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Anggota Muda {summary.nama_angkatan ? `(${summary.nama_angkatan})` : ''}
+                </span>
+              )}
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
               Portal Aktivitas & Progres PPNIA
@@ -309,10 +329,10 @@ export default function PPNIAPortalPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-800 gap-2">
+      <div className="flex border-b border-slate-800 gap-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('presentasi')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'presentasi'
               ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -326,7 +346,7 @@ export default function PPNIAPortalPage() {
         </button>
         <button
           onClick={() => setActiveTab('ekspedisi')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'ekspedisi'
               ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -339,6 +359,26 @@ export default function PPNIAPortalPage() {
               {summary.ekspedisi_saya.status_approval.toUpperCase()}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => setActiveTab('sidang_nia')}
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+            activeTab === 'sidang_nia'
+              ? 'border-amber-500 text-amber-400 bg-amber-500/5'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Award className="w-4 h-4 text-amber-400" />
+          Sidang Pleno & Kartu NIA
+          {evalAkhir?.nia ? (
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              {evalAkhir.nia}
+            </span>
+          ) : evalAkhir?.status_sidang === 'lolos' ? (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
+              LOLOS
+            </span>
+          ) : null}
         </button>
       </div>
 
@@ -603,6 +643,256 @@ export default function PPNIAPortalPage() {
               </form>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 3: SIDANG PLENO DP & KARTU DIGITAL NIA                   */}
+      {/* ============================================================ */}
+      {activeTab === 'sidang_nia' && (
+        <div className="space-y-8">
+          {/* Status Sidang & NIA Overview Card */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <Card className="p-5 bg-slate-900/70 border-slate-800 flex items-center gap-4">
+              <div className="p-3 bg-amber-500/10 text-amber-400 rounded-2xl shrink-0">
+                <GraduationCap className="w-7 h-7" />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  Keputusan Sidang Pleno
+                </span>
+                <div className="text-base font-bold text-white mt-0.5">
+                  {evalAkhir?.status_sidang === 'lolos' ? (
+                    <span className="text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Dinyatakan Lolos
+                    </span>
+                  ) : evalAkhir?.status_sidang === 'tunda' ? (
+                    <span className="text-amber-400 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4" /> Ditunda / Perlu Revisi
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 flex items-center gap-1.5">
+                      <Clock className="w-4 h-4" /> Menunggu Sidang DP
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-slate-900/70 border-slate-800 flex items-center gap-4">
+              <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl shrink-0">
+                <Award className="w-7 h-7" />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  Nomor Induk Anggota (NIA)
+                </span>
+                <p className="text-base font-mono font-bold text-amber-400 mt-0.5">
+                  {evalAkhir?.nia || 'Belum Diterbitkan'}
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-slate-900/70 border-slate-800 flex items-center gap-4">
+              <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl shrink-0">
+                <Activity className="w-7 h-7" />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  Rata-rata Skor Evaluasi
+                </span>
+                <p className="text-base font-bold text-white mt-0.5">
+                  <span className="text-indigo-400 text-lg">{evalAkhir?.rata_rata_skor || '-'}</span> / 100
+                </p>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Digital Member ID Card (NIA Card) */}
+            <div className="lg:col-span-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Kartu Digital Anggota Biasa (KTA)
+                </h3>
+                {evalAkhir?.nia && (
+                  <button
+                    onClick={() => window.print()}
+                    className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Cetak Kartu
+                  </button>
+                )}
+              </div>
+
+              {evalAkhir?.nia ? (
+                /* The Prestigious KTA Card */
+                <div className="relative overflow-hidden rounded-3xl p-6 sm:p-7 bg-gradient-to-br from-stone-900 via-[#0a1812] to-slate-950 border-2 border-amber-500/40 shadow-2xl shadow-emerald-950/40">
+                  {/* Watermark & Decorative background */}
+                  <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+
+                  {/* Card Header */}
+                  <div className="relative z-10 flex items-start justify-between border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-forest-900/90 border border-forest-600 flex items-center justify-center font-black text-emerald-400 text-sm tracking-wider shadow-inner">
+                        GW
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black tracking-wider text-white uppercase">
+                          GANDAWESI FPTI UPI
+                        </h4>
+                        <p className="text-[10px] text-emerald-400 font-medium tracking-wide">
+                          Perhimpunan Mahasiswa Pecinta Alam
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <ShieldCheck className="w-3 h-3 text-amber-400" />
+                      Anggota Biasa
+                    </span>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="relative z-10 my-6 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-forest-800 to-emerald-900 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-200 text-2xl font-black shrink-0 shadow-lg">
+                      {profile?.nama?.slice(0, 2).toUpperCase() || 'GW'}
+                    </div>
+                    <div className="space-y-1.5 text-center sm:text-left flex-1 min-w-0">
+                      <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                        Nama Lengkap
+                      </p>
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight truncate">
+                        {profile?.nama || 'Alya Putri Salsabila'}
+                      </h3>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-xs">
+                        <span className="text-slate-300 font-medium">
+                          Angkatan {evalAkhir.nomor_angkatan || summary.nomor_angkatan || '-'}
+                        </span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-emerald-400 font-semibold">
+                          {evalAkhir.nama_angkatan || summary.nama_angkatan || 'Rimba Halimun'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Footer with Big NIA & QR Code */}
+                  <div className="relative z-10 pt-4 border-t border-white/10 flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-[9px] font-bold text-amber-400/80 uppercase tracking-widest block mb-0.5">
+                        Nomor Induk Anggota (NIA) Resmi
+                      </span>
+                      <div className="font-mono text-xl sm:text-2xl font-extrabold tracking-widest text-amber-300 bg-amber-950/40 px-3 py-1.5 rounded-xl border border-amber-500/30 inline-block">
+                        {evalAkhir.nia}
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Diterbitkan: {evalAkhir.tanggal_nia_terbit || '-'}
+                      </p>
+                    </div>
+
+                    <div className="p-2 bg-white/5 rounded-xl border border-white/10 shrink-0 text-center">
+                      <QrCode className="w-10 h-10 text-slate-300 mx-auto" />
+                      <span className="text-[8px] font-mono text-slate-400 mt-0.5 block">VERIFIED</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Card className="p-8 bg-slate-900/60 border-slate-800 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                    <Award className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-white">Kartu NIA Belum Diterbitkan</h4>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Nomor Induk Anggota (NIA) dan Kartu Anggota Penuh akan diterbitkan setelah Anda menyelesaikan seluruh tahapan PPNIA dan dinyatakan Lolos dalam Sidang Pleno Dewan Pengurus.
+                  </p>
+                </Card>
+              )}
+
+              {/* Plenary Notes Card */}
+              {evalAkhir?.catatan_sidang && (
+                <Card className="p-5 bg-slate-900/60 border-slate-800 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <FileText className="w-4 h-4 text-emerald-400" />
+                    Catatan Sidang Pleno Dewan Pengurus:
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 italic">
+                    "{evalAkhir.catatan_sidang}"
+                  </p>
+                </Card>
+              )}
+            </div>
+
+            {/* Right Column: Transkrip Nilai Evaluasi Kriteria */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-emerald-400" />
+                  Transkrip Nilai Evaluasi PPNIA
+                </h3>
+                <span className="text-xs text-slate-400">
+                  {evalAkhir?.transkrip_nilai?.length || 0} Kriteria Dinilai
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {evalAkhir?.transkrip_nilai && evalAkhir.transkrip_nilai.length > 0 ? (
+                  evalAkhir.transkrip_nilai.map((item, idx) => (
+                    <Card key={item.id || idx} className="p-4 bg-slate-900/60 border-slate-800 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Kriteria #{idx + 1}
+                          </span>
+                          <h4 className="text-xs font-bold text-white mt-0.5">
+                            {item.nama_kriteria}
+                          </h4>
+                        </div>
+                        <div className="text-right shrink-0">
+                          {item.skor !== null ? (
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                              item.skor >= 85
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : item.skor >= 70
+                                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            }`}>
+                              Skor: {item.skor} / 100
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-500 italic">Belum dinilai</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Score progress bar */}
+                      {item.skor !== null && (
+                        <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              item.skor >= 85 ? 'bg-emerald-500' : item.skor >= 70 ? 'bg-indigo-500' : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(0, item.skor))}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {item.catatan && (
+                        <p className="text-[11px] text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                          <span className="font-semibold text-slate-300">Catatan Penguji:</span> {item.catatan}
+                        </p>
+                      )}
+                    </Card>
+                  ))
+                ) : (
+                  <Card className="p-8 bg-slate-900/60 border-slate-800 text-center">
+                    <p className="text-xs text-slate-400">Belum ada transkrip nilai evaluasi yang tercatat.</p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

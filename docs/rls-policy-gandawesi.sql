@@ -353,13 +353,13 @@ create policy "peserta_ekspedisi_delete_admin" on peserta_ekspedisi
 
 create policy "kriteria_evaluasi_select_authenticated" on kriteria_evaluasi
     for select using (auth.role() = 'authenticated' or is_admin());
-create policy "kriteria_evaluasi_write_admin" on kriteria_evaluasi
-    for all using (is_admin()) with check (is_admin());
+create policy "kriteria_evaluasi_write_panitia_or_admin" on kriteria_evaluasi
+    for all using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 
 create policy "nilai_evaluasi_select_own_or_admin" on nilai_evaluasi
-    for select using (anggota_id = current_anggota_id() or is_admin());
-create policy "nilai_evaluasi_write_admin" on nilai_evaluasi
-    for all using (is_admin()) with check (is_admin());
+    for select using (anggota_id = current_anggota_id() or is_panitia_or_admin());
+create policy "nilai_evaluasi_write_panitia_or_admin" on nilai_evaluasi
+    for all using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 
 -- ------------------------------------------------------------
 -- 6. GOVERNANCE & JABATAN — publik
