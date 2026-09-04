@@ -23,6 +23,8 @@ import {
   FileSpreadsheet,
   UserCog,
   Compass,
+  BookOpen,
+  ShieldAlert,
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -40,6 +42,7 @@ export function Sidebar() {
       badge: !hasLinkedProfile ? 'Aktivasi' : undefined,
     },
     { href: '/dashboard/kaderisasi', label: 'Alur Kaderisasi', icon: Award },
+    { href: '/dashboard/ppnia', label: 'Program PPNIA', icon: BookOpen },
     { href: '/dashboard/event', label: 'Kalender Kegiatan', icon: Calendar },
     { href: '/dashboard/inventaris', label: 'Peminjaman Alat', icon: Package },
     { href: '/dashboard/iuran', label: 'Status Iuran', icon: Wallet },
@@ -52,6 +55,7 @@ export function Sidebar() {
     { href: '/dashboard/admin/calon-siswa', label: 'Calon Anggota', icon: ClipboardList },
     { href: '/dashboard/admin/siswa', label: 'Tahap Siswa (DP)', icon: Award },
     { href: '/dashboard/admin/medan-operasi', label: 'Medan Operasi (Danlat)', icon: Compass },
+    { href: '/dashboard/admin/ppnia', label: 'PPNIA (Dewan Pengurus)', icon: ShieldAlert },
     { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
     { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
     { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },

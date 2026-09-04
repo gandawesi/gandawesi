@@ -315,8 +315,8 @@ create policy "evaluasi_kelompok_delete_admin" on evaluasi_kelompok
 
 create policy "evaluasi_berkala_select_own_or_panitia" on evaluasi_berkala
     for select using (anggota_id = current_anggota_id() or is_panitia_or_admin());
-create policy "evaluasi_berkala_write_admin" on evaluasi_berkala
-    for all using (is_admin()) with check (is_admin());
+create policy "evaluasi_berkala_write_panitia_or_admin" on evaluasi_berkala
+    for all using (is_panitia_or_admin()) with check (is_panitia_or_admin());
 
 create policy "presentasi_select_own_or_panitia" on presentasi
     for select using (anggota_id = current_anggota_id() or is_panitia_or_admin());
@@ -335,11 +335,11 @@ create policy "rencana_ekspedisi_insert_own_or_panitia" on rencana_ekspedisi
         (pengaju_id = current_anggota_id() and status_approval = 'diajukan')
         or is_panitia_or_admin()
     );
-create policy "rencana_ekspedisi_update_own_or_admin" on rencana_ekspedisi
-    for update using (pengaju_id = current_anggota_id() or is_admin())
+create policy "rencana_ekspedisi_update_own_or_panitia" on rencana_ekspedisi
+    for update using (pengaju_id = current_anggota_id() or is_panitia_or_admin())
     with check (
         (pengaju_id = current_anggota_id() and status_approval = 'diajukan')
-        or is_admin()
+        or is_panitia_or_admin()
     );
 
 create policy "peserta_ekspedisi_select_own_or_panitia" on peserta_ekspedisi
