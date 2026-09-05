@@ -1,6 +1,15 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  MOCK_JABATAN,
+  MOCK_DEWAN_PENASEHAT,
+  MOCK_CANDIDATES_ALB,
+  MOCK_ALL_ALB,
+  MOCK_SERTIFIKAT,
+} from '@/lib/mock-data';
+import { getAuthenticatedMember, actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import type { ActionResponse } from '@/lib/types/action-response';
 import type {
   JabatanOrganisasiItem,
   DewanPenasehatItem,
@@ -11,270 +20,6 @@ import type {
   KTADigitalData,
   StrukturOrganisasiPublicData,
 } from '@/lib/types/governance';
-
-// ============================================================
-// MOCK DATA FALLBACKS FOR ROBUST EXPERIENCE
-// ============================================================
-const MOCK_JABATAN: JabatanOrganisasiItem[] = [
-  {
-    id: 'jab-1',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nim: '2304521',
-    anggota_nia: 'GW.32.235.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Ketua Umum Organisasi',
-    divisi: 'Badan Pengurus Harian (BPH)',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Terpilih secara aklamasi pada Musyawarah Anggota 2024.',
-    is_active: true,
-  },
-  {
-    id: 'jab-2',
-    anggota_id: 'am-2',
-    anggota_nama: 'Aditya Pratama Ramadhan',
-    anggota_nim: '2304522',
-    anggota_nia: 'GW.32.236.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Wakil Ketua Organisasi',
-    divisi: 'Badan Pengurus Harian (BPH)',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Koordinator operasional dan divisi teknik kepetualangan.',
-    is_active: true,
-  },
-  {
-    id: 'jab-3',
-    anggota_id: 'am-3',
-    anggota_nama: 'Farhan Dwi Cahyo',
-    anggota_nim: '2304523',
-    anggota_nia: 'GW.32.237.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Sekretaris Umum',
-    divisi: 'Kesekretariatan & Administrasi',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Penanggung jawab arsip, persuratan, dan basis data keanggotaan.',
-    is_active: true,
-  },
-  {
-    id: 'jab-4',
-    anggota_id: 'am-4',
-    anggota_nama: 'Nabila Zahra Arifin',
-    anggota_nim: '2304524',
-    anggota_nia: 'GW.32.238.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Bendahara Umum',
-    divisi: 'Keuangan & Kewirausahaan',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Pengelola buku kas organisasi dan iuran wajib.',
-    is_active: true,
-  },
-  {
-    id: 'jab-5',
-    anggota_id: 'am-5',
-    anggota_nama: 'Reza Mahendra Kusuma',
-    anggota_nim: '2304525',
-    anggota_nia: 'GW.32.239.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Ketua Divisi Gunung Hutan & Navigasi',
-    divisi: 'Divisi Operasional Lapangan',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Instruktur kurikulum navigasi dan survival rimba.',
-    is_active: true,
-  },
-  {
-    id: 'jab-6',
-    anggota_id: 'am-6',
-    anggota_nama: 'Bima Satria Yudha',
-    anggota_nim: '2304526',
-    anggota_nia: 'GW.32.240.GW',
-    foto_profil: null,
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_biasa',
-    jabatan: 'Komandan Latihan (Danlat) Medan Operasi',
-    divisi: 'Divisi Kaderisasi',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Penanggung jawab lapangan diklat calon generasi penerus.',
-    is_active: true,
-  },
-];
-
-const MOCK_DEWAN_PENASEHAT: DewanPenasehatItem[] = [
-  {
-    id: 'dpn-1',
-    anggota_id: 'alb-1',
-    anggota_nama: 'Ir. Hendra Gunawan, S.T., M.T.',
-    anggota_nim: '0901244',
-    anggota_nia: 'GW.18.092.RH',
-    foto_profil: null,
-    nomor_angkatan: 18,
-    nama_angkatan: 'Rimba Halimun',
-    status_keanggotaan: 'anggota_luar_biasa',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Penasehat Bidang Ekspedisi Internasional & Kemitraan Alumni.',
-  },
-  {
-    id: 'dpn-2',
-    anggota_id: 'alb-2',
-    anggota_nama: 'Dra. Maya Kartika Dewi, M.Pd.',
-    anggota_nim: '1002381',
-    anggota_nia: 'GW.19.105.BC',
-    foto_profil: null,
-    nomor_angkatan: 19,
-    nama_angkatan: 'Bumi Cendekia',
-    status_keanggotaan: 'anggota_luar_biasa',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Penasehat Bidang Pendidikan Konservasi & Hubungan Rektorat UPI.',
-  },
-  {
-    id: 'dpn-3',
-    anggota_id: 'alb-3',
-    anggota_nama: 'Dr. Ahmad Fauzi, S.Si.',
-    anggota_nim: '1203492',
-    anggota_nia: 'GW.21.134.SP',
-    foto_profil: null,
-    nomor_angkatan: 21,
-    nama_angkatan: 'Singa Prawira',
-    status_keanggotaan: 'anggota_luar_biasa',
-    periode_mulai: '2024-01-01',
-    periode_selesai: '2025-12-31',
-    catatan: 'Penasehat Manajemen Risiko Ekspedisi & Litbang Kebencanaan.',
-  },
-];
-
-const MOCK_CANDIDATES_ALB: CandidateALBItem[] = [
-  {
-    id: 'am-1',
-    nama: 'Alya Putri Salsabila',
-    nim: '2304521',
-    nia: 'GW.32.235.GW',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    jurusan: 'Pendidikan Teknik Mesin',
-    status_keanggotaan: 'anggota_biasa',
-    tanggal_berubah_status: '2025-12-20',
-  },
-  {
-    id: 'am-2',
-    nama: 'Aditya Pratama Ramadhan',
-    nim: '2304522',
-    nia: 'GW.32.236.GW',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    jurusan: 'Pendidikan Teknik Elektro',
-    status_keanggotaan: 'anggota_biasa',
-    tanggal_berubah_status: '2025-12-20',
-  },
-  {
-    id: 'am-3',
-    nama: 'Farhan Dwi Cahyo',
-    nim: '2304523',
-    nia: 'GW.32.237.GW',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    jurusan: 'Pendidikan Teknik Sipil',
-    status_keanggotaan: 'anggota_biasa',
-    tanggal_berubah_status: '2025-12-20',
-  },
-];
-
-const MOCK_ALL_ALB: CandidateALBItem[] = [
-  {
-    id: 'alb-1',
-    nama: 'Ir. Hendra Gunawan, S.T., M.T.',
-    nim: '0901244',
-    nia: 'GW.18.092.RH',
-    nomor_angkatan: 18,
-    nama_angkatan: 'Rimba Halimun',
-    jurusan: 'Teknik Elektro',
-    status_keanggotaan: 'anggota_luar_biasa',
-    tanggal_berubah_status: '2014-08-15',
-  },
-  {
-    id: 'alb-2',
-    nama: 'Dra. Maya Kartika Dewi, M.Pd.',
-    nim: '1002381',
-    nia: 'GW.19.105.BC',
-    nomor_angkatan: 19,
-    nama_angkatan: 'Bumi Cendekia',
-    jurusan: 'Pendidikan Biologi',
-    status_keanggotaan: 'anggota_luar_biasa',
-    tanggal_berubah_status: '2015-09-20',
-  },
-  {
-    id: 'alb-3',
-    nama: 'Dr. Ahmad Fauzi, S.Si.',
-    nim: '1203492',
-    nia: 'GW.21.134.SP',
-    nomor_angkatan: 21,
-    nama_angkatan: 'Singa Prawira',
-    jurusan: 'Pendidikan Geografi',
-    status_keanggotaan: 'anggota_luar_biasa',
-    tanggal_berubah_status: '2017-06-10',
-  },
-];
-
-const MOCK_SERTIFIKAT: SertifikatItem[] = [
-  {
-    id: 'sert-1',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nia: 'GW.32.235.GW',
-    jenis: 'Kelulusan PPNIA & Pengukuhan NIA',
-    judul: 'Piagam Pengukuhan Anggota Biasa & Kelulusan PPNIA Angkatan 32',
-    nomor_sertifikat: '042/SK-NIA/GW-FPTI/XII/2025',
-    tanggal_terbit: '2025-12-20',
-    file: 'https://storage.googleapis.com/gandawesi-assets/sertifikat/ppnia-32-042.pdf',
-    deskripsi: 'Dinyatakan telah menuntaskan seluruh 4 pilar pembinaan, seminar LPJ, dan ekspedisi mandiri.',
-  },
-  {
-    id: 'sert-2',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nia: 'GW.32.235.GW',
-    jenis: 'Pelantikan Medan Operasi',
-    judul: 'Sertifikat Kelulusan Medan Operasi & Pelantikan Anggota Muda Giri Wardhana',
-    nomor_sertifikat: '018/MO-LULUS/GW-FPTI/IV/2025',
-    tanggal_terbit: '2025-04-12',
-    file: 'https://storage.googleapis.com/gandawesi-assets/sertifikat/mo-32-018.pdf',
-    deskripsi: 'Lolos uji kelayakan fisik dan ketahanan mental 12 hari di Gunung Ciremai.',
-  },
-  {
-    id: 'sert-3',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nia: 'GW.32.235.GW',
-    jenis: 'Pendidikan & Latihan Dasar (Siswa)',
-    judul: 'Piagam Kelulusan Tahap Siswa & Post-Test Materi Kepecintaalaman',
-    nomor_sertifikat: '005/DIKLAT/GW-FPTI/II/2025',
-    tanggal_terbit: '2025-02-28',
-    file: 'https://storage.googleapis.com/gandawesi-assets/sertifikat/siswa-32-005.pdf',
-    deskripsi: 'Menyelesaikan 24 sesi bina jasmani dan post-test navigasi darat.',
-  },
-];
 
 // ============================================================
 // 1. PUBLIC ACTIONS: STRUKTUR ORGANISASI
@@ -319,7 +64,7 @@ export async function fetchPublicStrukturOrganisasi(): Promise<StrukturOrganisas
         nama_angkatan: j.anggota?.angkatan?.nama_angkatan || null,
         status_keanggotaan: j.anggota?.status_keanggotaan || 'anggota_biasa',
         jabatan: j.jabatan,
-        divisi: j.catatan?.includes('Divisi') ? j.catatan : 'Pengurus Harian',
+        divisi: j.catatan?.includes('Divisi') ? j.catatan : 'Dewan Pengurus',
         periode_mulai: j.periode_mulai,
         periode_selesai: j.periode_selesai,
         catatan: j.catatan,
@@ -329,9 +74,9 @@ export async function fetchPublicStrukturOrganisasi(): Promise<StrukturOrganisas
       jabatanList = MOCK_JABATAN;
     }
 
-    let dpnList: DewanPenasehatItem[] = [];
+    let dewanPenasehatList: DewanPenasehatItem[] = [];
     if (dpnRes.data && dpnRes.data.length > 0) {
-      dpnList = dpnRes.data.map((d: any) => ({
+      dewanPenasehatList = dpnRes.data.map((d: any) => ({
         id: d.id,
         anggota_id: d.anggota_id,
         anggota_nama: d.anggota?.nama || 'Dewan Penasehat',
@@ -343,38 +88,36 @@ export async function fetchPublicStrukturOrganisasi(): Promise<StrukturOrganisas
         status_keanggotaan: d.anggota?.status_keanggotaan || 'anggota_luar_biasa',
         periode_mulai: d.periode_mulai,
         periode_selesai: d.periode_selesai,
-        catatan: 'Dewan Penasehat Organisasi Gandawesi (Alumni)',
+        catatan: 'Dewan Penasehat (Alumni)',
       }));
     } else {
-      dpnList = MOCK_DEWAN_PENASEHAT;
+      dewanPenasehatList = MOCK_DEWAN_PENASEHAT;
     }
 
-    const pimpinan = jabatanList.filter(
-      (j) => j.jabatan.toLowerCase().includes('ketua umum') || j.jabatan.toLowerCase().includes('wakil ketua')
+    const pimpinan = jabatanList.filter((j) =>
+      j.jabatan.toLowerCase().includes('ketua') || j.jabatan.toLowerCase().includes('wakil')
     );
     const bph = jabatanList.filter(
       (j) =>
-        j.jabatan.toLowerCase().includes('sekretaris') ||
-        j.jabatan.toLowerCase().includes('bendahara')
+        (j.divisi?.toLowerCase().includes('harian') ||
+          j.jabatan.toLowerCase().includes('sekretaris') ||
+          j.jabatan.toLowerCase().includes('bendahara')) &&
+        !pimpinan.some((p) => p.id === j.id)
     );
     const divisi_operasional = jabatanList.filter(
-      (j) =>
-        !j.jabatan.toLowerCase().includes('ketua umum') &&
-        !j.jabatan.toLowerCase().includes('wakil ketua') &&
-        !j.jabatan.toLowerCase().includes('sekretaris') &&
-        !j.jabatan.toLowerCase().includes('bendahara')
+      (j) => !pimpinan.some((p) => p.id === j.id) && !bph.some((b) => b.id === j.id)
     );
 
     return {
-      periode_aktif: 'Periode 2024–2025',
+      periode_aktif: '2024–2025',
       pimpinan: pimpinan.length > 0 ? pimpinan : MOCK_JABATAN.slice(0, 2),
       bph: bph.length > 0 ? bph : MOCK_JABATAN.slice(2, 4),
       divisi_operasional: divisi_operasional.length > 0 ? divisi_operasional : MOCK_JABATAN.slice(4),
-      dewan_penasehat: dpnList,
+      dewan_penasehat: dewanPenasehatList,
     };
   } catch (err) {
     return {
-      periode_aktif: 'Periode 2024–2025',
+      periode_aktif: '2024–2025',
       pimpinan: MOCK_JABATAN.slice(0, 2),
       bph: MOCK_JABATAN.slice(2, 4),
       divisi_operasional: MOCK_JABATAN.slice(4),
@@ -516,7 +259,7 @@ export async function createJabatanOrganisasi(payload: {
   periode_mulai: string;
   periode_selesai?: string | null;
   catatan?: string | null;
-}) {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('jabatan_organisasi').insert({
@@ -528,24 +271,24 @@ export async function createJabatanOrganisasi(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
-    return { success: true, message: 'Jabatan organisasi berhasil ditambahkan!' };
+    return actionSuccess(undefined, 'Jabatan organisasi berhasil ditambahkan!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Jabatan organisasi berhasil ditambahkan.' };
+    return actionSuccess(undefined, 'Simulasi: Jabatan organisasi berhasil ditambahkan.');
   }
 }
 
-export async function deleteJabatanOrganisasi(id: string) {
+export async function deleteJabatanOrganisasi(id: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('jabatan_organisasi').delete().eq('id', id);
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
-    return { success: true, message: 'Jabatan organisasi berhasil dihapus.' };
+    return actionSuccess(undefined, 'Jabatan organisasi berhasil dihapus.');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Jabatan organisasi berhasil dihapus.' };
+    return actionSuccess(undefined, 'Simulasi: Jabatan organisasi berhasil dihapus.');
   }
 }
 
@@ -555,7 +298,7 @@ export async function createDewanPenasehat(payload: {
   periode_mulai: string;
   periode_selesai?: string | null;
   catatan?: string | null;
-}) {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -567,10 +310,9 @@ export async function createDewanPenasehat(payload: {
       .single();
 
     if (member && member.status_keanggotaan !== 'anggota_luar_biasa') {
-      return {
-        success: false,
-        error: `Sesuai AD/ART Gandawesi, Dewan Penasehat HANYA boleh dipilih dari Anggota Luar Biasa (alumni). Status ${member.nama} saat ini adalah "${member.status_keanggotaan}".`,
-      };
+      return actionError(
+        `Sesuai AD/ART Gandawesi, Dewan Penasehat HANYA boleh dipilih dari Anggota Luar Biasa (alumni). Status ${member.nama} saat ini adalah "${member.status_keanggotaan}".`
+      );
     }
 
     const { error } = await supabase.from('dewan_penasehat').insert({
@@ -580,36 +322,30 @@ export async function createDewanPenasehat(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return {
-      success: true,
-      message: 'Anggota Luar Biasa resmi diangkat menjadi Dewan Penasehat!',
-    };
+    return actionSuccess(undefined, 'Anggota Luar Biasa resmi diangkat menjadi Dewan Penasehat!');
   } catch (err: any) {
-    return {
-      success: true,
-      message: 'Simulasi: Anggota Luar Biasa berhasil diangkat menjadi Dewan Penasehat.',
-    };
+    return actionSuccess(undefined, 'Simulasi: Anggota Luar Biasa berhasil diangkat menjadi Dewan Penasehat.');
   }
 }
 
-export async function deleteDewanPenasehat(id: string) {
+export async function deleteDewanPenasehat(id: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('dewan_penasehat').delete().eq('id', id);
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
-    return { success: true, message: 'Dewan penasehat berhasil dihapus.' };
+    return actionSuccess(undefined, 'Dewan penasehat berhasil dihapus.');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Dewan penasehat berhasil dihapus.' };
+    return actionSuccess(undefined, 'Simulasi: Dewan penasehat berhasil dihapus.');
   }
 }
 
 // Manual transition to Anggota Luar Biasa (ALB) based on oral graduation report
-export async function transisiKeAnggotaLuarBiasa(payload: TransisiALBPayload) {
+export async function transisiKeAnggotaLuarBiasa(payload: TransisiALBPayload): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -623,18 +359,15 @@ export async function transisiKeAnggotaLuarBiasa(payload: TransisiALBPayload) {
       .eq('id', payload.anggota_id);
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return {
-      success: true,
-      message: 'Selamat! Anggota resmi ditransisikan ke status Anggota Luar Biasa (ALB / Alumni) permanen.',
-    };
+    return actionSuccess(
+      undefined,
+      'Selamat! Anggota resmi ditransisikan ke status Anggota Luar Biasa (ALB / Alumni) permanen.'
+    );
   } catch (err: any) {
-    return {
-      success: true,
-      message: 'Simulasi: Anggota resmi berstatus Anggota Luar Biasa (alumni).',
-    };
+    return actionSuccess(undefined, 'Simulasi: Anggota resmi berstatus Anggota Luar Biasa (alumni).');
   }
 }
 
@@ -642,52 +375,28 @@ export async function transisiKeAnggotaLuarBiasa(payload: TransisiALBPayload) {
 // 3. KTA DIGITAL ACTIONS
 // ============================================================
 export async function fetchMyKTADigital(): Promise<KTADigitalData> {
+  const fallbackKTA: KTADigitalData = {
+    has_nia: true,
+    kta_id: 'kta-mock-1',
+    anggota_id: 'am-1',
+    nama: 'Alya Putri Salsabila',
+    nim: '2304521',
+    jurusan: 'Pendidikan Biologi',
+    nia: 'GW.32.235.GW',
+    status_keanggotaan: 'anggota_biasa',
+    nomor_angkatan: 32,
+    nama_angkatan: 'Giri Wardhana',
+    foto_profil: null,
+    tanggal_terbit: '2025-12-20',
+    qr_code_hash: 'GW-VERIFIED-32-235-KTA-OFFICIAL',
+  };
+
   try {
     const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return {
-        has_nia: true,
-        kta_id: 'kta-mock-1',
-        anggota_id: 'am-1',
-        nama: 'Alya Putri Salsabila',
-        nim: '2304521',
-        jurusan: 'Pendidikan Biologi',
-        nia: 'GW.32.235.GW',
-        status_keanggotaan: 'anggota_biasa',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        foto_profil: null,
-        tanggal_terbit: '2025-12-20',
-        qr_code_hash: 'GW-VERIFIED-32-235-KTA-OFFICIAL',
-      };
-    }
-
-    const { data: profile } = await supabase
-      .from('anggota')
-      .select('*, angkatan:angkatan_id(nomor_angkatan, nama_angkatan)')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
+    const { member: profile } = await getAuthenticatedMember(supabase);
 
     if (!profile) {
-      return {
-        has_nia: true,
-        kta_id: 'kta-mock-1',
-        anggota_id: 'am-1',
-        nama: 'Alya Putri Salsabila',
-        nim: '2304521',
-        jurusan: 'Pendidikan Biologi',
-        nia: 'GW.32.235.GW',
-        status_keanggotaan: 'anggota_biasa',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        foto_profil: null,
-        tanggal_terbit: '2025-12-20',
-        qr_code_hash: 'GW-VERIFIED-32-235-KTA-OFFICIAL',
-      };
+      return fallbackKTA;
     }
 
     // Gate check: only members with official NIA can access KTA
@@ -719,7 +428,6 @@ export async function fetchMyKTADigital(): Promise<KTADigitalData> {
     let tglTerbit = ktaRecord?.tanggal_terbit || profile.tanggal_berubah_status || '2025-12-20';
 
     if (!ktaRecord) {
-      // Create kta row if missing
       const { data: newKTA } = await supabase
         .from('kta')
         .insert({
@@ -748,21 +456,7 @@ export async function fetchMyKTADigital(): Promise<KTADigitalData> {
       qr_code_hash: `GW-${profile.nia}-KTA-VERIFIED-UPI`,
     };
   } catch (err) {
-    return {
-      has_nia: true,
-      kta_id: 'kta-mock-1',
-      anggota_id: 'am-1',
-      nama: 'Alya Putri Salsabila',
-      nim: '2304521',
-      jurusan: 'Pendidikan Biologi',
-      nia: 'GW.32.235.GW',
-      status_keanggotaan: 'anggota_biasa',
-      nomor_angkatan: 32,
-      nama_angkatan: 'Giri Wardhana',
-      foto_profil: null,
-      tanggal_terbit: '2025-12-20',
-      qr_code_hash: 'GW-VERIFIED-32-235-KTA-OFFICIAL',
-    };
+    return fallbackKTA;
   }
 }
 
@@ -772,19 +466,7 @@ export async function fetchMyKTADigital(): Promise<KTADigitalData> {
 export async function fetchMySertifikatList(): Promise<SertifikatItem[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return MOCK_SERTIFIKAT;
-    }
-
-    const { data: profile } = await supabase
-      .from('anggota')
-      .select('id, nama, nia')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
+    const { member: profile } = await getAuthenticatedMember(supabase);
 
     if (!profile) return MOCK_SERTIFIKAT;
 
@@ -844,7 +526,7 @@ export async function fetchAllSertifikatAdmin(): Promise<SertifikatItem[]> {
   }
 }
 
-export async function issueSertifikat(payload: CreateSertifikatPayload) {
+export async function issueSertifikat(payload: CreateSertifikatPayload): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('sertifikat').insert({
@@ -855,23 +537,23 @@ export async function issueSertifikat(payload: CreateSertifikatPayload) {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
-    return { success: true, message: 'Sertifikat resmi berhasil diterbitkan!' };
+    return actionSuccess(undefined, 'Sertifikat resmi berhasil diterbitkan!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Sertifikat resmi berhasil diterbitkan.' };
+    return actionSuccess(undefined, 'Simulasi: Sertifikat resmi berhasil diterbitkan.');
   }
 }
 
-export async function deleteSertifikat(id: string) {
+export async function deleteSertifikat(id: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('sertifikat').delete().eq('id', id);
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
-    return { success: true, message: 'Sertifikat berhasil dihapus.' };
+    return actionSuccess(undefined, 'Sertifikat berhasil dihapus.');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Sertifikat berhasil dihapus.' };
+    return actionSuccess(undefined, 'Simulasi: Sertifikat berhasil dihapus.');
   }
 }

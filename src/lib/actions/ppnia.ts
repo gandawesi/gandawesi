@@ -1,6 +1,14 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  MOCK_ANGGOTA_MUDA_PPNIA,
+  MOCK_PRESENTASI_PPNIA,
+  MOCK_RENCANA_EKSPEDISI,
+  MOCK_SESI_PPNIA,
+} from '@/lib/mock-data';
+import { getAuthenticatedMember, getCurrentMemberId, actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import type { ActionResponse } from '@/lib/types/action-response';
 import type {
   JenisKegiatanPPNIA,
   StatusEvaluasiBerkala,
@@ -12,193 +20,6 @@ import type {
   PresensiPPNIAItem,
   MyPPNIASummary,
 } from '@/lib/types/ppnia';
-
-// Mock data fallbacks for realistic rendering
-const MOCK_ANGGOTA_MUDA_PPNIA: AnggotaMudaPPNIAItem[] = [
-  {
-    id: 'am-1',
-    nama: 'Alya Putri Salsabila',
-    nim: '2304521',
-    jurusan: 'Pendidikan Biologi',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_muda',
-    kehadiran_pematerian: 6,
-    total_pematerian: 6,
-    kehadiran_presentasi: 2,
-    total_presentasi: 2,
-    kehadiran_pendakian: 3,
-    total_pendakian: 3,
-    kehadiran_ekspedisi: 1,
-    total_ekspedisi: 1,
-    persentase_total: 100,
-    total_slide_presentasi: 2,
-    rencana_ekspedisi_status: 'disetujui',
-    status_evaluasi_terkini: 'aman',
-    catatan_evaluasi_terkini: 'Progres sangat aktif. Proposal ekspedisi rimba Gunung Ciremai telah diverifikasi dan siap eksekusi.',
-    periode_terkini: '2025-Q2',
-  },
-  {
-    id: 'am-2',
-    nama: 'Aditya Pratama Ramadhan',
-    nim: '2301892',
-    jurusan: 'Pendidikan Geografi',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_muda',
-    kehadiran_pematerian: 4,
-    total_pematerian: 6,
-    kehadiran_presentasi: 1,
-    total_presentasi: 2,
-    kehadiran_pendakian: 2,
-    total_pendakian: 3,
-    kehadiran_ekspedisi: 0,
-    total_ekspedisi: 1,
-    persentase_total: 58,
-    total_slide_presentasi: 1,
-    rencana_ekspedisi_status: 'diajukan',
-    status_evaluasi_terkini: 'perlu_perhatian',
-    catatan_evaluasi_terkini: 'Kehadiran sesi materi menurun karena bentrok praktikum kampus. Perlu bimbingan percepatan revisi proposal ekspedisi.',
-    periode_terkini: '2025-Q2',
-  },
-  {
-    id: 'am-3',
-    nama: 'Dimas Ardiansyah',
-    nim: '2209145',
-    jurusan: 'Pendidikan Kepelatihan Olahraga',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_muda',
-    kehadiran_pematerian: 5,
-    total_pematerian: 6,
-    kehadiran_presentasi: 2,
-    total_presentasi: 2,
-    kehadiran_pendakian: 3,
-    total_pendakian: 3,
-    kehadiran_ekspedisi: 1,
-    total_ekspedisi: 1,
-    persentase_total: 92,
-    total_slide_presentasi: 2,
-    rencana_ekspedisi_status: 'disetujui',
-    status_evaluasi_terkini: 'aman',
-    catatan_evaluasi_terkini: 'Koordinator tim ekspedisi arung jeram Citarik. Seluruh materi seminar pra-ekspedisi telah dipresentasikan dengan baik.',
-    periode_terkini: '2025-Q2',
-  },
-  {
-    id: 'am-4',
-    nama: 'Rifki Hidayat',
-    nim: '2105671',
-    jurusan: 'Pendidikan Teknik Mesin',
-    foto_profil: null,
-    angkatan_id: 'angkatan-31',
-    nomor_angkatan: 31,
-    nama_angkatan: 'Cakrawala Sunda',
-    status_keanggotaan: 'anggota_muda',
-    kehadiran_pematerian: 2,
-    total_pematerian: 6,
-    kehadiran_presentasi: 0,
-    total_presentasi: 2,
-    kehadiran_pendakian: 1,
-    total_pendakian: 3,
-    kehadiran_ekspedisi: 0,
-    total_ekspedisi: 1,
-    persentase_total: 25,
-    total_slide_presentasi: 0,
-    rencana_ekspedisi_status: 'belum_ada',
-    status_evaluasi_terkini: 'kritis',
-    catatan_evaluasi_terkini: 'Mendekati batas masa studi kuliah aktif. Belum pernah mengajukan presentasi pra-ekspedisi. Memerlukan panggilan khusus DP.',
-    periode_terkini: '2025-Q2',
-  },
-];
-
-const MOCK_PRESENTASI_LIST: PresentasiPPNIAItem[] = [
-  {
-    id: 'pres-1',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nim: '2304521',
-    jenis: 'pra_ekspedisi',
-    tanggal: '2025-10-15',
-    file: 'https://storage.gandawesi.org/slides/proposal_ekspedisi_ciremai_alya.pdf',
-    catatan: 'Seminar Proposal Jalur Rintisan Lembah Cilimus Gunung Ciremai',
-  },
-  {
-    id: 'pres-2',
-    anggota_id: 'am-3',
-    anggota_nama: 'Dimas Ardiansyah',
-    anggota_nim: '2209145',
-    jenis: 'pra_ekspedisi',
-    tanggal: '2025-10-20',
-    file: 'https://storage.gandawesi.org/slides/proposal_rafting_citarik_dimas.pdf',
-    catatan: 'Proposal Ekspedisi Arung Jeram Grade IV Sungai Citarik Sukabumi',
-  },
-  {
-    id: 'pres-3',
-    anggota_id: 'am-1',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nim: '2304521',
-    jenis: 'pasca_ekspedisi',
-    tanggal: '2025-11-28',
-    file: 'https://storage.gandawesi.org/slides/lpj_laporan_ciremai_alya.pdf',
-    catatan: 'Laporan Perjalanan & Analisis Vegetasi Hutan Tropis Gunung Ciremai',
-  },
-];
-
-const MOCK_RENCANA_EKSPEDISI: RencanaEkspedisiItem[] = [
-  {
-    id: 'eksp-1',
-    pengaju_id: 'am-1',
-    pengaju_nama: 'Alya Putri Salsabila',
-    pengaju_nim: '2304521',
-    deskripsi: 'Ekspedisi Pendataan Keanekaragaman Hayati & Resection Jalur Kuno Lembah Cilimus',
-    lokasi: 'Taman Nasional Gunung Ciremai, Jawa Barat',
-    tanggal: '2025-11-10',
-    status_approval: 'disetujui',
-    peserta: [
-      { id: 'p-1', anggota_id: 'am-1', nama: 'Alya Putri Salsabila', nim: '2304521' },
-      { id: 'p-2', anggota_id: 'am-2', nama: 'Aditya Pratama Ramadhan', nim: '2301892' },
-    ],
-  },
-  {
-    id: 'eksp-2',
-    pengaju_id: 'am-3',
-    pengaju_nama: 'Dimas Ardiansyah',
-    pengaju_nim: '2209145',
-    deskripsi: 'Ekspedisi Arung Jeram & Pemetaan Jeram Bahaya DAS Citarik Bawah',
-    lokasi: 'Sungai Citarik, Cikidang, Sukabumi',
-    tanggal: '2025-12-05',
-    status_approval: 'disetujui',
-    peserta: [
-      { id: 'p-3', anggota_id: 'am-3', nama: 'Dimas Ardiansyah', nim: '2209145' },
-    ],
-  },
-  {
-    id: 'eksp-3',
-    pengaju_id: 'am-2',
-    pengaju_nama: 'Aditya Pratama Ramadhan',
-    pengaju_nim: '2301892',
-    deskripsi: 'Ekspedisi Penelusuran Gua Karst & Pemetaan Speleologi Citatah',
-    lokasi: 'Kawasan Karst Citatah, Padalarang, Bandung Barat',
-    tanggal: '2026-01-15',
-    status_approval: 'diajukan',
-    peserta: [
-      { id: 'p-4', anggota_id: 'am-2', nama: 'Aditya Pratama Ramadhan', nim: '2301892' },
-    ],
-  },
-];
-
-const MOCK_SESI_PPNIA: SesiKegiatanPPNIAItem[] = [
-  { id: 'ses-ppnia-1', jenis_kegiatan: 'pematerian', judul: 'Materi Lanjutan: Manajemen Ekspedisi & Manajemen Risiko Lapangan', tanggal: '2025-10-02', catatan: 'Ruang Rapat DP, wajib untuk seluruh Anggota Muda' },
-  { id: 'ses-ppnia-2', jenis_kegiatan: 'presentasi', judul: 'Sidang Seminar Proposal Pra-Ekspedisi Kuartal IV', tanggal: '2025-10-15', catatan: 'Aula FPTI UPI' },
-  { id: 'ses-ppnia-3', jenis_kegiatan: 'pendakian', judul: 'Pendakian Latihan Bersama Gunung Guntur & Bivak Badai', tanggal: '2025-10-25', catatan: 'Simulasi manajemen logistik 3 hari 2 malam' },
-  { id: 'ses-ppnia-4', jenis_kegiatan: 'ekspedisi', judul: 'Ekspedisi Mandiri PPNIA Tahap 1', tanggal: '2025-11-10', catatan: 'Pelaksanaan ekspedisi per tim' },
-];
 
 export async function fetchAnggotaMudaPPNIAList(
   periodeFilter?: string
@@ -296,7 +117,7 @@ export async function saveEvaluasiBerkala(payload: {
   periode: string;
   status: StatusEvaluasiBerkala;
   catatan: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -308,12 +129,12 @@ export async function saveEvaluasiBerkala(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: `Evaluasi berkala periode ${payload.periode} berhasil disimpan!` };
+    return actionSuccess(undefined, `Evaluasi berkala periode ${payload.periode} berhasil disimpan!`);
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Evaluasi berkala berhasil dicatat.' };
+    return actionSuccess(undefined, 'Simulasi: Evaluasi berkala berhasil dicatat.');
   }
 }
 
@@ -336,9 +157,9 @@ export async function fetchPresentasiPPNIAList(
 
     if (error || !data || data.length === 0) {
       if (anggotaId) {
-        return MOCK_PRESENTASI_LIST.filter((p) => p.anggota_id === anggotaId);
+        return MOCK_PRESENTASI_PPNIA.filter((p) => p.anggota_id === anggotaId);
       }
-      return MOCK_PRESENTASI_LIST;
+      return MOCK_PRESENTASI_PPNIA;
     }
 
     return data.map((d: any) => ({
@@ -352,7 +173,7 @@ export async function fetchPresentasiPPNIAList(
       catatan: d.catatan,
     }));
   } catch (err) {
-    return MOCK_PRESENTASI_LIST;
+    return MOCK_PRESENTASI_PPNIA;
   }
 }
 
@@ -361,27 +182,17 @@ export async function submitPresentasiPPNIA(payload: {
   tanggal: string;
   file: string;
   catatan: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const memberId = await getCurrentMemberId(supabase);
 
-    if (!session?.user) {
-      return { success: false, error: 'Sesi login tidak ditemukan. Harap login terlebih dahulu.' };
-    }
-
-    const { data: profile } = await supabase
-      .from('anggota')
-      .select('id')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
-
-    if (!profile) {
-      return { success: true, message: 'Simulasi: Berkas presentasi berhasil diunggah.' };
+    if (!memberId) {
+      return actionSuccess(undefined, 'Simulasi: Berkas presentasi berhasil diunggah.');
     }
 
     const { error } = await supabase.from('presentasi').insert({
-      anggota_id: profile.id,
+      anggota_id: memberId,
       jenis: payload.jenis,
       tanggal: payload.tanggal,
       file: payload.file,
@@ -389,12 +200,12 @@ export async function submitPresentasiPPNIA(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: 'Berkas presentasi PPNIA berhasil diunggah dan tercatat di sistem!' };
+    return actionSuccess(undefined, 'Berkas presentasi PPNIA berhasil diunggah dan tercatat di sistem!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Berkas presentasi berhasil disimpan.' };
+    return actionSuccess(undefined, 'Simulasi: Berkas presentasi berhasil disimpan.');
   }
 }
 
@@ -437,30 +248,20 @@ export async function submitRencanaEkspedisi(payload: {
   lokasi: string;
   tanggal: string;
   peserta_ids: string[];
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const memberId = await getCurrentMemberId(supabase);
 
-    if (!session?.user) {
-      return { success: false, error: 'Harap login terlebih dahulu.' };
-    }
-
-    const { data: profile } = await supabase
-      .from('anggota')
-      .select('id')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
-
-    if (!profile) {
-      return { success: true, message: 'Simulasi: Rencana ekspedisi berhasil diajukan.' };
+    if (!memberId) {
+      return actionSuccess(undefined, 'Simulasi: Rencana ekspedisi berhasil diajukan.');
     }
 
     // 1. Insert rencana ekspedisi
     const { data: newEksp, error: ekspError } = await supabase
       .from('rencana_ekspedisi')
       .insert({
-        pengaju_id: profile.id,
+        pengaju_id: memberId,
         deskripsi: payload.deskripsi,
         lokasi: payload.lokasi,
         tanggal: payload.tanggal,
@@ -470,11 +271,11 @@ export async function submitRencanaEkspedisi(payload: {
       .single();
 
     if (ekspError || !newEksp) {
-      return { success: false, error: ekspError?.message || 'Gagal menyimpan rencana ekspedisi.' };
+      return actionError(ekspError?.message || 'Gagal menyimpan rencana ekspedisi.');
     }
 
     // 2. Insert team members (include pengaju + selected teammates)
-    const allMemberIds = Array.from(new Set([profile.id, ...payload.peserta_ids]));
+    const allMemberIds = Array.from(new Set([memberId, ...payload.peserta_ids]));
     const pesertaInserts = allMemberIds.map((mId) => ({
       rencana_ekspedisi_id: newEksp.id,
       anggota_id: mId,
@@ -482,16 +283,16 @@ export async function submitRencanaEkspedisi(payload: {
 
     await supabase.from('peserta_ekspedisi').insert(pesertaInserts);
 
-    return { success: true, message: 'Proposal rencana ekspedisi berhasil diajukan ke Dewan Pengurus!' };
+    return actionSuccess(undefined, 'Proposal rencana ekspedisi berhasil diajukan ke Dewan Pengurus!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Proposal ekspedisi berhasil diajukan.' };
+    return actionSuccess(undefined, 'Simulasi: Proposal ekspedisi berhasil diajukan.');
   }
 }
 
 export async function decideRencanaEkspedisi(
   id: string,
   decision: 'disetujui' | 'ditolak'
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -501,7 +302,7 @@ export async function decideRencanaEkspedisi(
       .eq('id', id);
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
     const msg =
@@ -509,9 +310,9 @@ export async function decideRencanaEkspedisi(
         ? 'Proposal rencana ekspedisi DISETUJUI oleh Dewan Pengurus!'
         : 'Proposal rencana ekspedisi DITOLAK / Memerlukan revisi.';
 
-    return { success: true, message: msg };
+    return actionSuccess(undefined, msg);
   } catch (err: any) {
-    return { success: true, message: `Simulasi: Proposal ekspedisi ${decision}.` };
+    return actionSuccess(undefined, `Simulasi: Proposal ekspedisi ${decision}.`);
   }
 }
 
@@ -558,7 +359,7 @@ export async function createSesiPPNIA(payload: {
   judul: string;
   tanggal: string;
   catatan?: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -570,12 +371,12 @@ export async function createSesiPPNIA(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: 'Sesi kegiatan PPNIA berhasil dijadwalkan!' };
+    return actionSuccess(undefined, 'Sesi kegiatan PPNIA berhasil dijadwalkan!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Sesi kegiatan PPNIA berhasil dibuat.' };
+    return actionSuccess(undefined, 'Simulasi: Sesi kegiatan PPNIA berhasil dibuat.');
   }
 }
 
@@ -637,7 +438,7 @@ export async function fetchPresensiSesiPPNIA(sesiId: string): Promise<PresensiPP
 export async function savePresensiSesiPPNIABatch(
   sesiId: string,
   records: { anggota_id: string; hadir: boolean; catatan?: string | null }[]
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -653,76 +454,50 @@ export async function savePresensiSesiPPNIABatch(
       .upsert(payload, { onConflict: 'anggota_id,sesi_kegiatan_id' });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: `Presensi untuk ${records.length} Anggota Muda berhasil disimpan!` };
+    return actionSuccess(undefined, `Presensi untuk ${records.length} Anggota Muda berhasil disimpan!`);
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Presensi PPNIA berhasil dicatat.' };
+    return actionSuccess(undefined, 'Simulasi: Presensi PPNIA berhasil dicatat.');
   }
 }
 
 export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
+  const fallbackSummary: MyPPNIASummary = {
+    status_keanggotaan: 'anggota_muda',
+    nomor_angkatan: 32,
+    nama_angkatan: 'Giri Wardhana',
+    persentase_kehadiran: 100,
+    pematerian_count: { hadir: 6, total: 6 },
+    presentasi_count: { hadir: 2, total: 2 },
+    pendakian_count: { hadir: 3, total: 3 },
+    ekspedisi_count: { hadir: 1, total: 1 },
+    evaluasi_terkini: {
+      id: 'ev-1',
+      anggota_id: 'am-1',
+      periode: '2025-Q2',
+      status: 'aman',
+      catatan: 'Progres kegiatan PPNIA sangat baik. Terus pertahankan hingga sidang evaluasi akhir NIA.',
+    },
+    presentasi_list: MOCK_PRESENTASI_PPNIA.filter((p) => p.anggota_id === 'am-1'),
+    ekspedisi_saya: MOCK_RENCANA_EKSPEDISI[0],
+  };
+
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { member } = await getAuthenticatedMember(supabase);
 
-    if (!session?.user) {
-      return {
-        status_keanggotaan: 'anggota_muda',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        persentase_kehadiran: 100,
-        pematerian_count: { hadir: 6, total: 6 },
-        presentasi_count: { hadir: 2, total: 2 },
-        pendakian_count: { hadir: 3, total: 3 },
-        ekspedisi_count: { hadir: 1, total: 1 },
-        evaluasi_terkini: {
-          id: 'ev-1',
-          anggota_id: 'am-1',
-          periode: '2025-Q2',
-          status: 'aman',
-          catatan: 'Progres kegiatan PPNIA sangat baik. Terus pertahankan hingga sidang evaluasi akhir NIA.',
-        },
-        presentasi_list: MOCK_PRESENTASI_LIST.filter((p) => p.anggota_id === 'am-1'),
-        ekspedisi_saya: MOCK_RENCANA_EKSPEDISI[0],
-      };
-    }
-
-    const { data: profile } = await supabase
-      .from('anggota')
-      .select('id, status_keanggotaan, angkatan:angkatan_id(nomor_angkatan, nama_angkatan)')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
-
-    if (!profile) {
-      return {
-        status_keanggotaan: 'anggota_muda',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        persentase_kehadiran: 100,
-        pematerian_count: { hadir: 6, total: 6 },
-        presentasi_count: { hadir: 2, total: 2 },
-        pendakian_count: { hadir: 3, total: 3 },
-        ekspedisi_count: { hadir: 1, total: 1 },
-        evaluasi_terkini: {
-          id: 'ev-1',
-          anggota_id: 'am-1',
-          periode: '2025-Q2',
-          status: 'aman',
-          catatan: 'Progres kegiatan PPNIA sangat baik. Terus pertahankan hingga sidang evaluasi akhir NIA.',
-        },
-        presentasi_list: MOCK_PRESENTASI_LIST.filter((p) => p.anggota_id === 'am-1'),
-        ekspedisi_saya: MOCK_RENCANA_EKSPEDISI[0],
-      };
+    if (!member) {
+      return fallbackSummary;
     }
 
     // Parallel fetch attendance, latest evaluation, presentations, and expedition plan
     const [presRes, evalRes, presenRes, ekspRes] = await Promise.all([
-      supabase.from('presensi_kaderisasi').select('hadir, sesi_kegiatan!inner(jenis_kegiatan)').eq('anggota_id', profile.id),
-      supabase.from('evaluasi_berkala').select('*').eq('anggota_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-      supabase.from('presentasi').select('*').eq('anggota_id', profile.id).order('tanggal', { ascending: false }),
-      supabase.from('rencana_ekspedisi').select('*, peserta:peserta_ekspedisi(id, anggota_id, anggota:anggota_id(nama, nim))').eq('pengaju_id', profile.id).maybeSingle(),
+      supabase.from('presensi_kaderisasi').select('hadir, sesi_kegiatan!inner(jenis_kegiatan)').eq('anggota_id', member.id),
+      supabase.from('evaluasi_berkala').select('*').eq('anggota_id', member.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('presentasi').select('*').eq('anggota_id', member.id).order('tanggal', { ascending: false }),
+      supabase.from('rencana_ekspedisi').select('*, peserta:peserta_ekspedisi(id, anggota_id, anggota:anggota_id(nama, nim))').eq('pengaju_id', member.id).maybeSingle(),
     ]);
 
     const myPres = presRes.data || [];
@@ -735,21 +510,15 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
     const pct = Math.min(100, Math.round((totalHadir / 12) * 100));
 
     return {
-      status_keanggotaan: profile.status_keanggotaan,
-      nomor_angkatan: (profile.angkatan as any)?.nomor_angkatan || 32,
-      nama_angkatan: (profile.angkatan as any)?.nama_angkatan || 'Giri Wardhana',
+      status_keanggotaan: member.status_keanggotaan,
+      nomor_angkatan: (member.angkatan as any)?.nomor_angkatan || 32,
+      nama_angkatan: (member.angkatan as any)?.nama_angkatan || 'Giri Wardhana',
       persentase_kehadiran: pct > 0 ? pct : 100,
       pematerian_count: { hadir: hadPem || 6, total: 6 },
       presentasi_count: { hadir: hadPre || 2, total: 2 },
       pendakian_count: { hadir: hadPen || 3, total: 3 },
       ekspedisi_count: { hadir: hadEks || 1, total: 1 },
-      evaluasi_terkini: evalRes.data || {
-        id: 'ev-1',
-        anggota_id: profile.id,
-        periode: '2025-Q2',
-        status: 'aman',
-        catatan: 'Progres kegiatan PPNIA sangat baik. Terus pertahankan hingga sidang evaluasi akhir NIA.',
-      },
+      evaluasi_terkini: evalRes.data || fallbackSummary.evaluasi_terkini,
       presentasi_list: (presenRes.data || []).map((d: any) => ({
         id: d.id,
         anggota_id: d.anggota_id,
@@ -774,24 +543,6 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
       } : MOCK_RENCANA_EKSPEDISI[0],
     };
   } catch (err) {
-    return {
-      status_keanggotaan: 'anggota_muda',
-      nomor_angkatan: 32,
-      nama_angkatan: 'Giri Wardhana',
-      persentase_kehadiran: 100,
-      pematerian_count: { hadir: 6, total: 6 },
-      presentasi_count: { hadir: 2, total: 2 },
-      pendakian_count: { hadir: 3, total: 3 },
-      ekspedisi_count: { hadir: 1, total: 1 },
-      evaluasi_terkini: {
-        id: 'ev-1',
-        anggota_id: 'am-1',
-        periode: '2025-Q2',
-        status: 'aman',
-        catatan: 'Progres kegiatan PPNIA sangat baik. Terus pertahankan hingga sidang evaluasi akhir NIA.',
-      },
-      presentasi_list: MOCK_PRESENTASI_LIST.filter((p) => p.anggota_id === 'am-1'),
-      ekspedisi_saya: MOCK_RENCANA_EKSPEDISI[0],
-    };
+    return fallbackSummary;
   }
 }

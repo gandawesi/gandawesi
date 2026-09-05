@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { LayoutDashboard, Users, Calendar, Wallet, User } from 'lucide-react';
+import { MOBILE_NAV_ITEMS } from '@/lib/navigation';
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -14,17 +14,9 @@ export function MobileNav() {
     return null;
   }
 
-  const items = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/direktori', label: 'Direktori', icon: Users },
-    { href: '/dashboard/event', label: 'Kegiatan', icon: Calendar },
-    { href: '/dashboard/iuran', label: 'Iuran', icon: Wallet },
-    { href: '/dashboard/profil', label: 'Profil', icon: User },
-  ];
-
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#0c1410]/90 backdrop-blur-lg border-t border-stone-200/80 dark:border-stone-800/80 px-2 py-1.5 flex items-center justify-around">
-      {items.map((item) => {
+      {MOBILE_NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
         return (

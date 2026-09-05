@@ -20,6 +20,8 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   Award,
   Users,
@@ -267,92 +269,44 @@ export default function AdminNIAPage() {
 
       {/* Feedback Toast Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between animate-in fade-in slide-in-from-top-2 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
-            )}
-            <p className="text-sm font-medium">{feedback.text}</p>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-white p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Kandidat Calon NIA
-              </p>
-              <p className="text-2xl font-bold text-white mt-1">{totalCalon}</p>
-            </div>
-            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Anggota Muda aktif dalam evaluasi akhir</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Rata-rata Skor Kriteria
-              </p>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">{avgSkorTotal} / 100</p>
-            </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-              <Sparkles className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Akumulasi {kriteriaList.length} kriteria dinamis</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Lolos Sidang Pleno DP
-              </p>
-              <p className="text-2xl font-bold text-cyan-400 mt-1">{totalLolos}</p>
-            </div>
-            <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Memenuhi syarat penetapan NIA resmi</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Anggota Biasa Resmi (NIA)
-              </p>
-              <p className="text-2xl font-bold text-amber-400 mt-1">{totalBerNIA}</p>
-            </div>
-            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
-              <KeyRound className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Telah terpromosikan otomatis di database</p>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Users}
+          label="Kandidat Calon NIA"
+          value={totalCalon}
+          subtext="Anggota Muda aktif"
+          color="purple"
+        />
+        <StatCard
+          icon={Sparkles}
+          label="Rata-rata Skor Kriteria"
+          value={`${avgSkorTotal} / 100`}
+          subtext={`Akumulasi ${kriteriaList.length} kriteria`}
+          color="emerald"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="Lolos Sidang Pleno DP"
+          value={totalLolos}
+          subtext="Memenuhi syarat penetapan"
+          color="blue"
+        />
+        <StatCard
+          icon={KeyRound}
+          label="Anggota Biasa Resmi (NIA)"
+          value={totalBerNIA}
+          subtext="Status keanggotaan penuh"
+          color="amber"
+        />
+      </StatGrid>
 
       {/* Main Tabs */}
       <div className="flex border-b border-slate-800 gap-2">

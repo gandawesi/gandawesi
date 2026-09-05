@@ -5,6 +5,9 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Badge } from '@/components/ui/Badge';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { Modal } from '@/components/ui/Modal';
 import {
   Users,
   Briefcase,
@@ -212,81 +215,44 @@ export default function AdminGovernancePage() {
 
       {/* Notification Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
-              : 'bg-rose-950/80 text-rose-300 border border-rose-800'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-            )}
-            <span>{feedback.text}</span>
-          </div>
-          <button onClick={() => setFeedback(null)} className="text-stone-400 hover:text-white">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* 4 Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Jabatan Aktif DP</span>
-            <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
-              <Briefcase className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-2 font-mono">
-            {jabatanList.filter((j) => j.is_active).length}
-          </p>
-          <span className="text-[11px] text-stone-400">Pengurus Harian & Divisi</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Dewan Penasehat (ALB)</span>
-            <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
-              <Sparkles className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2 font-mono">
-            {dewanPenasehatList.length}
-          </p>
-          <span className="text-[11px] text-stone-400">Senior Alumni Terpilih</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Calon Transisi ALB</span>
-            <div className="p-2 bg-indigo-500/10 text-indigo-600 rounded-xl">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2 font-mono">
-            {candidatesALB.length}
-          </p>
-          <span className="text-[11px] text-stone-400">Anggota Biasa Aktif</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Total ALB (Alumni)</span>
-            <div className="p-2 bg-forest-500/10 text-forest-600 rounded-xl">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-2 font-mono">
-            {allALBList.length}
-          </p>
-          <span className="text-[11px] text-stone-400">Memenuhi Syarat Penasehat</span>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Briefcase}
+          label="Jabatan Aktif DP"
+          value={jabatanList.filter((j) => j.is_active).length}
+          subtext="Pengurus Harian & Divisi"
+          color="emerald"
+        />
+        <StatCard
+          icon={Sparkles}
+          label="Dewan Penasehat (ALB)"
+          value={dewanPenasehatList.length}
+          subtext="Senior Alumni Terpilih"
+          color="amber"
+        />
+        <StatCard
+          icon={GraduationCap}
+          label="Calon Transisi ALB"
+          value={candidatesALB.length}
+          subtext="Anggota Biasa Aktif"
+          color="blue"
+        />
+        <StatCard
+          icon={Users}
+          label="Total ALB (Alumni)"
+          value={allALBList.length}
+          subtext="Memenuhi Syarat Penasehat"
+          color="forest"
+        />
+      </StatGrid>
 
       {/* Tabs Navigation */}
       <div className="flex border-b border-stone-200 dark:border-stone-800 gap-2 overflow-x-auto">
@@ -574,207 +540,193 @@ export default function AdminGovernancePage() {
       {/* ============================================================ */}
       {/* MODAL 1: TAMBAH JABATAN ORGANISASI                          */}
       {/* ============================================================ */}
-      {showAddJabatanModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-emerald-400" />
-                Tambah Jabatan Kepengurusan DP
-              </h3>
-              <button onClick={() => setShowAddJabatanModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveJabatan} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Pilih Anggota:</label>
-                <select
-                  value={jabatanForm.anggota_id}
-                  onChange={(e) => setJabatanForm((p) => ({ ...p, anggota_id: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                >
-                  {candidatesALB.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nama} ({c.nia || 'No NIA'}) - Angkatan {c.nomor_angkatan}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Nama Jabatan:</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Ketua Umum Organisasi / Ketua Divisi Gunung Hutan"
-                  value={jabatanForm.jabatan}
-                  onChange={(e) => setJabatanForm((p) => ({ ...p, jabatan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Divisi / Bidang:</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Badan Pengurus Harian / Divisi Operasional Lapangan"
-                  value={jabatanForm.divisi}
-                  onChange={(e) => setJabatanForm((p) => ({ ...p, divisi: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Periode Mulai:</label>
-                  <input
-                    type="date"
-                    required
-                    value={jabatanForm.periode_mulai}
-                    onChange={(e) => setJabatanForm((p) => ({ ...p, periode_mulai: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Periode Selesai:</label>
-                  <input
-                    type="date"
-                    value={jabatanForm.periode_selesai}
-                    onChange={(e) => setJabatanForm((p) => ({ ...p, periode_selesai: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Catatan SK / Mandat:</label>
-                <textarea
-                  rows={2}
-                  placeholder="Catatan surat keputusan atau amanat..."
-                  value={jabatanForm.catatan}
-                  onChange={(e) => setJabatanForm((p) => ({ ...p, catatan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowAddJabatanModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={savingJabatan} className="bg-emerald-600 text-white">
-                  {savingJabatan ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
-                  Simpan Jabatan
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddJabatanModal}
+        onClose={() => setShowAddJabatanModal(false)}
+        title={
+          <span className="flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-emerald-400" />
+            Tambah Jabatan Kepengurusan DP
+          </span>
+        }
+        description="Pencatatan jabatan struktural Dewan Pengurus (DP) organisasi."
+        maxWidth="md"
+      >
+        <form onSubmit={handleSaveJabatan} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Pilih Anggota:</label>
+            <select
+              value={jabatanForm.anggota_id}
+              onChange={(e) => setJabatanForm((p) => ({ ...p, anggota_id: e.target.value }))}
+              required
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            >
+              {candidatesALB.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nama} ({c.nia || 'No NIA'}) - Angkatan {c.nomor_angkatan}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Nama Jabatan:</label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Ketua Umum Organisasi / Ketua Divisi Gunung Hutan"
+              value={jabatanForm.jabatan}
+              onChange={(e) => setJabatanForm((p) => ({ ...p, jabatan: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            >
+            </input>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Divisi / Bidang:</label>
+            <input
+              type="text"
+              placeholder="Contoh: Badan Pengurus Harian / Divisi Operasional Lapangan"
+              value={jabatanForm.divisi}
+              onChange={(e) => setJabatanForm((p) => ({ ...p, divisi: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Periode Mulai:</label>
+              <input
+                type="date"
+                required
+                value={jabatanForm.periode_mulai}
+                onChange={(e) => setJabatanForm((p) => ({ ...p, periode_mulai: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Periode Selesai:</label>
+              <input
+                type="date"
+                value={jabatanForm.periode_selesai}
+                onChange={(e) => setJabatanForm((p) => ({ ...p, periode_selesai: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Catatan SK / Mandat:</label>
+            <textarea
+              rows={2}
+              placeholder="Catatan surat keputusan atau amanat..."
+              value={jabatanForm.catatan}
+              onChange={(e) => setJabatanForm((p) => ({ ...p, catatan: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowAddJabatanModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={savingJabatan} className="bg-emerald-600 text-white">
+              {savingJabatan ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
+              Simpan Jabatan
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ============================================================ */}
       {/* MODAL 2: TUNJUK DEWAN PENASEHAT                              */}
       {/* ============================================================ */}
-      {showAddPenasehatModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-amber-300">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                Tunjuk Dewan Penasehat (Alumni)
-              </h3>
-              <button onClick={() => setShowAddPenasehatModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSavePenasehat} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">
-                  Pilih Anggota Luar Biasa (ALB):
-                </label>
-                <select
-                  value={penasehatForm.anggota_id}
-                  onChange={(e) => setPenasehatForm((p) => ({ ...p, anggota_id: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
-                >
-                  {allALBList.map((alb) => (
-                    <option key={alb.id} value={alb.id}>
-                      {alb.nama} ({alb.nia}) - Angkatan {alb.nomor_angkatan}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-amber-400/80 mt-1">
-                  *Hanya menampilkan anggota yang telah berstatus Anggota Luar Biasa.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Periode Mulai:</label>
-                  <input
-                    type="date"
-                    required
-                    value={penasehatForm.periode_mulai}
-                    onChange={(e) => setPenasehatForm((p) => ({ ...p, periode_mulai: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Periode Selesai:</label>
-                  <input
-                    type="date"
-                    value={penasehatForm.periode_selesai}
-                    onChange={(e) => setPenasehatForm((p) => ({ ...p, periode_selesai: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Bidang Penasehat / Catatan:</label>
-                <textarea
-                  rows={2}
-                  placeholder="Contoh: Penasehat Bidang Ekspedisi Internasional & Kemitraan Alumni"
-                  value={penasehatForm.catatan}
-                  onChange={(e) => setPenasehatForm((p) => ({ ...p, catatan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowAddPenasehatModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={savingPenasehat} className="bg-amber-600 hover:bg-amber-500 text-white">
-                  {savingPenasehat ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Sparkles className="w-3.5 h-3.5 mr-1" />}
-                  Tunjuk Penasehat
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddPenasehatModal}
+        onClose={() => setShowAddPenasehatModal(false)}
+        title="Tunjuk Dewan Penasehat (Alumni)"
+        description="Penunjukan alumni Anggota Luar Biasa sebagai penasehat organisasi."
+        maxWidth="md"
+      >
+        <form onSubmit={handleSavePenasehat} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">
+              Pilih Anggota Luar Biasa (ALB):
+            </label>
+            <select
+              value={penasehatForm.anggota_id}
+              onChange={(e) => setPenasehatForm((p) => ({ ...p, anggota_id: e.target.value }))}
+              required
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
+            >
+              {allALBList.map((alb) => (
+                <option key={alb.id} value={alb.id}>
+                  {alb.nama} ({alb.nia}) - Angkatan {alb.nomor_angkatan}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-amber-400/80 mt-1">
+              *Hanya menampilkan anggota yang telah berstatus Anggota Luar Biasa.
+            </p>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Periode Mulai:</label>
+              <input
+                type="date"
+                required
+                value={penasehatForm.periode_mulai}
+                onChange={(e) => setPenasehatForm((p) => ({ ...p, periode_mulai: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Periode Selesai:</label>
+              <input
+                type="date"
+                value={penasehatForm.periode_selesai}
+                onChange={(e) => setPenasehatForm((p) => ({ ...p, periode_selesai: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Bidang Penasehat / Catatan:</label>
+            <textarea
+              rows={2}
+              placeholder="Contoh: Penasehat Bidang Ekspedisi Internasional & Kemitraan Alumni"
+              value={penasehatForm.catatan}
+              onChange={(e) => setPenasehatForm((p) => ({ ...p, catatan: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowAddPenasehatModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={savingPenasehat} className="bg-amber-600 hover:bg-amber-500 text-white">
+              {savingPenasehat ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Sparkles className="w-3.5 h-3.5 mr-1" />}
+              Tunjuk Penasehat
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ============================================================ */}
       {/* MODAL 3: KONFIRMASI TRANSISI KE ANGGOTA LUAR BIASA           */}
       {/* ============================================================ */}
-      {transisiTarget && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border-2 border-indigo-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-indigo-300">
-                <GraduationCap className="w-4 h-4 text-indigo-400" />
-                Konfirmasi Transisi Anggota Luar Biasa (Alumni)
-              </h3>
-              <button onClick={() => setTransisiTarget(null)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
+      <Modal
+        isOpen={!!transisiTarget}
+        onClose={() => setTransisiTarget(null)}
+        title="Konfirmasi Transisi Anggota Luar Biasa (Alumni)"
+        description="Pencatatan alumni yang telah lulus/wisuda secara permanen."
+        maxWidth="md"
+      >
+        {transisiTarget && (
+          <>
             <div className="p-3 bg-indigo-950/40 rounded-xl border border-indigo-900/50 space-y-1 text-xs">
               <p className="font-bold text-white">{transisiTarget.nama}</p>
               <p className="text-emerald-400 font-mono">NIA: {transisiTarget.nia || '-'}</p>
@@ -830,9 +782,9 @@ export default function AdminGovernancePage() {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

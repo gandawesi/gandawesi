@@ -19,6 +19,11 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { formatDateIndo } from '@/lib/utils/format';
 import { AlatItem, PeminjamanAlatItem, KondisiAlat } from '@/lib/types/inventaris';
 import { getAlatList, getMyPeminjaman, ajukanPeminjaman } from '@/lib/actions/inventaris';
 
@@ -138,81 +143,45 @@ export default function MemberInventarisPage() {
   return (
     <div className="space-y-8 pb-16">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-forest-900 via-forest-800 to-moss-900 p-6 md:p-8 text-white shadow-xl shadow-forest-950/20">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold tracking-wide text-forest-200 mb-4">
-            <Package className="w-3.5 h-3.5 text-forest-300" />
-            Logistik & Inventaris Organisasi
-          </div>
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
-            Peminjaman Alat Lapangan
-          </h1>
-          <p className="text-sm md:text-base text-forest-100/90 leading-relaxed">
-            Katalog perlengkapan caving, climbing, mountaineering, dan perkemahan. Ajukan permohonan pinjam alat secara digital dan pantau persetujuan pengurus.
-          </p>
-        </div>
-
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-forest-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 -mb-20 w-60 h-60 bg-moss-400/20 rounded-full blur-2xl pointer-events-none" />
-      </div>
+      <PageHeader
+        variant="hero"
+        badge={{ icon: Package, text: 'Logistik & Inventaris Organisasi' }}
+        title="Peminjaman Alat Lapangan"
+        description="Katalog perlengkapan caving, climbing, mountaineering, dan perkemahan. Ajukan permohonan pinjam alat secara digital dan pantau persetujuan pengurus."
+      />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-forest-50 dark:bg-forest-950/60 border border-forest-100 dark:border-forest-900/60 flex items-center justify-center text-forest-700 dark:text-forest-400 shrink-0">
-            <Layers className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Katalog Peralatan
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-0.5">
-              {alatList.length} <span className="text-xs font-normal text-stone-500">Jenis Alat</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/60 flex items-center justify-center text-amber-700 dark:text-amber-400 shrink-0">
-            <Clock className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Menunggu Disetujui
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-0.5">
-              {pendingLoans.length} <span className="text-xs font-normal text-stone-500">Permohonan</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-400 shrink-0">
-            <Package className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Aktif Saya Pinjam
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-0.5">
-              {activeLoans.length} <span className="text-xs font-normal text-stone-500">Peminjaman</span>
-            </p>
-          </div>
-        </div>
-      </div>
+      <StatGrid columns={3}>
+        <StatCard
+          icon={Layers}
+          label="Katalog Peralatan"
+          value={alatList.length}
+          subtext="Jenis Alat"
+          color="forest"
+        />
+        <StatCard
+          icon={Clock}
+          label="Menunggu Disetujui"
+          value={pendingLoans.length}
+          subtext="Permohonan"
+          color="amber"
+        />
+        <StatCard
+          icon={Package}
+          label="Aktif Saya Pinjam"
+          value={activeLoans.length}
+          subtext="Peminjaman"
+          color="emerald"
+        />
+      </StatGrid>
 
       {/* Notification */}
       {actionSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-start gap-3 text-emerald-900 dark:text-emerald-200 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          <div className="flex-1 text-sm font-medium">{actionSuccess}</div>
-          <button
-            onClick={() => setActionSuccess(null)}
-            className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type="success"
+          message={actionSuccess}
+          onClose={() => setActionSuccess(null)}
+        />
       )}
 
       {/* Main Tabs */}
@@ -281,15 +250,11 @@ export default function MemberInventarisPage() {
               <p className="text-xs text-stone-500">Memuat katalog inventaris...</p>
             </div>
           ) : filteredAlat.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl border border-dashed border-stone-200 dark:border-stone-800 bg-white/40 dark:bg-stone-900/40">
-              <Package className="w-12 h-12 text-stone-400 mx-auto mb-3 opacity-60" />
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                Tidak ada alat yang cocok
-              </h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Silakan ubah filter kategori atau kata kunci pencarian.
-              </p>
-            </div>
+            <EmptyState
+              icon={Package}
+              title="Tidak ada alat yang cocok"
+              description="Silakan ubah filter kategori atau kata kunci pencarian."
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredAlat.map((alat) => {
@@ -375,23 +340,21 @@ export default function MemberInventarisPage() {
               <p className="text-xs text-stone-500">Memuat data peminjaman...</p>
             </div>
           ) : myLoans.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl border border-dashed border-stone-200 dark:border-stone-800 bg-white/40 dark:bg-stone-900/40">
-              <ClipboardList className="w-12 h-12 text-stone-400 mx-auto mb-3 opacity-60" />
-              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                Belum ada riwayat peminjaman
-              </h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Pilih perlengkapan dari tab Katalog Alat Lapangan untuk mengajukan peminjaman pertama Anda.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setActiveTab('katalog')}
-                className="mt-4 text-xs"
-              >
-                Buka Katalog Alat
-              </Button>
-            </div>
+            <EmptyState
+              icon={ClipboardList}
+              title="Belum ada riwayat peminjaman"
+              description="Pilih perlengkapan dari tab Katalog Alat Lapangan untuk mengajukan peminjaman pertama Anda."
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('katalog')}
+                  className="text-xs"
+                >
+                  Buka Katalog Alat
+                </Button>
+              }
+            />
           ) : (
             <div className="rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
@@ -419,20 +382,10 @@ export default function MemberInventarisPage() {
                           {loan.jumlah} Unit
                         </td>
                         <td className="py-3.5 px-4 text-stone-600 dark:text-stone-400">
-                          {new Date(loan.tanggal_pinjam).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {formatDateIndo(loan.tanggal_pinjam)}
                         </td>
                         <td className="py-3.5 px-4 text-stone-600 dark:text-stone-400">
-                          {loan.tanggal_kembali
-                            ? new Date(loan.tanggal_kembali).toLocaleDateString('id-ID', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })
-                            : '–'}
+                          {formatDateIndo(loan.tanggal_kembali)}
                         </td>
                         <td className="py-3.5 px-4">
                           <span

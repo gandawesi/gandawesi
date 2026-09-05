@@ -2,103 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { FunctionalRole } from '@/lib/constants';
-import type { UserRoleRecord, AnggotaProfile } from '@/lib/auth/types';
+import type { ActionResponse } from '@/lib/types/action-response';
+import { MOCK_MEMBERS_WITH_ROLES, type MemberWithRolesItem } from '@/lib/mock-data';
 
-export interface MemberWithRolesItem {
-  id: string;
-  nama: string;
-  status_keanggotaan: string;
-  nia: string | null;
-  jurusan: string | null;
-  is_admin: boolean;
-  angkatan?: {
-    nomor_angkatan: number;
-    nama_angkatan: string | null;
-  } | null;
-  roles: UserRoleRecord[];
-}
-
-const MOCK_MEMBERS_WITH_ROLES: MemberWithRolesItem[] = [
-  {
-    id: 'mock-1',
-    nama: 'Rian Pratama Putra',
-    status_keanggotaan: 'anggota_biasa',
-    nia: 'GW.28.192.AB',
-    jurusan: 'Pendidikan Geografi',
-    is_admin: true,
-    angkatan: { nomor_angkatan: 28, nama_angkatan: 'Tapak Rimba' },
-    roles: [
-      {
-        id: 'role-1',
-        anggota_id: 'mock-1',
-        role: 'admin',
-        periode_mulai: '2024-01-01',
-        periode_selesai: null,
-        is_active: true,
-        created_at: '2024-01-01T00:00:00Z',
-      },
-      {
-        id: 'role-2',
-        anggota_id: 'mock-1',
-        role: 'ketua_dp',
-        periode_mulai: '2024-01-01',
-        periode_selesai: '2025-01-01',
-        is_active: true,
-        created_at: '2024-01-01T00:00:00Z',
-      },
-    ],
-  },
-  {
-    id: 'mock-2',
-    nama: 'Nabila Azzahra',
-    status_keanggotaan: 'anggota_biasa',
-    nia: 'GW.29.205.AB',
-    jurusan: 'Pendidikan Biologi',
-    is_admin: false,
-    angkatan: { nomor_angkatan: 29, nama_angkatan: 'Kabut Lembah' },
-    roles: [
-      {
-        id: 'role-3',
-        anggota_id: 'mock-2',
-        role: 'ketua_organisasi',
-        periode_mulai: '2024-06-01',
-        periode_selesai: '2025-06-01',
-        is_active: true,
-        created_at: '2024-06-01T00:00:00Z',
-      },
-    ],
-  },
-  {
-    id: 'mock-3',
-    nama: 'Fajar Nugraha',
-    status_keanggotaan: 'anggota_muda',
-    nia: null,
-    jurusan: 'PKO',
-    is_admin: false,
-    angkatan: { nomor_angkatan: 30, nama_angkatan: 'Elang Merbabu' },
-    roles: [
-      {
-        id: 'role-4',
-        anggota_id: 'mock-3',
-        role: 'panitia',
-        periode_mulai: '2024-08-01',
-        periode_selesai: '2025-02-01',
-        is_active: true,
-        created_at: '2024-08-01T00:00:00Z',
-      },
-    ],
-  },
-  {
-    id: 'mock-4',
-    nama: 'Dimas Ardiansyah',
-    status_keanggotaan: 'medan_operasi',
-    nia: null,
-    jurusan: 'Pendidikan Geografi',
-    is_admin: false,
-    angkatan: { nomor_angkatan: 31, nama_angkatan: 'Cakrawala Sunda' },
-    roles: [],
-  },
-];
+export type { MemberWithRolesItem };
 
 export async function fetchMembersWithRoles(): Promise<{
   members: MemberWithRolesItem[];
@@ -138,7 +45,7 @@ export async function assignMemberRole(
   role: FunctionalRole,
   periodeMulai?: string,
   periodeSelesai?: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -167,7 +74,7 @@ export async function assignMemberRole(
 
 export async function deactivateMemberRole(
   userRoleId: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 

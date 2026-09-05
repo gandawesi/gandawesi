@@ -1,6 +1,14 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  MOCK_ANGKATAN_DIKLAT,
+  MOCK_PESERTA_MEDAN_OPERASI,
+  MOCK_EVALUASI_INDIVIDU,
+  MOCK_EVALUASI_KELOMPOK,
+} from '@/lib/mock-data';
+import { getCurrentMemberId, getAuthenticatedMember, actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import type { ActionResponse } from '@/lib/types/action-response';
 import type {
   PesertaMedanOperasiItem,
   EvaluasiIndividuItem,
@@ -9,148 +17,6 @@ import type {
   BatchKelulusanPayload,
   MyMedanOperasiSummary,
 } from '@/lib/types/medan-operasi';
-
-// Mock data fallbacks for realistic rendering
-const MOCK_ANGKATAN_LIST: AngkatanDiklatItem[] = [
-  { id: 'angkatan-32', nomor_angkatan: 32, nama_angkatan: 'Giri Wardhana', tahun: 2025, total_peserta: 3 },
-  { id: 'angkatan-31', nomor_angkatan: 31, nama_angkatan: 'Cakrawala Sunda', tahun: 2024, total_peserta: 8 },
-  { id: 'angkatan-30', nomor_angkatan: 30, nama_angkatan: 'Elang Merbabu', tahun: 2023, total_peserta: 10 },
-];
-
-const MOCK_PESERTA_MEDAN_OPERASI: PesertaMedanOperasiItem[] = [
-  {
-    id: 'siswa-mock-1',
-    nama: 'Alya Putri Salsabila',
-    nim: '2304521',
-    jurusan: 'Pendidikan Biologi',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'medan_operasi',
-    total_evaluasi: 3,
-    rata_rata_skor: 88,
-    status_tahap: 'dalam_proses',
-    catatan_kelulusan: 'Navigasi darat malam stabil, kepemimpinan regu sangat baik di punggungan.',
-    approver_nama: null,
-    tanggal_kelulusan: null,
-    is_gugur: false,
-  },
-  {
-    id: 'siswa-mock-2',
-    nama: 'Aditya Pratama Ramadhan',
-    nim: '2301892',
-    jurusan: 'Pendidikan Geografi',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'medan_operasi',
-    total_evaluasi: 3,
-    rata_rata_skor: 82,
-    status_tahap: 'dalam_proses',
-    catatan_kelulusan: 'Ketahanan fisik prima, manajemen waktu dan bivak alam rapi.',
-    approver_nama: null,
-    tanggal_kelulusan: null,
-    is_gugur: false,
-  },
-  {
-    id: 'siswa-mock-3',
-    nama: 'Dimas Ardiansyah',
-    nim: '2209145',
-    jurusan: 'Pendidikan Kepelatihan Olahraga',
-    foto_profil: null,
-    angkatan_id: 'angkatan-32',
-    nomor_angkatan: 32,
-    nama_angkatan: 'Giri Wardhana',
-    status_keanggotaan: 'anggota_muda',
-    total_evaluasi: 4,
-    rata_rata_skor: 92,
-    status_tahap: 'lolos',
-    catatan_kelulusan: 'Lolos dengan predikat istimewa. Dilantik resmi sebagai Anggota Muda Giri Wardhana.',
-    approver_nama: 'Danlat Medan Operasi',
-    tanggal_kelulusan: '2025-09-15',
-    is_gugur: false,
-  },
-];
-
-const MOCK_EVALUASI_INDIVIDU: Record<string, EvaluasiIndividuItem[]> = {
-  'siswa-mock-1': [
-    {
-      id: 'eval-1',
-      anggota_id: 'siswa-mock-1',
-      evaluator_id: 'danlat-1',
-      evaluator_nama: 'Komandan Latihan (Danlat)',
-      tahap: 'medan_operasi',
-      skor: 90,
-      catatan: 'Simulasi Resection & Intersection di titik koordinat Gunung Manglayang sangat akurat (akurasi 15m).',
-      tanggal: '2025-09-10',
-    },
-    {
-      id: 'eval-2',
-      anggota_id: 'siswa-mock-1',
-      evaluator_id: 'instruktur-1',
-      evaluator_nama: 'Instruktur Navigasi Rimba',
-      tahap: 'medan_operasi',
-      skor: 85,
-      catatan: 'Manajemen zero-waste dan botani praktis lapangan terlaksana baik. Bivak teruji aman dari badai.',
-      tanggal: '2025-09-12',
-    },
-    {
-      id: 'eval-3',
-      anggota_id: 'siswa-mock-1',
-      evaluator_id: 'danlat-1',
-      evaluator_nama: 'Komandan Latihan (Danlat)',
-      tahap: 'medan_operasi',
-      skor: 90,
-      catatan: 'Ketahanan mental dan inisiatif kepemimpinan saat melintasi jalur punggungan terjal.',
-      tanggal: '2025-09-14',
-    },
-  ],
-  'siswa-mock-2': [
-    {
-      id: 'eval-4',
-      anggota_id: 'siswa-mock-2',
-      evaluator_id: 'danlat-1',
-      evaluator_nama: 'Komandan Latihan (Danlat)',
-      tahap: 'medan_operasi',
-      skor: 80,
-      catatan: 'Fisik kuat menahan beban carrier 15kg. Perlu sedikit peningkatan dalam ketelitian orientasi peta kontur gelap.',
-      tanggal: '2025-09-10',
-    },
-    {
-      id: 'eval-5',
-      anggota_id: 'siswa-mock-2',
-      evaluator_id: 'instruktur-1',
-      evaluator_nama: 'Instruktur Survival',
-      tahap: 'medan_operasi',
-      skor: 84,
-      catatan: 'Kerjasama tim dan distribusi logistik memasak sangat baik antar rekan seperjalanan.',
-      tanggal: '2025-09-12',
-    },
-  ],
-};
-
-const MOCK_EVALUASI_KELOMPOK: EvaluasiKelompokItem[] = [
-  {
-    id: 'eval-kel-1',
-    angkatan_id: 'angkatan-32',
-    evaluator_id: 'danlat-1',
-    evaluator_nama: 'Komandan Latihan (Danlat)',
-    tahap: 'medan_operasi',
-    catatan: 'Solidaritas kelompok Angkatan 32 sangat solid. Jalur rintisan 22 KM berhasil ditempuh tepat waktu tanpa insiden cedera fatal.',
-    tanggal: '2025-09-13',
-  },
-  {
-    id: 'eval-kel-2',
-    angkatan_id: 'angkatan-32',
-    evaluator_id: 'instruktur-1',
-    evaluator_nama: 'Dewan Pengurus (DP)',
-    tahap: 'medan_operasi',
-    catatan: 'Musyawarah Angkatan berjalan demokratis dan khidmat. Nama angkatan "Giri Wardhana" disepakati secara aklamasi bersama seluruh anggota tim.',
-    tanggal: '2025-09-15',
-  },
-];
 
 export async function fetchAngkatanDiklatList(): Promise<AngkatanDiklatItem[]> {
   try {
@@ -162,7 +28,7 @@ export async function fetchAngkatanDiklatList(): Promise<AngkatanDiklatItem[]> {
       .order('nomor_angkatan', { ascending: false });
 
     if (error || !data || data.length === 0) {
-      return MOCK_ANGKATAN_LIST;
+      return MOCK_ANGKATAN_DIKLAT;
     }
 
     return data.map((d: any) => ({
@@ -173,7 +39,7 @@ export async function fetchAngkatanDiklatList(): Promise<AngkatanDiklatItem[]> {
       total_peserta: d.anggota?.[0]?.count || 0,
     }));
   } catch (err) {
-    return MOCK_ANGKATAN_LIST;
+    return MOCK_ANGKATAN_DIKLAT;
   }
 }
 
@@ -228,7 +94,6 @@ export async function fetchPesertaMedanOperasi(
 
     const riwayatMap = new Map<string, any>();
     (riwayatRes.data || []).forEach((r) => {
-      // Pick newest stage record
       if (!riwayatMap.has(r.anggota_id)) {
         riwayatMap.set(r.anggota_id, r);
       }
@@ -304,20 +169,10 @@ export async function submitEvaluasiIndividu(payload: {
   skor: number;
   catatan: string;
   tanggal?: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let evaluatorId: string | null = null;
-    if (session?.user) {
-      const { data: myProfile } = await supabase
-        .from('anggota')
-        .select('id')
-        .eq('auth_user_id', session.user.id)
-        .maybeSingle();
-      if (myProfile) evaluatorId = myProfile.id;
-    }
+    const evaluatorId = await getCurrentMemberId(supabase);
 
     const { error } = await supabase.from('evaluasi_individu').insert({
       anggota_id: payload.anggota_id,
@@ -329,12 +184,12 @@ export async function submitEvaluasiIndividu(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: 'Evaluasi lapangan individu berhasil disimpan!' };
+    return actionSuccess(undefined, 'Evaluasi lapangan individu berhasil disimpan!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Evaluasi lapangan berhasil dicatat.' };
+    return actionSuccess(undefined, 'Simulasi: Evaluasi lapangan berhasil dicatat.');
   }
 }
 
@@ -371,20 +226,10 @@ export async function submitEvaluasiKelompok(payload: {
   angkatan_id: string;
   catatan: string;
   tanggal?: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let evaluatorId: string | null = null;
-    if (session?.user) {
-      const { data: myProfile } = await supabase
-        .from('anggota')
-        .select('id')
-        .eq('auth_user_id', session.user.id)
-        .maybeSingle();
-      if (myProfile) evaluatorId = myProfile.id;
-    }
+    const evaluatorId = await getCurrentMemberId(supabase);
 
     const { error } = await supabase.from('evaluasi_kelompok').insert({
       angkatan_id: payload.angkatan_id,
@@ -395,19 +240,19 @@ export async function submitEvaluasiKelompok(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return { success: true, message: 'Evaluasi kelompok angkatan berhasil disimpan!' };
+    return actionSuccess(undefined, 'Evaluasi kelompok angkatan berhasil disimpan!');
   } catch (err: any) {
-    return { success: true, message: 'Simulasi: Evaluasi kelompok berhasil dicatat.' };
+    return actionSuccess(undefined, 'Simulasi: Evaluasi kelompok berhasil dicatat.');
   }
 }
 
 export async function updateNamaAngkatan(
   angkatanId: string,
   namaAngkatan: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -417,18 +262,12 @@ export async function updateNamaAngkatan(
       .eq('id', angkatanId);
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return {
-      success: true,
-      message: `Nama angkatan "${namaAngkatan}" resmi ditetapkan hasil Musyawarah Angkatan!`,
-    };
+    return actionSuccess(undefined, `Nama angkatan "${namaAngkatan}" resmi ditetapkan hasil Musyawarah Angkatan!`);
   } catch (err: any) {
-    return {
-      success: true,
-      message: `Simulasi: Nama angkatan "${namaAngkatan}" berhasil diperbarui.`,
-    };
+    return actionSuccess(undefined, `Simulasi: Nama angkatan "${namaAngkatan}" berhasil diperbarui.`);
   }
 }
 
@@ -436,24 +275,11 @@ export async function decideKelulusanMedanOperasi(payload: {
   anggota_id: string;
   decision: 'lolos' | 'gugur';
   catatan: string;
-}): Promise<{ success: boolean; message?: string; error?: string }> {
+}): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const approverId = await getCurrentMemberId(supabase);
 
-    let approverId: string | null = null;
-    if (session?.user) {
-      const { data: myProfile } = await supabase
-        .from('anggota')
-        .select('id')
-        .eq('auth_user_id', session.user.id)
-        .maybeSingle();
-      if (myProfile) approverId = myProfile.id;
-    }
-
-    // Insert to riwayat_tahap:
-    // When decision is 'lolos' and tahap is 'medan_operasi', trigger trg_sync_status_kaderisasi
-    // automatically updates anggota.status_keanggotaan = 'anggota_muda'
     const { error } = await supabase.from('riwayat_tahap').insert({
       anggota_id: payload.anggota_id,
       tahap: 'medan_operasi',
@@ -464,7 +290,7 @@ export async function decideKelulusanMedanOperasi(payload: {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
     const message =
@@ -472,34 +298,23 @@ export async function decideKelulusanMedanOperasi(payload: {
         ? 'Peserta dinyatakan LOLOS dan resmi dilantik menjadi ANGGOTA MUDA!'
         : 'Pencatatan GUGUR medan operasi berhasil disimpan di riwayat kaderisasi.';
 
-    return { success: true, message };
+    return actionSuccess(undefined, message);
   } catch (err: any) {
-    return {
-      success: true,
-      message:
-        payload.decision === 'lolos'
-          ? 'Simulasi: Peserta resmi dilantik menjadi ANGGOTA MUDA via trigger database.'
-          : 'Simulasi: Pencatatan peserta gugur lapangan berhasil disimpan.',
-    };
+    return actionSuccess(
+      undefined,
+      payload.decision === 'lolos'
+        ? 'Simulasi: Peserta resmi dilantik menjadi ANGGOTA MUDA via trigger database.'
+        : 'Simulasi: Pencatatan peserta gugur lapangan berhasil disimpan.'
+    );
   }
 }
 
 export async function executeBatchKelulusanMedanOperasi(
   payload: BatchKelulusanPayload
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let approverId: string | null = null;
-    if (session?.user) {
-      const { data: myProfile } = await supabase
-        .from('anggota')
-        .select('id')
-        .eq('auth_user_id', session.user.id)
-        .maybeSingle();
-      if (myProfile) approverId = myProfile.id;
-    }
+    const approverId = await getCurrentMemberId(supabase);
 
     // 1. Update nama angkatan in angkatan table
     if (payload.nama_angkatan && payload.angkatan_id) {
@@ -523,54 +338,38 @@ export async function executeBatchKelulusanMedanOperasi(
     const { error: rwError } = await supabase.from('riwayat_tahap').insert(riwayatInserts);
 
     if (rwError) {
-      return { success: false, error: rwError.message };
+      return actionError(rwError.message);
     }
 
-    return {
-      success: true,
-      message: `Selamat! ${payload.anggota_ids.length} peserta resmi dilantik menjadi Anggota Muda "${payload.nama_angkatan}"!`,
-    };
+    return actionSuccess(
+      undefined,
+      `Selamat! ${payload.anggota_ids.length} peserta resmi dilantik menjadi Anggota Muda "${payload.nama_angkatan}"!`
+    );
   } catch (err: any) {
-    return {
-      success: true,
-      message: `Simulasi: ${payload.anggota_ids.length} peserta resmi dilantik menjadi Anggota Muda "${payload.nama_angkatan}".`,
-    };
+    return actionSuccess(
+      undefined,
+      `Simulasi: ${payload.anggota_ids.length} peserta resmi dilantik menjadi Anggota Muda "${payload.nama_angkatan}".`
+    );
   }
 }
 
 export async function fetchMyMedanOperasiSummary(): Promise<MyMedanOperasiSummary> {
+  const fallbackSummary: MyMedanOperasiSummary = {
+    status_keanggotaan: 'medan_operasi',
+    tahap_status: 'dalam_proses',
+    nomor_angkatan: 32,
+    nama_angkatan: 'Giri Wardhana',
+    rata_rata_skor: 88,
+    catatan_danlat: 'Observasi lapangan stabil, navigasi darat konsisten.',
+    evaluasi_list: MOCK_EVALUASI_INDIVIDU['siswa-mock-1'],
+  };
+
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { member } = await getAuthenticatedMember(supabase);
 
-    if (!session?.user) {
-      return {
-        status_keanggotaan: 'medan_operasi',
-        tahap_status: 'dalam_proses',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        rata_rata_skor: 88,
-        catatan_danlat: 'Observasi lapangan stabil, navigasi darat konsisten.',
-        evaluasi_list: MOCK_EVALUASI_INDIVIDU['siswa-mock-1'],
-      };
-    }
-
-    const { data: anggota } = await supabase
-      .from('anggota')
-      .select('id, status_keanggotaan, angkatan:angkatan_id(nomor_angkatan, nama_angkatan)')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
-
-    if (!anggota) {
-      return {
-        status_keanggotaan: 'medan_operasi',
-        tahap_status: 'dalam_proses',
-        nomor_angkatan: 32,
-        nama_angkatan: 'Giri Wardhana',
-        rata_rata_skor: 88,
-        catatan_danlat: 'Observasi lapangan stabil, navigasi darat konsisten.',
-        evaluasi_list: MOCK_EVALUASI_INDIVIDU['siswa-mock-1'],
-      };
+    if (!member) {
+      return fallbackSummary;
     }
 
     // Parallel fetch evaluations and stage decision
@@ -578,13 +377,13 @@ export async function fetchMyMedanOperasiSummary(): Promise<MyMedanOperasiSummar
       supabase
         .from('evaluasi_individu')
         .select('*, evaluator:evaluator_id(nama)')
-        .eq('anggota_id', anggota.id)
+        .eq('anggota_id', member.id)
         .eq('tahap', 'medan_operasi')
         .order('tanggal', { ascending: false }),
       supabase
         .from('riwayat_tahap')
         .select('status, catatan')
-        .eq('anggota_id', anggota.id)
+        .eq('anggota_id', member.id)
         .eq('tahap', 'medan_operasi')
         .maybeSingle(),
     ]);
@@ -604,23 +403,15 @@ export async function fetchMyMedanOperasiSummary(): Promise<MyMedanOperasiSummar
     const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 88;
 
     return {
-      status_keanggotaan: anggota.status_keanggotaan,
-      tahap_status: riwayatRes.data?.status || (anggota.status_keanggotaan === 'anggota_muda' ? 'lolos' : 'dalam_proses'),
-      nomor_angkatan: (anggota.angkatan as any)?.nomor_angkatan || 32,
-      nama_angkatan: (anggota.angkatan as any)?.nama_angkatan || 'Giri Wardhana',
+      status_keanggotaan: member.status_keanggotaan,
+      tahap_status: riwayatRes.data?.status || (member.status_keanggotaan === 'anggota_muda' ? 'lolos' : 'dalam_proses'),
+      nomor_angkatan: (member.angkatan as any)?.nomor_angkatan || 32,
+      nama_angkatan: (member.angkatan as any)?.nama_angkatan || 'Giri Wardhana',
       rata_rata_skor: avgScore,
       catatan_danlat: riwayatRes.data?.catatan || 'Performa lapangan terpantau aktif dan berdedikasi tinggi.',
       evaluasi_list: evals.length > 0 ? evals : MOCK_EVALUASI_INDIVIDU['siswa-mock-1'],
     };
   } catch (err) {
-    return {
-      status_keanggotaan: 'medan_operasi',
-      tahap_status: 'dalam_proses',
-      nomor_angkatan: 32,
-      nama_angkatan: 'Giri Wardhana',
-      rata_rata_skor: 88,
-      catatan_danlat: 'Observasi lapangan stabil, navigasi darat konsisten.',
-      evaluasi_list: MOCK_EVALUASI_INDIVIDU['siswa-mock-1'],
-    };
+    return fallbackSummary;
   }
 }

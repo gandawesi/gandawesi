@@ -11,6 +11,9 @@ import type { CalonSiswaItem, PeriodePendaftaranItem } from '@/lib/types/registr
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { Modal } from '@/components/ui/Modal';
 import {
   ClipboardList,
   CheckCircle2,
@@ -156,60 +159,40 @@ export default function AdminCalonSiswaPage() {
       </div>
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
-          ) : (
-            <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] text-stone-400 uppercase font-semibold">Total Pendaftar</span>
-            <p className="text-2xl font-extrabold text-stone-900 dark:text-white mt-0.5">{countTotal}</p>
-          </div>
-          <UserCheck className="w-7 h-7 text-forest-600 dark:text-forest-400" />
-        </Card>
-
-        <Card className="p-4 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] text-stone-400 uppercase font-semibold">Surat Dokter Ada</span>
-            <p className="text-2xl font-extrabold text-stone-900 dark:text-white mt-0.5">{countDokter}</p>
-          </div>
-          <HeartPulse className="w-7 h-7 text-rose-500" />
-        </Card>
-
-        <Card className="p-4 flex items-center justify-between border-emerald-500/30 bg-emerald-50/20">
-          <div>
-            <span className="text-[11px] text-emerald-700 dark:text-emerald-400 uppercase font-semibold">
-              Lolos ke Siswa
-            </span>
-            <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400 mt-0.5">{countLolos}</p>
-          </div>
-          <CheckCircle2 className="w-7 h-7 text-emerald-600" />
-        </Card>
-
-        <Card className="p-4 flex items-center justify-between border-rose-500/30 bg-rose-50/20">
-          <div>
-            <span className="text-[11px] text-rose-700 dark:text-rose-400 uppercase font-semibold">
-              Gugur Seleksi
-            </span>
-            <p className="text-2xl font-extrabold text-rose-700 dark:text-rose-400 mt-0.5">{countGugur}</p>
-          </div>
-          <XCircle className="w-7 h-7 text-rose-600" />
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={UserCheck}
+          label="Total Pendaftar"
+          value={countTotal}
+          color="forest"
+        />
+        <StatCard
+          icon={HeartPulse}
+          label="Surat Dokter Ada"
+          value={countDokter}
+          color="rose"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="Lolos ke Siswa"
+          value={countLolos}
+          color="emerald"
+        />
+        <StatCard
+          icon={XCircle}
+          label="Gugur Seleksi"
+          value={countGugur}
+          color="stone"
+        />
+      </StatGrid>
 
       {/* Filter & Search Toolbar */}
       <Card className="p-4">
@@ -377,163 +360,153 @@ export default function AdminCalonSiswaPage() {
       )}
 
       {/* Modal 1: Catatan Medis Panitia */}
-      {healthModalTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <Card className="max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
-              <h3 className="text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                <HeartPulse className="w-4 h-4 text-rose-500" />
-                Catatan Medis: {healthModalTarget.nama}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setHealthModalTarget(null)}
-                className="text-stone-400 hover:text-stone-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={!!healthModalTarget}
+        onClose={() => setHealthModalTarget(null)}
+        title={
+          <span className="flex items-center gap-2">
+            <HeartPulse className="w-4 h-4 text-rose-500" />
+            Catatan Medis: {healthModalTarget?.nama}
+          </span>
+        }
+        description="Pencatatan evaluasi fisik dan rekomendasi medis tim kepanitiaan."
+        maxWidth="md"
+      >
+        {healthModalTarget && (
+          <form onSubmit={handleSaveHealthNote} className="space-y-3.5 text-xs">
+            <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800">
+              <span className="text-stone-400 block mb-0.5">Surat Keterangan Dokter:</span>
+              <p className="font-semibold text-stone-800 dark:text-stone-200">
+                {healthModalTarget.tes_kesehatan_awal?.file_surat_dokter
+                  ? 'Sudah diunggah oleh calon siswa'
+                  : 'Belum diunggah'}
+              </p>
             </div>
 
-            <form onSubmit={handleSaveHealthNote} className="space-y-3.5 text-xs">
-              <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800">
-                <span className="text-stone-400 block mb-0.5">Surat Keterangan Dokter:</span>
-                <p className="font-semibold text-stone-800 dark:text-stone-200">
-                  {healthModalTarget.tes_kesehatan_awal?.file_surat_dokter
-                    ? 'Sudah diunggah oleh calon siswa'
-                    : 'Belum diunggah'}
-                </p>
-              </div>
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Catatan Evaluasi Fisik & Tim Medis Panitia
+              </label>
+              <textarea
+                rows={4}
+                required
+                value={healthNoteText}
+                onChange={(e) => setHealthNoteText(e.target.value)}
+                placeholder="Contoh: Tekanan darah 120/80, riwayat cedera pergelangan kaki 2 tahun lalu, aman untuk bina jasmani sedang..."
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
+            </div>
 
-              <div>
-                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                  Catatan Evaluasi Fisik & Tim Medis Panitia
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={healthNoteText}
-                  onChange={(e) => setHealthNoteText(e.target.value)}
-                  placeholder="Contoh: Tekanan darah 120/80, riwayat cedera pergelangan kaki 2 tahun lalu, aman untuk bina jasmani sedang..."
-                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setHealthModalTarget(null)}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" size="sm" disabled={processingId === healthModalTarget.id}>
-                  {processingId === healthModalTarget.id ? 'Menyimpan...' : 'Simpan Catatan Medis'}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setHealthModalTarget(null)}
+              >
+                Batal
+              </Button>
+              <Button type="submit" size="sm" disabled={processingId === healthModalTarget.id}>
+                {processingId === healthModalTarget.id ? 'Menyimpan...' : 'Simpan Catatan Medis'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
 
       {/* Modal 2: Keputusan Kelulusan Tahap (Ketua Medan Operasi / DANLAT) */}
-      {decisionModalTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <Card className="max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
-              <h3 className="text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                <Award className="w-4 h-4 text-forest-600" />
-                Keputusan Seleksi: {decisionModalTarget.nama}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setDecisionModalTarget(null)}
-                className="text-stone-400 hover:text-stone-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={!!decisionModalTarget}
+        onClose={() => setDecisionModalTarget(null)}
+        title={
+          <span className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-forest-600" />
+            Keputusan Seleksi: {decisionModalTarget?.nama}
+          </span>
+        }
+        description="Penetapan status kelulusan peserta seleksi calon siswa."
+        maxWidth="md"
+      >
+        {decisionModalTarget && (
+          <form onSubmit={handleExecuteDecision} className="space-y-4 text-xs">
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-2">
+                Tentukan Hasil Kelulusan
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDecisionType('lolos')}
+                  className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    decisionType === 'lolos'
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 ring-2 ring-emerald-500/20'
+                      : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                  }`}
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <span className="font-bold">Lolos ke Siswa</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDecisionType('gugur')}
+                  className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    decisionType === 'gugur'
+                      ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/20'
+                      : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                  }`}
+                >
+                  <XCircle className="w-5 h-5 text-rose-600" />
+                  <span className="font-bold">Gugur</span>
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleExecuteDecision} className="space-y-4 text-xs">
-              <div>
-                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-2">
-                  Tentukan Hasil Kelulusan
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDecisionType('lolos')}
-                    className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      decisionType === 'lolos'
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 ring-2 ring-emerald-500/20'
-                        : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <span className="font-bold">Lolos ke Siswa</span>
-                  </button>
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Catatan Evaluasi / Alasan Keputusan
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={decisionNote}
+                onChange={(e) => setDecisionNote(e.target.value)}
+                placeholder="Contoh: Berkas lengkap, tes kebugaran memenuhi ambang batas, dinyatakan siap mengikuti kurikulum tahap Siswa..."
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
+            </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setDecisionType('gugur')}
-                    className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      decisionType === 'gugur'
-                        ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/20'
-                        : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
-                    }`}
-                  >
-                    <XCircle className="w-5 h-5 text-rose-600" />
-                    <span className="font-bold">Gugur</span>
-                  </button>
-                </div>
+            {decisionType === 'lolos' && (
+              <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-[11px]">
+                * Status anggota akan otomatis diperbarui menjadi <strong>&quot;Siswa&quot;</strong> via trigger database `trg_sync_status_kaderisasi`.
               </div>
+            )}
 
-              <div>
-                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                  Catatan Evaluasi / Alasan Keputusan
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={decisionNote}
-                  onChange={(e) => setDecisionNote(e.target.value)}
-                  placeholder="Contoh: Berkas lengkap, tes kebugaran memenuhi ambang batas, dinyatakan siap mengikuti kurikulum tahap Siswa..."
-                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                />
-              </div>
-
-              {decisionType === 'lolos' && (
-                <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-[11px]">
-                  * Status anggota akan otomatis diperbarui menjadi <strong>&quot;Siswa&quot;</strong> via trigger database `trg_sync_status_kaderisasi`.
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDecisionModalTarget(null)}
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={processingId === decisionModalTarget.id}
-                  className={decisionType === 'gugur' ? 'bg-rose-600 hover:bg-rose-700 text-white' : ''}
-                >
-                  {processingId === decisionModalTarget.id
-                    ? 'Memproses...'
-                    : decisionType === 'lolos'
-                    ? 'Konfirmasi Lolos ke Siswa'
-                    : 'Konfirmasi Gugur'}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDecisionModalTarget(null)}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={processingId === decisionModalTarget.id}
+                className={decisionType === 'gugur' ? 'bg-rose-600 hover:bg-rose-700 text-white' : ''}
+              >
+                {processingId === decisionModalTarget.id
+                  ? 'Memproses...'
+                  : decisionType === 'lolos'
+                  ? 'Konfirmasi Lolos ke Siswa'
+                  : 'Konfirmasi Gugur'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { Modal } from '@/components/ui/Modal';
+import { formatRupiah } from '@/lib/utils/format';
 import {
   Wallet,
   ArrowDownLeft,
@@ -191,13 +195,7 @@ export default function AdminKeuanganPage() {
     }
   };
 
-  const formatIDR = (val: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
+  const formatIDR = formatRupiah;
 
   if (loading || !summary) {
     return (
@@ -260,81 +258,44 @@ export default function AdminKeuanganPage() {
 
       {/* Notification Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
-              : 'bg-rose-950/80 text-rose-300 border border-rose-800'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-            )}
-            <span>{feedback.text}</span>
-          </div>
-          <button onClick={() => setFeedback(null)} className="text-stone-400 hover:text-white">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* 4 Financial KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-2">
-          <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-semibold uppercase tracking-wider">Saldo Kas Organisasi</span>
-            <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
-            {formatIDR(summary.saldo_kas_saat_ini)}
-          </p>
-          <span className="text-[11px] text-stone-400">Kas bersih umum & operasional</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-2">
-          <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-semibold uppercase tracking-wider">Pemasukan Bulan Ini</span>
-            <div className="p-2 bg-indigo-500/10 text-indigo-600 rounded-xl">
-              <ArrowDownLeft className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
-            {formatIDR(summary.pemasukan_bulan_ini)}
-          </p>
-          <span className="text-[11px] text-stone-400">Iuran, sponsorship, dan hibah</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-2">
-          <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-semibold uppercase tracking-wider">Pengeluaran Bulan Ini</span>
-            <div className="p-2 bg-rose-500/10 text-rose-600 rounded-xl">
-              <ArrowUpRight className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">
-            {formatIDR(summary.pengeluaran_bulan_ini)}
-          </p>
-          <span className="text-[11px] text-stone-400">Operasional dan logistik diklat</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-2">
-          <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-semibold uppercase tracking-wider">Total Tunggakan Iuran</span>
-            <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
-            {formatIDR(summary.total_tunggakan_organisasi)}
-          </p>
-          <span className="text-[11px] text-stone-400">Catatan administratif anggota</span>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Wallet}
+          label="Saldo Kas Organisasi"
+          value={formatIDR(summary.saldo_kas_saat_ini)}
+          subtext="Kas bersih umum & operasional"
+          color="emerald"
+        />
+        <StatCard
+          icon={ArrowDownLeft}
+          label="Pemasukan Bulan Ini"
+          value={formatIDR(summary.pemasukan_bulan_ini)}
+          subtext="Iuran, sponsorship, hibah"
+          color="blue"
+        />
+        <StatCard
+          icon={ArrowUpRight}
+          label="Pengeluaran Bulan Ini"
+          value={formatIDR(summary.pengeluaran_bulan_ini)}
+          subtext="Operasional & logistik"
+          color="rose"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label="Total Tunggakan Iuran"
+          value={formatIDR(summary.total_tunggakan_organisasi)}
+          subtext="Catatan administratif"
+          color="amber"
+        />
+      </StatGrid>
 
       {/* Tabs Navigation */}
       <div className="flex border-b border-stone-200 dark:border-stone-800 gap-2 overflow-x-auto">
@@ -782,238 +743,213 @@ export default function AdminKeuanganPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* ============================================================ */}
+      )}      {/* ============================================================ */}
       {/* MODAL 1: CATAT TRANSAKSI KAS                                 */}
       {/* ============================================================ */}
-      {showKasModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-emerald-400">
-                <Wallet className="w-4 h-4" />
-                Catat Transaksi Buku Kas
-              </h3>
-              <button onClick={() => setShowKasModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={showKasModal}
+        onClose={() => setShowKasModal(false)}
+        title="Catat Transaksi Buku Kas"
+        description="Pencatatan arus kas masuk atau keluar organisasi."
+        maxWidth="md"
+      >
+        <form onSubmit={handleSaveKas} className="space-y-4 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Tipe Arus Kas:</label>
+              <select
+                value={kasForm.tipe}
+                onChange={(e) => setKasForm((p) => ({ ...p, tipe: e.target.value as any }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              >
+                <option value="masuk">Pemasukan (+)</option>
+                <option value="keluar">Pengeluaran (-)</option>
+              </select>
             </div>
-
-            <form onSubmit={handleSaveKas} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Tipe Arus Kas:</label>
-                  <select
-                    value={kasForm.tipe}
-                    onChange={(e) => setKasForm((p) => ({ ...p, tipe: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  >
-                    <option value="masuk">Pemasukan (+)</option>
-                    <option value="keluar">Pengeluaran (-)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Kategori:</label>
-                  <select
-                    value={kasForm.kategori}
-                    onChange={(e) => setKasForm((p) => ({ ...p, kategori: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  >
-                    {kasForm.tipe === 'masuk' ? (
-                      <>
-                        <option value="iuran">Iuran Anggota</option>
-                        <option value="sponsorship">Sponsorship Brand</option>
-                        <option value="donasi">Donasi Alumni / Luar</option>
-                        <option value="subsidi_kampus">Subsidi Kemahasiswaan UPI</option>
-                        <option value="usaha_mandiri">Usaha Mandiri / Merchandise</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="operasional">Operasional & Kesekretariatan</option>
-                        <option value="diklat">Kegiatan Diklat & Kaderisasi</option>
-                        <option value="logistik">Logistik & Pemeliharaan Alat</option>
-                        <option value="konsumsi">Konsumsi Pertemuan / Rapat</option>
-                        <option value="lainnya">Pengeluaran Lainnya</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Nominal (Rp):</label>
-                <input
-                  type="number"
-                  required
-                  min="1000"
-                  value={kasForm.nominal}
-                  onChange={(e) => setKasForm((p) => ({ ...p, nominal: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Keterangan Transaksi:</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Misal: Pembelian tali karmantel & carabiner..."
-                  value={kasForm.keterangan}
-                  onChange={(e) => setKasForm((p) => ({ ...p, keterangan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Tanggal Transaksi:</label>
-                <input
-                  type="date"
-                  required
-                  value={kasForm.tanggal}
-                  onChange={(e) => setKasForm((p) => ({ ...p, tanggal: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Tautan Bukti Struk / Nota:</label>
-                <input
-                  type="url"
-                  placeholder="https://storage.googleapis.com/..."
-                  value={kasForm.bukti}
-                  onChange={(e) => setKasForm((p) => ({ ...p, bukti: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowKasModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={submittingKas} className="bg-emerald-600 text-white">
-                  {submittingKas ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
-                  Bukukan Transaksi
-                </Button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Kategori:</label>
+              <select
+                value={kasForm.kategori}
+                onChange={(e) => setKasForm((p) => ({ ...p, kategori: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              >
+                {kasForm.tipe === 'masuk' ? (
+                  <>
+                    <option value="iuran">Iuran Anggota</option>
+                    <option value="sponsorship">Sponsorship Brand</option>
+                    <option value="donasi">Donasi Alumni / Luar</option>
+                    <option value="subsidi_kampus">Subsidi Kemahasiswaan UPI</option>
+                    <option value="usaha_mandiri">Usaha Mandiri / Merchandise</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="operasional">Operasional & Kesekretariatan</option>
+                    <option value="diklat">Kegiatan Diklat & Kaderisasi</option>
+                    <option value="logistik">Logistik & Pemeliharaan Alat</option>
+                    <option value="konsumsi">Konsumsi Pertemuan / Rapat</option>
+                    <option value="lainnya">Pengeluaran Lainnya</option>
+                  </>
+                )}
+              </select>
+            </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Nominal (Rp):</label>
+            <input
+              type="number"
+              required
+              min="1000"
+              value={kasForm.nominal}
+              onChange={(e) => setKasForm((p) => ({ ...p, nominal: Number(e.target.value) }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Keterangan Transaksi:</label>
+            <input
+              type="text"
+              required
+              value={kasForm.keterangan}
+              onChange={(e) => setKasForm((p) => ({ ...p, keterangan: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              placeholder="Contoh: Pembelian tali kermantle 50 meter"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Tanggal Transaksi:</label>
+              <input
+                type="date"
+                required
+                value={kasForm.tanggal}
+                onChange={(e) => setKasForm((p) => ({ ...p, tanggal: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Link Bukti / Kwitansi:</label>
+              <input
+                type="url"
+                value={kasForm.bukti}
+                onChange={(e) => setKasForm((p) => ({ ...p, bukti: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowKasModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={submittingKas} className="bg-emerald-600 text-white">
+              {submittingKas ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
+              Bukukan Transaksi
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ============================================================ */}
       {/* MODAL 2: GENERATE TAGIHAN BULANAN VIA RPC                    */}
       {/* ============================================================ */}
-      {showGenerateModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-amber-400">
-                <RefreshCw className="w-4 h-4" />
-                Generate Tagihan Iuran Bulanan
-              </h3>
-              <button onClick={() => setShowGenerateModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleGenerateBills} className="space-y-4 text-xs">
-              <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-300 leading-relaxed">
-                Memanggil fungsi RPC PostgreSQL <code>generate_tagihan_iuran_bulanan()</code>. Tagihan akan diterbitkan secara idempoten untuk seluruh anggota berstatus <strong>Anggota Muda</strong>, <strong>Anggota Biasa</strong>, dan <strong>Anggota Luar Biasa</strong>.
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Pilih Periode Tagihan:</label>
-                <input
-                  type="month"
-                  required
-                  value={generatePeriode}
-                  onChange={(e) => setGeneratePeriode(e.target.value)}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500 font-mono"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowGenerateModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={generating} className="bg-amber-600 hover:bg-amber-500 text-white">
-                  {generating ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <RefreshCw className="w-3.5 h-3.5 mr-1" />}
-                  Terbitkan Tagihan Massal
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        title="Generate Tagihan Iuran Bulanan"
+        description="Menerbitkan tagihan iuran bulanan untuk seluruh anggota aktif via RPC."
+        maxWidth="md"
+      >
+        <form onSubmit={handleGenerateBills} className="space-y-4 text-xs">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-300 leading-relaxed">
+            Memanggil fungsi RPC PostgreSQL <code>generate_tagihan_iuran_bulanan()</code>. Tagihan akan diterbitkan secara idempoten untuk seluruh anggota berstatus <strong>Anggota Muda</strong>, <strong>Anggota Biasa</strong>, dan <strong>Anggota Luar Biasa</strong>.
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Pilih Periode Tagihan:</label>
+            <input
+              type="month"
+              required
+              value={generatePeriode}
+              onChange={(e) => setGeneratePeriode(e.target.value)}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-amber-500 font-mono"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowGenerateModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={generating} className="bg-amber-600 hover:bg-amber-500 text-white">
+              {generating ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <RefreshCw className="w-3.5 h-3.5 mr-1" />}
+              Terbitkan Tagihan Massal
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ============================================================ */}
       {/* MODAL 3: KONFIGURASI TARIF IURAN                             */}
       {/* ============================================================ */}
-      {showTarifModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-indigo-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-indigo-400">
-                <Settings className="w-4 h-4" />
-                Perbarui Kebijakan Tarif Iuran
-              </h3>
-              <button onClick={() => setShowTarifModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveTarif} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Status Keanggotaan:</label>
-                <select
-                  value={tarifForm.status_keanggotaan}
-                  onChange={(e) => setTarifForm((p) => ({ ...p, status_keanggotaan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
-                >
-                  <option value="anggota_muda">Anggota Muda</option>
-                  <option value="anggota_biasa">Anggota Biasa (Penuh)</option>
-                  <option value="anggota_luar_biasa">Anggota Luar Biasa (Alumni)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Nominal Iuran Baru (Rp):</label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="5000"
-                  value={tarifForm.nominal}
-                  onChange={(e) => setTarifForm((p) => ({ ...p, nominal: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Berlaku Efektif Sejak:</label>
-                <input
-                  type="date"
-                  required
-                  value={tarifForm.berlaku_sejak}
-                  onChange={(e) => setTarifForm((p) => ({ ...p, berlaku_sejak: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowTarifModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={savingTarif} className="bg-indigo-600 hover:bg-indigo-500 text-white">
-                  {savingTarif ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Settings className="w-3.5 h-3.5 mr-1" />}
-                  Simpan Kebijakan Tarif
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showTarifModal}
+        onClose={() => setShowTarifModal(false)}
+        title="Perbarui Kebijakan Tarif Iuran"
+        description="Menetapkan besaran iuran bulanan wajib per jenjang keanggotaan."
+        maxWidth="md"
+      >
+        <form onSubmit={handleSaveTarif} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Status Keanggotaan:</label>
+            <select
+              value={tarifForm.status_keanggotaan}
+              onChange={(e) => setTarifForm((p) => ({ ...p, status_keanggotaan: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
+            >
+              <option value="anggota_muda">Anggota Muda</option>
+              <option value="anggota_biasa">Anggota Biasa (Penuh)</option>
+              <option value="anggota_luar_biasa">Anggota Luar Biasa (Alumni)</option>
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Nominal Iuran Baru (Rp):</label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="5000"
+              value={tarifForm.nominal}
+              onChange={(e) => setTarifForm((p) => ({ ...p, nominal: Number(e.target.value) }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Berlaku Efektif Sejak:</label>
+            <input
+              type="date"
+              required
+              value={tarifForm.berlaku_sejak}
+              onChange={(e) => setTarifForm((p) => ({ ...p, berlaku_sejak: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowTarifModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={savingTarif} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+              {savingTarif ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Settings className="w-3.5 h-3.5 mr-1" />}
+              Simpan Kebijakan Tarif
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

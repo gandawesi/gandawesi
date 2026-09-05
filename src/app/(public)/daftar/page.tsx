@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import { Alert } from '@/components/ui/Alert';
+import { formatDateIndo } from '@/lib/utils/format';
 import {
   Compass,
   Calendar,
@@ -156,20 +158,11 @@ export default function PendaftaranPage() {
       </div>
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
-          ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Case 1: Already Registered as Calon Siswa */}
@@ -191,11 +184,7 @@ export default function PendaftaranPage() {
               </div>
 
               <span className="text-xs text-stone-400 font-mono">
-                {new Date(existingCalon.created_at).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
+                {formatDateIndo(existingCalon.created_at)}
               </span>
             </div>
 

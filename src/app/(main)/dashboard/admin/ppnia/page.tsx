@@ -26,6 +26,8 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   ShieldAlert,
   Users,
@@ -315,92 +317,44 @@ export default function AdminPPNIAPage() {
 
       {/* Feedback Toast */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between animate-in fade-in slide-in-from-top-2 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
-            )}
-            <p className="text-sm font-medium">{feedback.text}</p>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-white p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Anggota Muda PPNIA
-              </p>
-              <p className="text-2xl font-bold text-white mt-1">{totalAnggota}</p>
-            </div>
-            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Masa pembinaan ~1 tahun menuju NIA</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Rata-rata Presensi
-              </p>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">{avgKehadiran}%</p>
-            </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-              <Activity className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Akumulasi 4 jenis kegiatan wajib</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Watchlist Perhatian
-              </p>
-              <p className="text-2xl font-bold text-amber-400 mt-1">{totalPerhatian}</p>
-            </div>
-            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Peringatan dini evaluasi berkala</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Ekspedisi Menunggu DP
-              </p>
-              <p className="text-2xl font-bold text-cyan-400 mt-1">{pendingEkspedisi}</p>
-            </div>
-            <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
-              <Mountain className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Proposal rencana ekspedisi anggota</p>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Users}
+          label="Anggota Muda PPNIA"
+          value={totalAnggota}
+          subtext="Masa pembinaan ~1 tahun"
+          color="purple"
+        />
+        <StatCard
+          icon={Activity}
+          label="Rata-rata Presensi"
+          value={`${avgKehadiran}%`}
+          subtext="Akumulasi 4 jenis kegiatan"
+          color="emerald"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label="Watchlist Perhatian"
+          value={totalPerhatian}
+          subtext="Peringatan dini evaluasi"
+          color="amber"
+        />
+        <StatCard
+          icon={Mountain}
+          label="Ekspedisi Menunggu DP"
+          value={pendingEkspedisi}
+          subtext="Proposal rencana ekspedisi"
+          color="blue"
+        />
+      </StatGrid>
 
       {/* Main Tabs */}
       <div className="flex border-b border-slate-800 gap-2">

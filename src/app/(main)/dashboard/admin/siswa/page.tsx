@@ -20,6 +20,8 @@ import type {
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   Award,
   Users,
@@ -389,28 +391,11 @@ export default function AdminSiswaPage() {
 
       {/* Feedback Toast Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between animate-in fade-in slide-in-from-top-2 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
-            )}
-            <p className="text-sm font-medium">{feedback.text}</p>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-white p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Main Tabs Navigation */}
@@ -465,67 +450,36 @@ export default function AdminSiswaPage() {
       {activeTab === 'rekap' && (
         <div className="space-y-6">
           {/* Summary Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Total Siswa Aktif
-                  </p>
-                  <p className="text-2xl font-bold text-white mt-1">{totalSiswa}</p>
-                </div>
-                <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                  <Users className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Kandidat ekspedisi Medan Operasi</p>
-            </Card>
-
-            <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Rata-rata Jasmani
-                  </p>
-                  <p className="text-2xl font-bold text-emerald-400 mt-1">{avgJasmani}%</p>
-                </div>
-                <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
-                  <Activity className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Target kelulusan: min. 80%</p>
-            </Card>
-
-            <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Rata-rata Post-Test
-                  </p>
-                  <p className="text-2xl font-bold text-amber-400 mt-1">{avgPostTest} / 100</p>
-                </div>
-                <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
-                  <BookOpen className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Target passing grade: min. 75</p>
-            </Card>
-
-            <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Kandidat Siap Lolos
-                  </p>
-                  <p className="text-2xl font-bold text-indigo-400 mt-1">{readyToPass}</p>
-                </div>
-                <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Seluruh indikator prasyarat terpenuhi</p>
-            </Card>
-          </div>
+          <StatGrid columns={4}>
+            <StatCard
+              icon={Users}
+              label="Total Siswa Aktif"
+              value={totalSiswa}
+              subtext="Kandidat ekspedisi"
+              color="emerald"
+            />
+            <StatCard
+              icon={Activity}
+              label="Rata-rata Jasmani"
+              value={`${avgJasmani}%`}
+              subtext="Target: min. 80%"
+              color="blue"
+            />
+            <StatCard
+              icon={BookOpen}
+              label="Rata-rata Post-Test"
+              value={`${avgPostTest} / 100`}
+              subtext="Target: min. 75"
+              color="amber"
+            />
+            <StatCard
+              icon={ShieldCheck}
+              label="Kandidat Siap Lolos"
+              value={readyToPass}
+              subtext="Prasyarat terpenuhi"
+              color="purple"
+            />
+          </StatGrid>
 
           {/* Search & Filters */}
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">

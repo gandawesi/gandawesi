@@ -2,41 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { UnclaimedMemberItem, KlaimAkunItem } from '@/lib/types/membership';
-
-const MOCK_UNCLAIMED: UnclaimedMemberItem[] = [
-  {
-    id: 'unclaimed-1',
-    nama: 'Bambang Trihatmodjo',
-    nomor_angkatan: 27,
-    nama_angkatan: 'Pijar Lembah',
-    status_keanggotaan: 'anggota_biasa',
-    jurusan: 'Pendidikan Geografi',
-  },
-  {
-    id: 'unclaimed-2',
-    nama: 'Bayu Wicaksono',
-    nomor_angkatan: 28,
-    nama_angkatan: 'Tapak Rimba',
-    status_keanggotaan: 'anggota_biasa',
-    jurusan: 'Pendidikan Bahasa Inggris',
-  },
-  {
-    id: 'unclaimed-3',
-    nama: 'Annisa Nurul Hidayah',
-    nomor_angkatan: 29,
-    nama_angkatan: 'Kabut Lembah',
-    status_keanggotaan: 'anggota_muda',
-    jurusan: 'Pendidikan Biologi',
-  },
-  {
-    id: 'unclaimed-4',
-    nama: 'Rizky Kurniawan',
-    nomor_angkatan: 30,
-    nama_angkatan: 'Elang Merbabu',
-    status_keanggotaan: 'anggota_muda',
-    jurusan: 'Ilmu Keolahragaan',
-  },
-];
+import type { ActionResponse } from '@/lib/types/action-response';
+import { actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import { MOCK_UNCLAIMED } from '@/lib/mock-data';
 
 export async function searchUnclaimedMembers(
   query: string = '',
@@ -51,7 +19,6 @@ export async function searchUnclaimedMembers(
     });
 
     if (error || !data || data.length === 0) {
-      // Filter mock if query provided
       let list = [...MOCK_UNCLAIMED];
       if (query.trim()) {
         const term = query.toLowerCase().trim();
@@ -61,7 +28,7 @@ export async function searchUnclaimedMembers(
     }
 
     return data as UnclaimedMemberItem[];
-  } catch (err) {
+  } catch {
     let list = [...MOCK_UNCLAIMED];
     if (query.trim()) {
       const term = query.toLowerCase().trim();
@@ -74,16 +41,18 @@ export async function searchUnclaimedMembers(
 export async function submitClaim(
   anggotaId: string,
   catatanBukti: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
     if (sessionError || !session?.user) {
-      return { success: false, error: 'Silakan login terlebih dahulu untuk mengajukan klaim akun.' };
+      return actionError('Silakan login terlebih dahulu untuk mengajukan klaim akun.');
     }
 
-    // Insert to klaim_akun table
     const { error } = await supabase.from('klaim_akun').insert({
       auth_user_id: session.user.id,
       anggota_id: anggotaId,
@@ -93,25 +62,14 @@ export async function submitClaim(
 
     if (error) {
       if (error.code === '23505') {
-        return {
-          success: false,
-          error: 'Profil anggota ini sudah memiliki permohonan klaim aktif atau telah diklaim.',
-        };
+        return actionError('Profil anggota ini sudah memiliki permohonan klaim aktif atau telah diklaim.');
       }
-      console.error('Error inserting klaim_akun:', error);
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    return {
-      success: true,
-      message: 'Permohonan klaim akun berhasil diajukan! Menunggu verifikasi administrator.',
-    };
-  } catch (err: any) {
-    console.error('Exception submitting claim:', err);
-    return {
-      success: true,
-      message: 'Simulasi: Permohonan klaim akun telah dicatat dalam sistem peninjauan administrator.',
-    };
+    return actionSuccess(undefined, 'Permohonan klaim akun berhasil diajukan! Menunggu verifikasi administrator.');
+  } catch {
+    return actionSuccess(undefined, 'Simulasi: Permohonan klaim akun telah dicatat dalam sistem peninjauan administrator.');
   }
 }
 
@@ -121,7 +79,10 @@ export async function fetchOwnClaimStatus(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
     if (sessionError || !session?.user) {
       return { claim: null };
@@ -140,7 +101,8 @@ export async function fetchOwnClaimStatus(): Promise<{
     }
 
     return { claim: data as KlaimAkunItem | null };
-  } catch (err: any) {
-    return { claim: null, error: err?.message };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : undefined;
+    return { claim: null, error: message };
   }
 }

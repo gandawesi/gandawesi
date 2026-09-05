@@ -6,6 +6,10 @@ import { USER_ROLE_LABELS, FunctionalRole } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Alert } from '@/components/ui/Alert';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import {
   ShieldCheck,
   Plus,
@@ -95,49 +99,37 @@ export default function AdminRolesPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+      <PageHeader
+        title="Kelola Role & Kewenangan Anggota"
+        description="Atur mandat fungsional kepengurusan (Ketua, Dewan Pengurus, Panitia Kaderisasi, Danlat) secara temporal"
+        badge={
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
-            <span>Tata Kelola Hak Akses</span>
-          </div>
-          <h1 className="text-2xl font-extrabold text-stone-900 dark:text-white">
-            Kelola Role & Kewenangan Anggota
-          </h1>
-          <p className="text-xs text-stone-500 mt-1">
-            Atur mandat fungsional kepengurusan (Ketua, Dewan Pengurus, Panitia Kaderisasi, Danlat) secara temporal
-          </p>
-        </div>
-
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => {
-            if (members.length > 0) setSelectedMemberId(members[0].id);
-            setAssignModalOpen(true);
-          }}
-          className="shrink-0"
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          Tambah Role Anggota
-        </Button>
-      </div>
+            Tata Kelola Hak Akses
+          </span>
+        }
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              if (members.length > 0) setSelectedMemberId(members[0].id);
+              setAssignModalOpen(true);
+            }}
+            className="shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            Tambah Role Anggota
+          </Button>
+        }
+      />
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
-          ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Filter / Search */}
@@ -245,101 +237,90 @@ export default function AdminRolesPage() {
       )}
 
       {/* Modal Dialog: Assign Role */}
-      {assignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <Card className="max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
-              <h3 className="text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-                Tetapkan Role Fungsional
-              </h3>
-              <button
-                type="button"
-                onClick={() => setAssignModalOpen(false)}
-                className="text-stone-400 hover:text-stone-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        title="Tetapkan Role Fungsional"
+        description="Pilih kewenangan dan periode aktif anggota."
+        maxWidth="md"
+      >
+        <form onSubmit={handleAssignRole} className="space-y-3.5 text-xs">
+          <div>
+            <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+              Pilih Anggota
+            </label>
+            <select
+              value={selectedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+              className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              required
+            >
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nama} ({m.nia || m.status_keanggotaan})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+              Pilih Kewenangan / Role
+            </label>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value as FunctionalRole)}
+              className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+            >
+              {Object.entries(USER_ROLE_LABELS).map(([roleKey, label]) => (
+                <option key={roleKey} value={roleKey}>
+                  {label} ({roleKey})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Periode Mulai
+              </label>
+              <input
+                type="date"
+                value={periodeMulai}
+                onChange={(e) => setPeriodeMulai(e.target.value)}
+                required
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
             </div>
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Periode Selesai (Opsional)
+              </label>
+              <input
+                type="date"
+                value={periodeSelesai}
+                onChange={(e) => setPeriodeSelesai(e.target.value)}
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
+            </div>
+          </div>
 
-            <form onSubmit={handleAssignRole} className="space-y-3.5 text-xs">
-              <div>
-                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                  Pilih Anggota
-                </label>
-                <select
-                  value={selectedMemberId}
-                  onChange={(e) => setSelectedMemberId(e.target.value)}
-                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                  required
-                >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nama} ({m.nia || m.status_keanggotaan})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                  Pilih Kewenangan / Role
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as FunctionalRole)}
-                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                >
-                  {Object.entries(USER_ROLE_LABELS).map(([roleKey, label]) => (
-                    <option key={roleKey} value={roleKey}>
-                      {label} ({roleKey})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                    Periode Mulai
-                  </label>
-                  <input
-                    type="date"
-                    value={periodeMulai}
-                    onChange={(e) => setPeriodeMulai(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                    Periode Selesai (Opsional)
-                  </label>
-                  <input
-                    type="date"
-                    value={periodeSelesai}
-                    onChange={(e) => setPeriodeSelesai(e.target.value)}
-                    className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-stone-100 dark:border-stone-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAssignModalOpen(false)}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" size="sm" disabled={processingId === 'assign'}>
-                  {processingId === 'assign' ? 'Menyimpan...' : 'Simpan Role'}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-stone-100 dark:border-stone-800">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAssignModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button type="submit" size="sm" disabled={processingId === 'assign'}>
+              {processingId === 'assign' ? 'Menyimpan...' : 'Simpan Role'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

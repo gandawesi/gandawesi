@@ -2,13 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import {
   ShieldCheck,
-  UserCheck,
   Award,
   Compass,
   ShieldAlert,
   ArrowRight,
   ClipboardList,
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function AdminApprovalHubPage() {
   const approvalModules = [
@@ -51,14 +51,10 @@ export default function AdminApprovalHubPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div>
-        <h1 className="text-2xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
-          Pusat Persetujuan & Alur Kaderisasi
-        </h1>
-        <p className="text-xs md:text-sm text-stone-500 mt-1">
-          Persetujuan tahapan anggota telah terintegrasi langsung pada masing-masing modul jenjang kaderisasi di bawah ini:
-        </p>
-      </div>
+      <PageHeader
+        title="Pusat Persetujuan & Alur Kaderisasi"
+        description="Persetujuan tahapan anggota telah terintegrasi langsung pada masing-masing modul jenjang kaderisasi di bawah ini:"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {approvalModules.map((item) => {

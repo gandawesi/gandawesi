@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Alert } from '@/components/ui/Alert';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import {
   UserCheck,
   CheckCircle2,
@@ -83,53 +87,40 @@ export default function AdminKlaimPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+      <PageHeader
+        title="Verifikasi Klaim Akun Anggota"
+        description="Validasi permohonan anggota lama yang menghubungkan email Google mereka ke database buku induk"
+        badge={
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
             <Shield className="w-4 h-4" />
-            <span>Panel Verifikasi Pengurus</span>
+            Panel Verifikasi Pengurus
+          </span>
+        }
+        action={
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs">
+            {(['all', 'menunggu', 'disetujui', 'ditolak'] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setFilterStatus(st)}
+                className={`px-3 py-1.5 rounded-lg font-medium capitalize transition-all cursor-pointer ${
+                  filterStatus === st
+                    ? 'bg-white dark:bg-forest-900 text-stone-900 dark:text-white shadow-xs'
+                    : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
+                }`}
+              >
+                {st === 'all' ? 'Semua' : st}
+              </button>
+            ))}
           </div>
-          <h1 className="text-2xl font-extrabold text-stone-900 dark:text-white">
-            Verifikasi Klaim Akun Anggota
-          </h1>
-          <p className="text-xs text-stone-500 mt-1">
-            Validasi permohonan anggota lama yang menghubungkan email Google mereka ke database buku induk
-          </p>
-        </div>
-
-        {/* Filter buttons */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs">
-          {(['all', 'menunggu', 'disetujui', 'ditolak'] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setFilterStatus(st)}
-              className={`px-3 py-1.5 rounded-lg font-medium capitalize transition-all cursor-pointer ${
-                filterStatus === st
-                  ? 'bg-white dark:bg-forest-900 text-stone-900 dark:text-white shadow-xs'
-                  : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-              }`}
-            >
-              {st === 'all' ? 'Semua' : st}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {feedback && (
-        <div
-          className={`p-4 rounded-2xl border flex items-center gap-3 text-xs font-semibold ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
-          ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
-          )}
-          <span>{feedback.text}</span>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Claims List */}
@@ -139,17 +130,11 @@ export default function AdminKlaimPage() {
           <p className="text-xs text-stone-500">Memuat daftar klaim akun...</p>
         </div>
       ) : filteredClaims.length === 0 ? (
-        <Card className="p-12 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-400">
-            <UserCheck className="w-6 h-6" />
-          </div>
-          <h3 className="text-sm font-bold text-stone-800 dark:text-stone-200">
-            Tidak Ada Pengajuan Klaim
-          </h3>
-          <p className="text-xs text-stone-500 max-w-sm">
-            Saat ini tidak ada permohonan klaim akun dengan filter &quot;{filterStatus}&quot;.
-          </p>
-        </Card>
+        <EmptyState
+          icon={UserCheck}
+          title="Tidak Ada Pengajuan Klaim"
+          description={`Saat ini tidak ada permohonan klaim akun dengan filter "${filterStatus}".`}
+        />
       ) : (
         <div className="space-y-4">
           {filteredClaims.map((claim) => (
@@ -251,56 +236,54 @@ export default function AdminKlaimPage() {
       )}
 
       {/* Modal Dialog for Rejecting Claim */}
-      {rejectingClaim && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <Card className="max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 className="text-base font-bold text-stone-900 dark:text-white">
-              Tolak Klaim Akun: {rejectingClaim.anggota?.nama}
-            </h3>
-            <p className="text-xs text-stone-500">
-              Berikan alasan penolakan agar pemohon dapat memperbaiki data atau mengajukan konfirmasi ulang.
-            </p>
+      <Modal
+        isOpen={!!rejectingClaim}
+        onClose={() => {
+          setRejectingClaim(null);
+          setRejectionReason('');
+        }}
+        title={`Tolak Klaim Akun: ${rejectingClaim?.anggota?.nama || ''}`}
+        description="Berikan alasan penolakan agar pemohon dapat memperbaiki data atau mengajukan konfirmasi ulang."
+        maxWidth="md"
+      >
+        <form onSubmit={handleRejectSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+              Alasan Penolakan
+            </label>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              required
+              rows={3}
+              placeholder="Contoh: NIM tidak sesuai dengan buku induk, atau akun terdeteksi duplikat..."
+              className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-rose-500/40"
+            />
+          </div>
 
-            <form onSubmit={handleRejectSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                  Alasan Penolakan
-                </label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  required
-                  rows={3}
-                  placeholder="Contoh: NIM tidak sesuai dengan buku induk, atau akun terdeteksi duplikat..."
-                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-rose-500/40"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setRejectingClaim(null);
-                    setRejectionReason('');
-                  }}
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="bg-rose-600 hover:bg-rose-700 text-white"
-                  disabled={processingId === rejectingClaim.id}
-                >
-                  {processingId === rejectingClaim.id ? 'Menyimpan...' : 'Konfirmasi Tolak'}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+          <div className="flex items-center justify-end gap-2.5 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setRejectingClaim(null);
+                setRejectionReason('');
+              }}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+              disabled={processingId === rejectingClaim?.id}
+            >
+              {processingId === rejectingClaim?.id ? 'Menyimpan...' : 'Konfirmasi Tolak'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

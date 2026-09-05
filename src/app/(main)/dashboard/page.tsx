@@ -30,6 +30,8 @@ import {
   Building,
 } from 'lucide-react';
 import { DashboardAnalytics, getDashboardAnalytics } from '@/lib/actions/dashboard';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { formatRupiah } from '@/lib/utils/format';
 
 function DashboardContent() {
   const { authUser, profile, isAdmin, isPanitiaOrAdmin, isAnggotaAktif } = useAuth();
@@ -138,79 +140,36 @@ function DashboardContent() {
       </div>
 
       {/* KPI Overview Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Anggota */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-              Total Keanggotaan
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100">
-              {stats.keanggotaan.total} <span className="text-xs font-normal text-stone-400">jiwa</span>
-            </p>
-            <p className="text-[11px] text-forest-600 dark:text-forest-400 font-semibold flex items-center gap-1">
-              <Users className="w-3 h-3" /> 32 Angkatan Resmi
-            </p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-forest-50 dark:bg-forest-950/60 border border-forest-100 dark:border-forest-900/60 flex items-center justify-center text-forest-700 dark:text-forest-400">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
-
-        {/* Saldo Kas */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-              Saldo Kas Organisasi
-            </p>
-            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-              Rp {Math.round(stats.keuangan.saldo_kas / 1000).toLocaleString('id-ID')}k
-            </p>
-            <p className="text-[11px] text-stone-400 font-medium">
-              Masuk: Rp {Math.round(stats.keuangan.kas_masuk / 1000)}k
-            </p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-            <Wallet className="w-6 h-6" />
-          </div>
-        </div>
-
-        {/* Kepatuhan Iuran */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-              Kepatuhan Iuran
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100">
-              {stats.keuangan.iuran_lunas_pct}%
-            </p>
-            <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-              Tunggakan: Rp {stats.keuangan.total_tunggakan.toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-400">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-        </div>
-
-        {/* Operasional Logistik */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-              Operasional Lapangan
-            </p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100">
-              {stats.operasional.event_aktif} <span className="text-xs font-normal text-stone-400">Event</span>
-            </p>
-            <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
-              {stats.operasional.alat_sedang_dipinjam} Alat Sedang Dipinjam
-            </p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/60 flex items-center justify-center text-purple-700 dark:text-purple-400">
-            <Package className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Users}
+          label="Total Keanggotaan"
+          value={stats.keanggotaan.total}
+          subtext="jiwa"
+          color="forest"
+        />
+        <StatCard
+          icon={Wallet}
+          label="Saldo Kas Organisasi"
+          value={`Rp ${Math.round(stats.keuangan.saldo_kas / 1000).toLocaleString('id-ID')}k`}
+          subtext={`Masuk: Rp ${Math.round(stats.keuangan.kas_masuk / 1000)}k`}
+          color="emerald"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Kepatuhan Iuran"
+          value={`${stats.keuangan.iuran_lunas_pct}%`}
+          subtext={`Tunggakan: ${formatRupiah(stats.keuangan.total_tunggakan)}`}
+          color="blue"
+        />
+        <StatCard
+          icon={Package}
+          label="Operasional Lapangan"
+          value={stats.operasional.event_aktif}
+          subtext={`${stats.operasional.alat_sedang_dipinjam} Alat Dipinjam`}
+          color="purple"
+        />
+      </StatGrid>
 
       {/* Cadre Progression Breakdown (FR-4.11) */}
       <div className="rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 p-6 md:p-8 space-y-6 shadow-sm">

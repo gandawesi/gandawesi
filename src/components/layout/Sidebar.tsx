@@ -6,70 +6,19 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
-import {
-  LayoutDashboard,
-  Users,
-  Award,
-  Calendar,
-  Package,
-  Wallet,
-  FileText,
-  ShieldCheck,
-  LogOut,
-  ChevronRight,
-  ClipboardList,
-  User,
-  UserCheck,
-  FileSpreadsheet,
-  UserCog,
-  Compass,
-  BookOpen,
-  ShieldAlert,
-  Building,
-  FileCheck,
-} from 'lucide-react';
+import { ChevronRight, LogOut } from 'lucide-react';
+import { MEMBER_NAV_ITEMS, ADMIN_NAV_ITEMS } from '@/lib/navigation';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { authUser, profile, isAdmin, isPanitiaOrAdmin, hasLinkedProfile, signOut } = useAuth();
 
-  const mainNavItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/profil', label: 'Profil Saya', icon: User },
-    { href: '/dashboard/kta', label: 'KTA Digital Resmi', icon: Award },
-    { href: '/dashboard/sertifikat', label: 'Sertifikat Saya', icon: FileCheck },
-    { href: '/dashboard/direktori', label: 'Direktori Anggota', icon: Users },
-    {
-      href: '/dashboard/klaim',
-      label: 'Klaim Akun',
-      icon: UserCheck,
-      badge: !hasLinkedProfile ? 'Aktivasi' : undefined,
-    },
-    { href: '/dashboard/kaderisasi', label: 'Alur Kaderisasi', icon: Award },
-    { href: '/dashboard/ppnia', label: 'Program PPNIA', icon: BookOpen },
-    { href: '/dashboard/event', label: 'Kalender Kegiatan', icon: Calendar },
-    { href: '/dashboard/inventaris', label: 'Peminjaman Alat', icon: Package },
-    { href: '/dashboard/artikel', label: 'Artikel Saya', icon: FileText },
-    { href: '/dashboard/iuran', label: 'Status Iuran', icon: Wallet },
-  ];
-
-  const adminNavItems = [
-    { href: '/dashboard/admin/klaim', label: 'Verifikasi Klaim', icon: UserCheck },
-    { href: '/dashboard/admin/import', label: 'Impor Data CSV', icon: FileSpreadsheet },
-    { href: '/dashboard/admin/roles', label: 'Kelola Hak Akses', icon: UserCog },
-    { href: '/dashboard/admin/calon-siswa', label: 'Calon Anggota', icon: ClipboardList },
-    { href: '/dashboard/admin/siswa', label: 'Tahap Siswa (DP)', icon: Award },
-    { href: '/dashboard/admin/medan-operasi', label: 'Medan Operasi (Danlat)', icon: Compass },
-    { href: '/dashboard/admin/ppnia', label: 'PPNIA (Dewan Pengurus)', icon: ShieldAlert },
-    { href: '/dashboard/admin/nia', label: 'Sidang Akhir & NIA (DP)', icon: Award },
-    { href: '/dashboard/admin/governance', label: 'Struktur & ALB (Governance)', icon: Building },
-    { href: '/dashboard/admin/sertifikat', label: 'Penerbitan Sertifikat', icon: FileCheck },
-    { href: '/dashboard/admin/event', label: 'Kelola Event', icon: Calendar },
-    { href: '/dashboard/admin/inventaris', label: 'Inventaris & Logistik', icon: Package },
-    { href: '/dashboard/admin/approval', label: 'Persetujuan & Tahap', icon: ShieldCheck },
-    { href: '/dashboard/admin/keuangan', label: 'Buku Kas & RAB', icon: Wallet },
-    { href: '/dashboard/admin/artikel', label: 'Kurasi Artikel', icon: FileText },
-  ];
+  const mainNavItems = MEMBER_NAV_ITEMS.map((item) =>
+    item.href === '/dashboard/klaim'
+      ? { ...item, badge: !hasLinkedProfile ? 'Aktivasi' : undefined }
+      : item
+  );
+  const adminNavItems = ADMIN_NAV_ITEMS;
 
   const isDashboardRoute = pathname.startsWith('/dashboard');
 

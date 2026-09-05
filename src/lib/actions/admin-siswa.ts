@@ -6,6 +6,8 @@ import type {
   PresensiSiswaItem,
   RekapKelulusanSiswaItem,
 } from '@/lib/types/siswa';
+import type { ActionResponse } from '@/lib/types/action-response';
+import { getCurrentMemberId, actionSuccess, actionError } from '@/lib/actions/auth-helper';
 
 const MOCK_SESI_LIST: SesiKegiatanItem[] = [
   {
@@ -355,20 +357,10 @@ export async function decideKelulusanSiswa(
   anggotaId: string,
   decision: 'lolos' | 'gugur',
   catatan: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let approverAnggotaId: string | null = null;
-    if (session?.user) {
-      const { data: appProfile } = await supabase
-        .from('anggota')
-        .select('id')
-        .eq('auth_user_id', session.user.id)
-        .maybeSingle();
-      if (appProfile) approverAnggotaId = appProfile.id;
-    }
+    const approverAnggotaId = await getCurrentMemberId(supabase);
 
     // Insert to riwayat_tahap:
     // When decision is 'lolos' and tahap is 'siswa', trigger trg_sync_status_kaderisasi
@@ -383,7 +375,7 @@ export async function decideKelulusanSiswa(
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
     const message =
@@ -391,22 +383,21 @@ export async function decideKelulusanSiswa(
         ? 'Siswa dinyatakan LOLOS dan resmi berstatus MEDAN OPERASI!'
         : 'Siswa dinyatakan GUGUR dari kurikulum tahap ini. Catatan tersimpan di sistem.';
 
-    return { success: true, message };
-  } catch (err: any) {
-    return {
-      success: true,
-      message:
-        decision === 'lolos'
-          ? 'Simulasi: Siswa dinyatakan LOLOS ke Medan Operasi oleh Ketua DP.'
-          : 'Simulasi: Keputusan Gugur telah dicatat.',
-    };
+    return actionSuccess(undefined, message);
+  } catch {
+    return actionSuccess(
+      undefined,
+      decision === 'lolos'
+        ? 'Simulasi: Siswa dinyatakan LOLOS ke Medan Operasi oleh Ketua DP.'
+        : 'Simulasi: Keputusan Gugur telah dicatat.'
+    );
   }
 }
 
 export async function createMateriWithSoal(
   materiPayload: { judul: string; angkatan_id?: string | null; tanggal: string },
   soalList: { pertanyaan: string; pilihan: string[]; jawaban_benar: string }[]
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
 
@@ -422,7 +413,7 @@ export async function createMateriWithSoal(
       .single();
 
     if (matError || !newMateri) {
-      return { success: false, error: matError?.message || 'Gagal membuat modul materi.' };
+      return actionError(matError?.message || 'Gagal membuat modul materi.');
     }
 
     // 2. Insert each question and its secret answer key
@@ -446,8 +437,8 @@ export async function createMateriWithSoal(
       }
     }
 
-    return { success: true, message: 'Modul materi beserta soal dan kunci jawaban aman berhasil dibuat!' };
-  } catch (err: any) {
-    return { success: true, message: 'Simulasi: Materi dan kuis post-test berhasil dibuat.' };
+    return actionSuccess(undefined, 'Modul materi beserta soal dan kunci jawaban aman berhasil dibuat!');
+  } catch {
+    return actionSuccess(undefined, 'Simulasi: Materi dan kuis post-test berhasil dibuat.');
   }
 }

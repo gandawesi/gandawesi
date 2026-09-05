@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import {
+import type {
   AlatItem,
   PeminjamanAlatItem,
   CreateAlatPayload,
@@ -10,174 +10,17 @@ import {
   AjukanPeminjamanPayload,
   PeminjamanStatus,
 } from '@/lib/types/inventaris';
+import type { ActionResponse } from '@/lib/types/action-response';
+import { getAuthenticatedMember, actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import { MOCK_ALAT, MOCK_PEMINJAMAN } from '@/lib/mock-data';
 
-// Initial fallback mock data for testing & offline mode
-let MOCK_ALAT: AlatItem[] = [
-  {
-    id: 'alt-1',
-    nama_alat: 'Tali Kernmantle Dinamis 10.5mm 50m (Beal)',
-    kategori: 'Tali & Webbing',
-    kondisi: 'baik',
-    stok: 4,
-  },
-  {
-    id: 'alt-2',
-    nama_alat: 'Tali Kernmantle Statis 11mm 100m (Tendon)',
-    kategori: 'Tali & Webbing',
-    kondisi: 'baik',
-    stok: 2,
-  },
-  {
-    id: 'alt-3',
-    nama_alat: 'Sit Harness Petzl Corax (Size M-L)',
-    kategori: 'Harness & Carabiner',
-    kondisi: 'baik',
-    stok: 8,
-  },
-  {
-    id: 'alt-4',
-    nama_alat: 'Carabiner Screwgate D-Shape (Black Diamond)',
-    kategori: 'Harness & Carabiner',
-    kondisi: 'baik',
-    stok: 15,
-  },
-  {
-    id: 'alt-5',
-    nama_alat: 'Descender Petzl Simple (Caving/SRT)',
-    kategori: 'Harness & Carabiner',
-    kondisi: 'baik',
-    stok: 6,
-  },
-  {
-    id: 'alt-6',
-    nama_alat: 'Tenda Dome Kapasitas 4 Orang (Consina Magnum 4)',
-    kategori: 'Tenda & Camp',
-    kondisi: 'baik',
-    stok: 5,
-  },
-  {
-    id: 'alt-7',
-    nama_alat: 'Tenda Dome Kapasitas 2 Orang (Eiger Shira 2)',
-    kategori: 'Tenda & Camp',
-    kondisi: 'rusak_ringan',
-    stok: 3,
-  },
-  {
-    id: 'alt-8',
-    nama_alat: 'Kompas Bidik Prisma Suunto KB-14',
-    kategori: 'Navigasi & Kompas',
-    kondisi: 'baik',
-    stok: 5,
-  },
-  {
-    id: 'alt-9',
-    nama_alat: 'GPS Garmin GPSMAP 64s Handheld',
-    kategori: 'Navigasi & Kompas',
-    kondisi: 'baik',
-    stok: 2,
-  },
-  {
-    id: 'alt-10',
-    nama_alat: 'Kompor Lapangan Windproof + Selang Gas',
-    kategori: 'Alat Masak & Logistik',
-    kondisi: 'baik',
-    stok: 7,
-  },
-  {
-    id: 'alt-11',
-    nama_alat: 'Nesting DS-308 Camping Cookware 3-4 Orang',
-    kategori: 'Alat Masak & Logistik',
-    kondisi: 'baik',
-    stok: 6,
-  },
-  {
-    id: 'alt-12',
-    nama_alat: 'Helm Panjat Petzl Elios White',
-    kategori: 'P3K & Safety',
-    kondisi: 'rusak_ringan',
-    stok: 4,
-  },
-];
+// Mutable runtime state for mock fallback in offline / maintenance mode
+let mockAlatStore: AlatItem[] = [...MOCK_ALAT];
+let mockPeminjamanStore: PeminjamanAlatItem[] = [...MOCK_PEMINJAMAN];
 
-let MOCK_PEMINJAMAN: PeminjamanAlatItem[] = [
-  {
-    id: 'pinjam-1',
-    anggota_id: 'am-1',
-    alat_id: 'alt-6',
-    jumlah: 2,
-    tanggal_pinjam: '2025-06-15',
-    tanggal_kembali: '2025-06-18',
-    status: 'dipinjam',
-    approved_by: 'am-admin',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nim: '2304521',
-    anggota_nia: 'GW.32.235.GW',
-    alat_nama: 'Tenda Dome Kapasitas 4 Orang (Consina Magnum 4)',
-    alat_kategori: 'Tenda & Camp',
-    approved_by_nama: 'Bambang Trihatmodjo',
-  },
-  {
-    id: 'pinjam-2',
-    anggota_id: 'am-2',
-    alat_id: 'alt-1',
-    jumlah: 1,
-    tanggal_pinjam: '2025-06-20',
-    tanggal_kembali: '2025-06-22',
-    status: 'disetujui',
-    approved_by: 'am-admin',
-    anggota_nama: 'Aditya Pratama Ramadhan',
-    anggota_nim: '2304522',
-    anggota_nia: 'GW.32.236.GW',
-    alat_nama: 'Tali Kernmantle Dinamis 10.5mm 50m (Beal)',
-    alat_kategori: 'Tali & Webbing',
-    approved_by_nama: 'Bambang Trihatmodjo',
-  },
-  {
-    id: 'pinjam-3',
-    anggota_id: 'am-3',
-    alat_id: 'alt-8',
-    jumlah: 2,
-    tanggal_pinjam: '2025-06-25',
-    tanggal_kembali: '2025-06-27',
-    status: 'diajukan',
-    approved_by: null,
-    anggota_nama: 'Farhan Dwi Cahyo',
-    anggota_nim: '2304523',
-    anggota_nia: 'GW.32.237.GW',
-    alat_nama: 'Kompas Bidik Prisma Suunto KB-14',
-    alat_kategori: 'Navigasi & Kompas',
-  },
-  {
-    id: 'pinjam-4',
-    anggota_id: 'am-1',
-    alat_id: 'alt-3',
-    jumlah: 2,
-    tanggal_pinjam: '2025-05-10',
-    tanggal_kembali: '2025-05-13',
-    status: 'dikembalikan',
-    approved_by: 'am-admin',
-    anggota_nama: 'Alya Putri Salsabila',
-    anggota_nim: '2304521',
-    anggota_nia: 'GW.32.235.GW',
-    alat_nama: 'Sit Harness Petzl Corax (Size M-L)',
-    alat_kategori: 'Harness & Carabiner',
-    approved_by_nama: 'Bambang Trihatmodjo',
-  },
-];
-
-async function getCurrentAnggota(supabase: any) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.user) return null;
-
-  const { data: anggota } = await supabase
-    .from('anggota')
-    .select('id, nama, nim, nia, is_admin')
-    .eq('auth_user_id', session.user.id)
-    .single();
-
-  return anggota || null;
+function revalidateInventarisPaths() {
+  revalidatePath('/dashboard/inventaris');
+  revalidatePath('/dashboard/admin/inventaris');
 }
 
 // ============================================================
@@ -196,26 +39,24 @@ export async function getAlatList(kategori?: string): Promise<AlatItem[]> {
 
     if (error || !data || data.length === 0) {
       if (kategori && kategori !== 'all') {
-        return MOCK_ALAT.filter((a) => a.kategori === kategori);
+        return mockAlatStore.filter((a) => a.kategori === kategori);
       }
-      return MOCK_ALAT;
+      return mockAlatStore;
     }
 
     return data;
   } catch {
     if (kategori && kategori !== 'all') {
-      return MOCK_ALAT.filter((a) => a.kategori === kategori);
+      return mockAlatStore.filter((a) => a.kategori === kategori);
     }
-    return MOCK_ALAT;
+    return mockAlatStore;
   }
 }
 
 // ============================================================
 // 2. CREATE ALAT (ADMIN / LOGISTIK)
 // ============================================================
-export async function createAlat(
-  payload: CreateAlatPayload
-): Promise<{ success: boolean; data?: AlatItem; error?: string }> {
+export async function createAlat(payload: CreateAlatPayload): Promise<ActionResponse<AlatItem>> {
   try {
     const supabase = await createClient();
 
@@ -234,26 +75,22 @@ export async function createAlat(
         id: `alt-${Date.now()}`,
         ...insertData,
       };
-      MOCK_ALAT.push(newMock);
-      revalidatePath('/dashboard/inventaris');
-      revalidatePath('/dashboard/admin/inventaris');
-      return { success: true, data: newMock };
+      mockAlatStore.push(newMock);
+      revalidateInventarisPaths();
+      return actionSuccess(newMock);
     }
 
-    revalidatePath('/dashboard/inventaris');
-    revalidatePath('/dashboard/admin/inventaris');
-    return { success: true, data };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Gagal menambahkan alat' };
+    revalidateInventarisPaths();
+    return actionSuccess(data);
+  } catch (err: unknown) {
+    return actionError(err, 'Gagal menambahkan alat');
   }
 }
 
 // ============================================================
 // 3. UPDATE ALAT (ADMIN / LOGISTIK)
 // ============================================================
-export async function updateAlat(
-  payload: UpdateAlatPayload
-): Promise<{ success: boolean; data?: AlatItem; error?: string }> {
+export async function updateAlat(payload: UpdateAlatPayload): Promise<ActionResponse<AlatItem>> {
   try {
     const supabase = await createClient();
 
@@ -272,45 +109,41 @@ export async function updateAlat(
 
     if (error) {
       console.warn('DB updateAlat fallback:', error.message);
-      const idx = MOCK_ALAT.findIndex((a) => a.id === payload.id);
+      const idx = mockAlatStore.findIndex((a) => a.id === payload.id);
       if (idx !== -1) {
-        MOCK_ALAT[idx] = { ...MOCK_ALAT[idx], ...updateData };
-        revalidatePath('/dashboard/inventaris');
-        revalidatePath('/dashboard/admin/inventaris');
-        return { success: true, data: MOCK_ALAT[idx] };
+        mockAlatStore[idx] = { ...mockAlatStore[idx], ...updateData };
+        revalidateInventarisPaths();
+        return actionSuccess(mockAlatStore[idx]);
       }
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    revalidatePath('/dashboard/inventaris');
-    revalidatePath('/dashboard/admin/inventaris');
-    return { success: true, data };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Gagal memperbarui alat' };
+    revalidateInventarisPaths();
+    return actionSuccess(data);
+  } catch (err: unknown) {
+    return actionError(err, 'Gagal memperbarui alat');
   }
 }
 
 // ============================================================
 // 4. DELETE ALAT (ADMIN / LOGISTIK)
 // ============================================================
-export async function deleteAlat(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteAlat(id: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.from('alat').delete().eq('id', id);
 
     if (error) {
       console.warn('DB deleteAlat fallback:', error.message);
-      MOCK_ALAT = MOCK_ALAT.filter((a) => a.id !== id);
-      revalidatePath('/dashboard/inventaris');
-      revalidatePath('/dashboard/admin/inventaris');
-      return { success: true };
+      mockAlatStore = mockAlatStore.filter((a) => a.id !== id);
+      revalidateInventarisPaths();
+      return actionSuccess();
     }
 
-    revalidatePath('/dashboard/inventaris');
-    revalidatePath('/dashboard/admin/inventaris');
-    return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Gagal menghapus alat' };
+    revalidateInventarisPaths();
+    return actionSuccess();
+  } catch (err: unknown) {
+    return actionError(err, 'Gagal menghapus alat');
   }
 }
 
@@ -355,9 +188,9 @@ export async function getPeminjamanList(status?: string): Promise<PeminjamanAlat
 
     if (error || !data || data.length === 0) {
       if (status && status !== 'all') {
-        return MOCK_PEMINJAMAN.filter((p) => p.status === status);
+        return mockPeminjamanStore.filter((p) => p.status === status);
       }
-      return MOCK_PEMINJAMAN;
+      return mockPeminjamanStore;
     }
 
     return data.map((item: any) => ({
@@ -378,9 +211,9 @@ export async function getPeminjamanList(status?: string): Promise<PeminjamanAlat
     }));
   } catch {
     if (status && status !== 'all') {
-      return MOCK_PEMINJAMAN.filter((p) => p.status === status);
+      return mockPeminjamanStore.filter((p) => p.status === status);
     }
-    return MOCK_PEMINJAMAN;
+    return mockPeminjamanStore;
   }
 }
 
@@ -390,10 +223,10 @@ export async function getPeminjamanList(status?: string): Promise<PeminjamanAlat
 export async function getMyPeminjaman(): Promise<PeminjamanAlatItem[]> {
   try {
     const supabase = await createClient();
-    const current = await getCurrentAnggota(supabase);
+    const { member } = await getAuthenticatedMember(supabase);
 
-    if (!current) {
-      return MOCK_PEMINJAMAN.filter((p) => p.anggota_id === 'am-1' || p.anggota_id === 'am-curr');
+    if (!member) {
+      return mockPeminjamanStore.filter((p) => p.anggota_id === 'am-1' || p.anggota_id === 'am-curr');
     }
 
     const { data, error } = await supabase
@@ -417,11 +250,11 @@ export async function getMyPeminjaman(): Promise<PeminjamanAlatItem[]> {
           nama
         )
       `)
-      .eq('anggota_id', current.id)
+      .eq('anggota_id', member.id)
       .order('tanggal_pinjam', { ascending: false });
 
     if (error || !data || data.length === 0) {
-      return MOCK_PEMINJAMAN.filter((p) => p.anggota_id === current.id || p.anggota_id === 'am-1');
+      return mockPeminjamanStore.filter((p) => p.anggota_id === member.id || p.anggota_id === 'am-1');
     }
 
     return data.map((item: any) => ({
@@ -433,15 +266,15 @@ export async function getMyPeminjaman(): Promise<PeminjamanAlatItem[]> {
       tanggal_kembali: item.tanggal_kembali,
       status: item.status,
       approved_by: item.approved_by,
-      anggota_nama: current.nama,
-      anggota_nim: current.nim,
-      anggota_nia: current.nia,
+      anggota_nama: member.nama,
+      anggota_nim: member.nim,
+      anggota_nia: member.nia,
       alat_nama: item.alat?.nama_alat || 'Alat',
       alat_kategori: item.alat?.kategori || 'Umum',
       approved_by_nama: item.approver?.nama || null,
     }));
   } catch {
-    return MOCK_PEMINJAMAN.filter((p) => p.anggota_id === 'am-1' || p.anggota_id === 'am-curr');
+    return mockPeminjamanStore.filter((p) => p.anggota_id === 'am-1' || p.anggota_id === 'am-curr');
   }
 }
 
@@ -450,27 +283,24 @@ export async function getMyPeminjaman(): Promise<PeminjamanAlatItem[]> {
 // ============================================================
 export async function ajukanPeminjaman(
   payload: AjukanPeminjamanPayload
-): Promise<{ success: boolean; data?: PeminjamanAlatItem; error?: string }> {
+): Promise<ActionResponse<PeminjamanAlatItem>> {
   try {
     const supabase = await createClient();
-    const current = await getCurrentAnggota(supabase);
+    const { member } = await getAuthenticatedMember(supabase);
 
     // Validate requested quantity
     const jumlah = Number(payload.jumlah);
     if (isNaN(jumlah) || jumlah <= 0) {
-      return { success: false, error: 'Jumlah alat yang dipinjam harus lebih dari 0' };
+      return actionError('Jumlah alat yang dipinjam harus lebih dari 0');
     }
 
-    // Check availability
-    let targetAlat = MOCK_ALAT.find((a) => a.id === payload.alat_id);
+    // Check availability in mock
+    const targetAlat = mockAlatStore.find((a) => a.id === payload.alat_id);
 
-    if (!current) {
+    if (!member) {
       // Offline fallback
       if (targetAlat && targetAlat.stok < jumlah) {
-        return {
-          success: false,
-          error: `Stok tidak mencukupi (sisa: ${targetAlat.stok} unit, diminta: ${jumlah} unit)`,
-        };
+        return actionError(`Stok tidak mencukupi (sisa: ${targetAlat.stok} unit, diminta: ${jumlah} unit)`);
       }
 
       const newPinjam: PeminjamanAlatItem = {
@@ -489,10 +319,9 @@ export async function ajukanPeminjaman(
         alat_kategori: targetAlat?.kategori || 'Umum',
       };
 
-      MOCK_PEMINJAMAN.unshift(newPinjam);
-      revalidatePath('/dashboard/inventaris');
-      revalidatePath('/dashboard/admin/inventaris');
-      return { success: true, data: newPinjam };
+      mockPeminjamanStore.unshift(newPinjam);
+      revalidateInventarisPaths();
+      return actionSuccess(newPinjam);
     }
 
     // Check DB stock
@@ -503,16 +332,13 @@ export async function ajukanPeminjaman(
       .single();
 
     if (dbAlat && dbAlat.stok < jumlah) {
-      return {
-        success: false,
-        error: `Stok alat tidak mencukupi (sisa: ${dbAlat.stok} unit, diminta: ${jumlah} unit)`,
-      };
+      return actionError(`Stok alat tidak mencukupi (sisa: ${dbAlat.stok} unit, diminta: ${jumlah} unit)`);
     }
 
     const { data, error } = await supabase
       .from('peminjaman_alat')
       .insert({
-        anggota_id: current.id,
+        anggota_id: member.id,
         alat_id: payload.alat_id,
         jumlah: jumlah,
         tanggal_pinjam: payload.tanggal_pinjam,
@@ -523,31 +349,27 @@ export async function ajukanPeminjaman(
       .single();
 
     if (error) {
-      return { success: false, error: error.message };
+      return actionError(error.message);
     }
 
-    revalidatePath('/dashboard/inventaris');
-    revalidatePath('/dashboard/admin/inventaris');
-    return {
-      success: true,
-      data: {
-        id: data.id,
-        anggota_id: current.id,
-        alat_id: payload.alat_id,
-        jumlah: jumlah,
-        tanggal_pinjam: payload.tanggal_pinjam,
-        tanggal_kembali: payload.tanggal_kembali || null,
-        status: 'diajukan',
-        approved_by: null,
-        anggota_nama: current.nama,
-        anggota_nim: current.nim,
-        anggota_nia: current.nia,
-        alat_nama: dbAlat?.nama_alat || 'Alat Lapangan',
-        alat_kategori: dbAlat?.kategori || 'Umum',
-      },
-    };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Gagal mengajukan peminjaman' };
+    revalidateInventarisPaths();
+    return actionSuccess({
+      id: data.id,
+      anggota_id: member.id,
+      alat_id: payload.alat_id,
+      jumlah: jumlah,
+      tanggal_pinjam: payload.tanggal_pinjam,
+      tanggal_kembali: payload.tanggal_kembali || null,
+      status: 'diajukan',
+      approved_by: null,
+      anggota_nama: member.nama,
+      anggota_nim: member.nim,
+      anggota_nia: member.nia,
+      alat_nama: dbAlat?.nama_alat || 'Alat Lapangan',
+      alat_kategori: dbAlat?.kategori || 'Umum',
+    });
+  } catch (err: unknown) {
+    return actionError(err, 'Gagal mengajukan peminjaman');
   }
 }
 
@@ -557,16 +379,16 @@ export async function ajukanPeminjaman(
 export async function updateStatusPeminjaman(
   peminjamanId: string,
   newStatus: PeminjamanStatus
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const current = await getCurrentAnggota(supabase);
+    const { member } = await getAuthenticatedMember(supabase);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('peminjaman_alat')
       .update({
         status: newStatus,
-        approved_by: current?.id || null,
+        approved_by: member?.id || null,
       })
       .eq('id', peminjamanId)
       .select()
@@ -574,27 +396,23 @@ export async function updateStatusPeminjaman(
 
     if (error) {
       console.warn('DB updateStatusPeminjaman fallback:', error.message);
-      // Fallback mock logic with stock adjustments
-      const pinjam = MOCK_PEMINJAMAN.find((p) => p.id === peminjamanId);
+      const pinjam = mockPeminjamanStore.find((p) => p.id === peminjamanId);
       if (pinjam) {
         const oldStatus = pinjam.status;
         pinjam.status = newStatus;
-        if (current) {
-          pinjam.approved_by = current.id;
-          pinjam.approved_by_nama = current.nama;
+        if (member) {
+          pinjam.approved_by = member.id;
+          pinjam.approved_by_nama = member.nama;
         }
 
-        const alat = MOCK_ALAT.find((a) => a.id === pinjam.alat_id);
+        const alat = mockAlatStore.find((a) => a.id === pinjam.alat_id);
         if (alat) {
-          // If moving to disetujui / dipinjam from diajukan / ditolak -> decrease stock
           if (
             (newStatus === 'disetujui' || newStatus === 'dipinjam') &&
             (oldStatus === 'diajukan' || oldStatus === 'ditolak')
           ) {
             alat.stok = Math.max(0, alat.stok - pinjam.jumlah);
-          }
-          // If returning or rejecting after previously approved -> restore stock
-          else if (
+          } else if (
             (newStatus === 'dikembalikan' || newStatus === 'ditolak') &&
             (oldStatus === 'disetujui' || oldStatus === 'dipinjam')
           ) {
@@ -604,10 +422,9 @@ export async function updateStatusPeminjaman(
       }
     }
 
-    revalidatePath('/dashboard/inventaris');
-    revalidatePath('/dashboard/admin/inventaris');
-    return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Gagal memperbarui status peminjaman' };
+    revalidateInventarisPaths();
+    return actionSuccess();
+  } catch (err: unknown) {
+    return actionError(err, 'Gagal memperbarui status peminjaman');
   }
 }

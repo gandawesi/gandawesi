@@ -2,18 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { PeriodePendaftaranItem, RegisterCalonSiswaPayload, CalonSiswaItem, TesKesehatanItem } from '@/lib/types/registration';
-
-const MOCK_ACTIVE_PERIODE: PeriodePendaftaranItem = {
-  id: 'periode-aktif-32',
-  angkatan_id: 'angkatan-32',
-  nomor_angkatan: 32,
-  nama_angkatan: 'Giri Wardhana',
-  tanggal_buka: '2025-08-01',
-  tanggal_tutup: '2025-09-30',
-  status: 'buka',
-  catatan: 'Penerimaan Calon Siswa Diklat Angkatan 32 Gandawesi FPTI UPI',
-  created_at: '2025-08-01T00:00:00Z',
-};
+import type { ActionResponse } from '@/lib/types/action-response';
+import { getAuthenticatedMember, actionSuccess, actionError } from '@/lib/actions/auth-helper';
+import { MOCK_ACTIVE_PERIODE } from '@/lib/mock-data';
 
 export async function fetchActivePeriode(): Promise<{
   periode: PeriodePendaftaranItem | null;
@@ -22,7 +13,6 @@ export async function fetchActivePeriode(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-
     const today = new Date().toISOString().split('T')[0];
 
     const { data, error } = await supabase
@@ -36,7 +26,6 @@ export async function fetchActivePeriode(): Promise<{
       .maybeSingle();
 
     if (error || !data) {
-      // Fallback to active mock registration period during maintenance
       return {
         periode: MOCK_ACTIVE_PERIODE,
         isOpen: true,
@@ -56,7 +45,7 @@ export async function fetchActivePeriode(): Promise<{
     };
 
     return { periode: item, isOpen: true };
-  } catch (err: any) {
+  } catch {
     return {
       periode: MOCK_ACTIVE_PERIODE,
       isOpen: true,
@@ -66,13 +55,16 @@ export async function fetchActivePeriode(): Promise<{
 
 export async function registerCalonSiswa(
   payload: RegisterCalonSiswaPayload
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
     if (sessionError || !session?.user) {
-      return { success: false, error: 'Silakan masuk dengan akun Google terlebih dahulu.' };
+      return actionError('Silakan masuk dengan akun Google terlebih dahulu.');
     }
 
     // Check if user already registered or has profile
@@ -83,10 +75,9 @@ export async function registerCalonSiswa(
       .maybeSingle();
 
     if (existing) {
-      return {
-        success: false,
-        error: `Akun Anda telah terdaftar sebagai ${existing.status_keanggotaan.replace('_', ' ')}. Silakan periksa portal dashboard Anda.`,
-      };
+      return actionError(
+        `Akun Anda telah terdaftar sebagai ${existing.status_keanggotaan.replace('_', ' ')}. Silakan periksa portal dashboard Anda.`
+      );
     }
 
     // Insert to anggota table as calon_siswa (matches RLS anggota_insert_self_registration)
@@ -103,41 +94,32 @@ export async function registerCalonSiswa(
         alamat: payload.alamat,
         nim: payload.nim,
         jurusan: payload.jurusan,
-        file_persetujuan_ortu: payload.file_persetujuan_ortu || null,
-        status_keanggotaan: 'calon_siswa',
         angkatan_id: payload.angkatan_id,
         periode_pendaftaran_id: payload.periode_pendaftaran_id,
-        is_admin: false,
+        status_keanggotaan: 'calon_siswa',
+        file_persetujuan_ortu: payload.file_persetujuan_ortu || null,
       })
-      .select('id')
+      .select()
       .single();
 
     if (insertError) {
-      console.error('Error inserting calon_siswa:', insertError);
-      return { success: false, error: insertError.message };
+      console.error('Error in registerCalonSiswa insert:', insertError);
+      return actionError(insertError.message);
     }
 
-    // Insert initial riwayat_tahap entry
-    if (newAnggota) {
-      await supabase.from('riwayat_tahap').insert({
-        anggota_id: newAnggota.id,
-        tahap: 'calon_siswa',
-        status: 'dalam_proses',
-        catatan: 'Pendaftaran mandiri calon anggota baru.',
-        tanggal: new Date().toISOString().split('T')[0],
-      });
-    }
+    // Create initial riwayat_tahap entry: tahap 'calon_siswa', status 'dalam_proses'
+    await supabase.from('riwayat_tahap').insert({
+      anggota_id: newAnggota.id,
+      tahap: 'calon_siswa',
+      status: 'dalam_proses',
+      catatan: 'Pendaftaran mandiri Calon Siswa diajukan.',
+      tanggal: new Date().toISOString().split('T')[0],
+    });
 
-    return {
-      success: true,
-      message: 'Pendaftaran berhasil dikirim! Selamat datang sebagai Calon Siswa Gandawesi.',
-    };
-  } catch (err: any) {
+    return actionSuccess(undefined, 'Pendaftaran berhasil dikirim! Selamat datang sebagai Calon Siswa Gandawesi.');
+  } catch (err) {
     console.warn('Simulating self-registration success:', err);
-    return {
-      success: true,
-      message: 'Pendaftaran calon siswa berhasil dicatat dalam sistem penerimaan anggota.',
-    };
+    return actionSuccess(undefined, 'Pendaftaran calon siswa berhasil dicatat dalam sistem penerimaan anggota.');
   }
 }
 
@@ -147,7 +129,10 @@ export async function fetchMyCalonSiswaStatus(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
     if (sessionError || !session?.user) {
       return { calonSiswa: null };
@@ -197,62 +182,50 @@ export async function fetchMyCalonSiswaStatus(): Promise<{
     };
 
     return { calonSiswa: result };
-  } catch (err: any) {
-    return { calonSiswa: null, error: err?.message };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : undefined;
+    return { calonSiswa: null, error: message };
   }
 }
 
-export async function submitSuratKesehatan(
-  fileUrl: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+export async function submitSuratKesehatan(fileUrl: string): Promise<ActionResponse> {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { memberId, error } = await getAuthenticatedMember(supabase);
 
-    if (!session?.user) {
-      return { success: false, error: 'Silakan login terlebih dahulu.' };
-    }
-
-    const { data: anggota } = await supabase
-      .from('anggota')
-      .select('id')
-      .eq('auth_user_id', session.user.id)
-      .maybeSingle();
-
-    if (!anggota) {
-      return { success: false, error: 'Profil anggota tidak ditemukan.' };
+    if (!memberId) {
+      return actionError(error || 'Profil anggota tidak ditemukan.');
     }
 
     // Check if record exists
     const { data: existing } = await supabase
       .from('tes_kesehatan')
       .select('id')
-      .eq('anggota_id', anggota.id)
+      .eq('anggota_id', memberId)
       .eq('jenis', 'awal')
       .maybeSingle();
+
+    const today = new Date().toISOString().split('T')[0];
 
     if (existing) {
       await supabase
         .from('tes_kesehatan')
         .update({
           file_surat_dokter: fileUrl,
-          tanggal: new Date().toISOString().split('T')[0],
+          tanggal: today,
         })
         .eq('id', existing.id);
     } else {
       await supabase.from('tes_kesehatan').insert({
-        anggota_id: anggota.id,
+        anggota_id: memberId,
         jenis: 'awal',
         file_surat_dokter: fileUrl,
-        tanggal: new Date().toISOString().split('T')[0],
+        tanggal: today,
       });
     }
 
-    return { success: true, message: 'Surat keterangan dokter berhasil diunggah!' };
-  } catch (err: any) {
-    return {
-      success: true,
-      message: 'Simulasi: Surat keterangan dokter telah tersimpan dalam berkas kesehatan Anda.',
-    };
+    return actionSuccess(undefined, 'Surat keterangan dokter berhasil diunggah!');
+  } catch {
+    return actionSuccess(undefined, 'Simulasi: Surat keterangan dokter telah tersimpan dalam berkas kesehatan Anda.');
   }
 }

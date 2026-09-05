@@ -19,21 +19,15 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
+import { PUBLIC_NAV_LINKS } from '@/lib/navigation';
+
 export function Navbar() {
   const pathname = usePathname();
   const { authUser, profile, isAdmin, isGuest, signOut, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
-  const guestNavLinks = [
-    { href: '/', label: 'Beranda' },
-    { href: '/tentang', label: 'Tentang' },
-    { href: '/struktur', label: 'Struktur' },
-    { href: '/artikel', label: 'Warta' },
-    { href: '/ekspedisi', label: 'Ekspedisi' },
-    { href: '/donasi', label: 'Sponsorship' },
-    { href: '/daftar', label: 'Pendaftaran' },
-  ];
+  const guestNavLinks = PUBLIC_NAV_LINKS;
 
   return (
     <header className="sticky top-0 z-40 w-full glass border-b border-stone-200/60 dark:border-stone-800/60 transition-colors">

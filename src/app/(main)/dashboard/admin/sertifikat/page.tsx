@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
+import { Alert } from '@/components/ui/Alert';
+import { Modal } from '@/components/ui/Modal';
 import {
   Award,
   FileCheck,
@@ -150,68 +153,37 @@ export default function AdminSertifikatPage() {
 
       {/* Notification Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
-              : 'bg-rose-950/80 text-rose-300 border border-rose-800'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-            )}
-            <span>{feedback.text}</span>
-          </div>
-          <button onClick={() => setFeedback(null)} className="text-stone-400 hover:text-white">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Total Diterbitkan</span>
-            <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
-              <FileCheck className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-stone-900 dark:text-stone-100 mt-2 font-mono">
-            {list.length}
-          </p>
-          <span className="text-[11px] text-stone-400">Piagam Resmi Tercatat</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Penerima Anggota</span>
-            <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2 font-mono">
-            {new Set(list.map((s) => s.anggota_id)).size}
-          </p>
-          <span className="text-[11px] text-stone-400">Kader Berprestasi</span>
-        </Card>
-
-        <Card className="p-5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase">Kategori Sertifikasi</span>
-            <div className="p-2 bg-indigo-500/10 text-indigo-600 rounded-xl">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2 font-mono">
-            6
-          </p>
-          <span className="text-[11px] text-stone-400">Kaderisasi & Ekspedisi</span>
-        </Card>
-      </div>
+      <StatGrid columns={3}>
+        <StatCard
+          label="Total Diterbitkan"
+          value={list.length}
+          description="Piagam Resmi Tercatat"
+          icon={FileCheck}
+          color="emerald"
+        />
+        <StatCard
+          label="Penerima Anggota"
+          value={new Set(list.map((s) => s.anggota_id)).size}
+          description="Kader Berprestasi"
+          icon={Users}
+          color="amber"
+        />
+        <StatCard
+          label="Kategori Sertifikasi"
+          value={6}
+          description="Kaderisasi & Ekspedisi"
+          icon={ShieldCheck}
+          color="indigo"
+        />
+      </StatGrid>
 
       {/* Main Table */}
       <Card className="overflow-hidden border border-stone-200 dark:border-stone-800">
@@ -280,120 +252,117 @@ export default function AdminSertifikatPage() {
       </Card>
 
       {/* Modal Terbitkan Sertifikat */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-stone-900 border border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-emerald-400">
-                <Award className="w-4 h-4" />
-                Terbitkan Sertifikat Resmi Baru
-              </h3>
-              <button onClick={() => setShowModal(false)} className="text-stone-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleIssue} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Pilih Penerima Sertifikat:</label>
-                <select
-                  value={form.anggota_id}
-                  onChange={(e) => setForm((p) => ({ ...p, anggota_id: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nama} ({m.nia || 'No NIA'}) - Angkatan {m.nomor_angkatan || '-'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Jenis Kaderisasi / Kegiatan:</label>
-                <select
-                  value={form.jenis}
-                  onChange={(e) => setForm((p) => ({ ...p, jenis: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                >
-                  <option value="Kelulusan PPNIA & Pengukuhan NIA">Kelulusan PPNIA & Pengukuhan NIA</option>
-                  <option value="Pelantikan Medan Operasi">Pelantikan Medan Operasi (Anggota Muda)</option>
-                  <option value="Pendidikan & Latihan Dasar (Siswa)">Pendidikan & Latihan Dasar (Siswa)</option>
-                  <option value="Ekspedisi & Penjelajahan Alam">Ekspedisi & Penjelajahan Alam Mandiri</option>
-                  <option value="Pelatihan SAR & Navigasi Darat">Pelatihan Khusus SAR & Navigasi Darat</option>
-                  <option value="Penghargaan Pengabdian Organisasi">Penghargaan Pengabdian Organisasi</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Judul Piagam / Sertifikat:</label>
-                <input
-                  type="text"
-                  required
-                  value={form.judul}
-                  onChange={(e) => setForm((p) => ({ ...p, judul: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Nomor Registrasi Sertifikat:</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.nomor_sertifikat}
-                    onChange={(e) => setForm((p) => ({ ...p, nomor_sertifikat: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Tanggal Terbit:</label>
-                  <input
-                    type="date"
-                    required
-                    value={form.tanggal_terbit}
-                    onChange={(e) => setForm((p) => ({ ...p, tanggal_terbit: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Tautan Berkas PDF (Opsional):</label>
-                <input
-                  type="url"
-                  placeholder="https://storage.googleapis.com/..."
-                  value={form.file}
-                  onChange={(e) => setForm((p) => ({ ...p, file: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Deskripsi / Amanat Piagam:</label>
-                <textarea
-                  rows={2}
-                  value={form.deskripsi}
-                  onChange={(e) => setForm((p) => ({ ...p, deskripsi: e.target.value }))}
-                  className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
-                <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" disabled={submitting} className="bg-emerald-600 text-white">
-                  {submitting ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Award className="w-3.5 h-3.5 mr-1" />}
-                  Terbitkan Sertifikat
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={
+          <span className="flex items-center gap-2 text-emerald-400">
+            <Award className="w-4 h-4" />
+            Terbitkan Sertifikat Resmi Baru
+          </span>
+        }
+        description="Penerbitan surat keputusan dan piagam resmi organisasi."
+        maxWidth="lg"
+      >
+        <form onSubmit={handleIssue} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Pilih Penerima Sertifikat:</label>
+            <select
+              value={form.anggota_id}
+              onChange={(e) => setForm((p) => ({ ...p, anggota_id: e.target.value }))}
+              required
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            >
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nama} ({m.nia || 'No NIA'}) - Angkatan {m.nomor_angkatan || '-'}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Jenis Kaderisasi / Kegiatan:</label>
+            <select
+              value={form.jenis}
+              onChange={(e) => setForm((p) => ({ ...p, jenis: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            >
+              <option value="Kelulusan PPNIA & Pengukuhan NIA">Kelulusan PPNIA & Pengukuhan NIA</option>
+              <option value="Pelantikan Medan Operasi">Pelantikan Medan Operasi (Anggota Muda)</option>
+              <option value="Pendidikan & Latihan Dasar (Siswa)">Pendidikan & Latihan Dasar (Siswa)</option>
+              <option value="Ekspedisi & Penjelajahan Alam">Ekspedisi & Penjelajahan Alam Mandiri</option>
+              <option value="Pelatihan SAR & Navigasi Darat">Pelatihan Khusus SAR & Navigasi Darat</option>
+              <option value="Penghargaan Pengabdian Organisasi">Penghargaan Pengabdian Organisasi</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Judul Piagam / Sertifikat:</label>
+            <input
+              type="text"
+              required
+              value={form.judul}
+              onChange={(e) => setForm((p) => ({ ...p, judul: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Nomor Registrasi Sertifikat:</label>
+              <input
+                type="text"
+                required
+                value={form.nomor_sertifikat}
+                onChange={(e) => setForm((p) => ({ ...p, nomor_sertifikat: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Tanggal Terbit:</label>
+              <input
+                type="date"
+                required
+                value={form.tanggal_terbit}
+                onChange={(e) => setForm((p) => ({ ...p, tanggal_terbit: e.target.value }))}
+                className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Tautan Berkas PDF (Opsional):</label>
+            <input
+              type="url"
+              placeholder="https://storage.googleapis.com/..."
+              value={form.file}
+              onChange={(e) => setForm((p) => ({ ...p, file: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1">Deskripsi / Amanat Piagam:</label>
+            <textarea
+              rows={2}
+              value={form.deskripsi}
+              onChange={(e) => setForm((p) => ({ ...p, deskripsi: e.target.value }))}
+              className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-800">
+            <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" disabled={submitting} className="bg-emerald-600 text-white">
+              {submitting ? <Spinner className="w-3.5 h-3.5 mr-1" /> : <Award className="w-3.5 h-3.5 mr-1" />}
+              Terbitkan Sertifikat
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

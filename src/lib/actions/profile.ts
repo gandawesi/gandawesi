@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedMember } from '@/lib/actions/auth-helper';
 import type { AnggotaProfile } from '@/lib/auth/types';
 import type { RiwayatTahapItem, JabatanOrganisasiItem } from '@/lib/types/membership';
 
@@ -18,17 +19,16 @@ export interface UpdateProfileInput {
 
 export async function fetchOwnProfile(): Promise<{ profile: AnggotaProfile | null; error?: string }> {
   try {
-    const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { supabase, member } = await getAuthenticatedMember();
 
-    if (sessionError || !session?.user) {
+    if (!member) {
       return { profile: null, error: 'Belum login' };
     }
 
     const { data, error } = await supabase
       .from('anggota')
       .select('*, angkatan:angkatan_id(*)')
-      .eq('auth_user_id', session.user.id)
+      .eq('id', member.id)
       .maybeSingle();
 
     if (error) {
@@ -45,10 +45,9 @@ export async function fetchOwnProfile(): Promise<{ profile: AnggotaProfile | nul
 
 export async function updateProfile(input: UpdateProfileInput): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { supabase, member } = await getAuthenticatedMember();
 
-    if (sessionError || !session?.user) {
+    if (!member) {
       return { success: false, error: 'Sesi tidak valid. Silakan login kembali.' };
     }
 

@@ -23,6 +23,8 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { Alert } from '@/components/ui/Alert';
+import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   Compass,
   Users,
@@ -329,92 +331,44 @@ export default function AdminMedanOperasiPage() {
 
       {/* Feedback Toast Banner */}
       {feedback && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between animate-in fade-in slide-in-from-top-2 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
-            )}
-            <p className="text-sm font-medium">{feedback.text}</p>
-          </div>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-white p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <Alert
+          type={feedback.type}
+          message={feedback.text}
+          onClose={() => setFeedback(null)}
+        />
       )}
 
       {/* Aggregates Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Peserta Lapangan
-              </p>
-              <p className="text-2xl font-bold text-white mt-1">{totalPeserta}</p>
-            </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-              <Mountain className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Kandidat ekspedisi rimba lapangan</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Rata-rata Skor Danlat
-              </p>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">{avgSkorTotal} / 100</p>
-            </div>
-            <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
-              <Compass className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Navigasi, ketahanan, & kepemimpinan</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Gugur di Lapangan
-              </p>
-              <p className="text-2xl font-bold text-rose-400 mt-1">{totalGugur}</p>
-            </div>
-            <div className="p-3 bg-rose-500/10 text-rose-400 rounded-xl">
-              <UserX className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Faktor cedera, sakit, atau etika</p>
-        </Card>
-
-        <Card className="p-5 bg-slate-900/60 border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Dilantik Anggota Muda
-              </p>
-              <p className="text-2xl font-bold text-indigo-400 mt-1">{totalLolos}</p>
-            </div>
-            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-              <Award className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">Status keanggotaan ter-upgrade</p>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard
+          icon={Mountain}
+          label="Peserta Lapangan"
+          value={totalPeserta}
+          subtext="Kandidat ekspedisi"
+          color="emerald"
+        />
+        <StatCard
+          icon={Compass}
+          label="Rata-rata Skor Danlat"
+          value={`${avgSkorTotal} / 100`}
+          subtext="Navigasi & ketahanan"
+          color="blue"
+        />
+        <StatCard
+          icon={UserX}
+          label="Gugur di Lapangan"
+          value={totalGugur}
+          subtext="Cedera/sakit/etika"
+          color="rose"
+        />
+        <StatCard
+          icon={Award}
+          label="Dilantik Anggota Muda"
+          value={totalLolos}
+          subtext="Status ter-upgrade"
+          color="purple"
+        />
+      </StatGrid>
 
       {/* Main Tabs Navigation */}
       <div className="flex border-b border-slate-800 gap-2">
