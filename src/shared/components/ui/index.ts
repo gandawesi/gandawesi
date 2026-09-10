@@ -11,3 +11,4 @@ export * from './Pagination';
 export * from './Spinner';
 export * from './StatCard';
 export * from './Toast';
+export * from './ImageUploader';

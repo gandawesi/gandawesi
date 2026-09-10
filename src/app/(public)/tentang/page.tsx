@@ -14,9 +14,14 @@ import {
   Users,
   ArrowRight,
   Sparkles,
+  Building2,
+  Calendar,
+  ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 import { APP_NAME, APP_SUBTITLE } from '@/lib/constants';
 import { getKontenStatis } from '@/lib/actions/content';
+import { fetchOrganizationAwards } from '@/lib/actions/governance';
 
 export const metadata: Metadata = {
   title: 'Tentang Gandawesi — Sejarah, Visi, Misi & Kode Etik',
@@ -25,9 +30,10 @@ export const metadata: Metadata = {
 };
 
 export default async function TentangPage() {
-  const [visiMisiData, sejarahData] = await Promise.all([
+  const [visiMisiData, sejarahData, orgAwards] = await Promise.all([
     getKontenStatis('visi-misi'),
     getKontenStatis('sejarah'),
+    fetchOrganizationAwards(),
   ]);
 
   const defaultVisi =
@@ -122,6 +128,84 @@ Nama "Gandawesi" melambangkan ketangguhan jiwa layaknya wesi (besi) dan keharuma
 Hingga saat ini, Gandawesi telah melahirkan lebih dari 32 angkatan resmi yang mengabdi di berbagai bidang kepecintaalaman, riset lingkungan, mitigasi bencana, dan pemetaan geografis.`}
         </div>
       </Card>
+
+      {/* Prestasi & Rekognisi Lembaga (Institusional Awards) */}
+      {orgAwards && orgAwards.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-stone-200 dark:border-stone-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5" /> Rekognisi Mitra &amp; Apresiasi Kampus
+                </span>
+              </div>
+              <h2 className="text-2xl font-black text-stone-900 dark:text-stone-100 font-mono mt-1">
+                PRESTASI &amp; PENGHARGAAN LEMBAGA
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
+                Piagam kehormatan dan pengakuan resmi yang dianugerahkan oleh kementerian, balai konservasi, dan rektorat UPI kepada institusi Gandawesi.
+              </p>
+            </div>
+            <Link
+              href="/verifikasi/sertifikat"
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1 shrink-0"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" /> Portal Verifikasi Sertifikat
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {orgAwards.map((award) => (
+              <Card
+                key={award.id}
+                className="p-6 bg-gradient-to-br from-white via-amber-50/20 to-stone-50 dark:from-stone-900 dark:via-stone-900/90 dark:to-amber-950/10 border border-amber-200/60 dark:border-amber-900/30 hover:border-amber-500/50 transition-all flex flex-col justify-between space-y-4 shadow-sm"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 flex items-center gap-1">
+                      <Building2 className="w-3 h-3" /> {award.jenis.split('—')[0].trim()}
+                    </span>
+                    <div className="flex items-center gap-1 text-[10px] text-stone-400 font-mono">
+                      <Calendar className="w-3 h-3" /> {award.tanggal_terbit}
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-black text-stone-900 dark:text-stone-100 leading-snug">
+                    {award.judul}
+                  </h3>
+
+                  {award.lembaga_penerbit && (
+                    <div className="text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 bg-amber-50/80 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200/50 dark:border-amber-800/40">
+                      <Building2 className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>{award.lembaga_penerbit}</span>
+                    </div>
+                  )}
+
+                  {award.deskripsi && (
+                    <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                      {award.deskripsi}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-stone-200/60 dark:border-stone-800 flex items-center justify-between gap-2 text-xs">
+                  <span className="font-mono text-[10px] text-stone-500 bg-white dark:bg-stone-950 px-2 py-0.5 rounded border border-stone-200 dark:border-stone-800">
+                    No: {award.nomor_sertifikat}
+                  </span>
+                  <Link
+                    href={`/verifikasi/sertifikat?nomor=${encodeURIComponent(award.nomor_sertifikat)}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition-colors"
+                  >
+                    <span>Cek Keabsahan</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Kode Etik Pecinta Alam */}
       <div className="rounded-3xl bg-forest-950 text-white p-8 md:p-10 space-y-6 border border-forest-900 shadow-xl">

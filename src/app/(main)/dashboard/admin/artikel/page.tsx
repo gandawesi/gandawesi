@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { ImageUploader } from '@/components/ui/ImageUploader';
+import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 import {
   ArtikelItem,
   KontenStatisItem,
@@ -64,6 +66,7 @@ export default function AdminArtikelCurationPage() {
     foto: [],
   });
   const [ruteFotoInput, setRuteFotoInput] = useState('');
+  const [uploadedRutePhotos, setUploadedRutePhotos] = useState<string[]>([]);
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(
     null
@@ -168,10 +171,12 @@ export default function AdminArtikelCurationPage() {
     e.preventDefault();
     if (!ruteFormData.nama.trim() || !ruteFormData.lokasi.trim()) return;
 
-    const fotoArray = ruteFotoInput
+    const manualUrls = ruteFotoInput
       .split('\n')
       .map((u) => u.trim())
       .filter(Boolean);
+
+    const fotoArray = [...uploadedRutePhotos, ...manualUrls];
 
     startTransition(async () => {
       const res = await createRuteEkspedisi({
@@ -184,6 +189,7 @@ export default function AdminArtikelCurationPage() {
         setIsRuteModalOpen(false);
         setRuteFormData({ nama: '', lokasi: '', tanggal: '', deskripsi: '', peserta: '', foto: [] });
         setRuteFotoInput('');
+        setUploadedRutePhotos([]);
         await loadData();
       } else {
         setNotification({ type: 'error', message: res.error || 'Gagal menambahkan rute ekspedisi' });
@@ -724,17 +730,66 @@ export default function AdminArtikelCurationPage() {
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                  URL Foto Galeri (1 link per baris)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="https://..."
-                  value={ruteFotoInput}
-                  onChange={(e) => setRuteFotoInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/30 font-mono"
-                />
+              <div className="space-y-3">
+                <div>
+                  <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                    Dokumentasi Foto Ekspedisi (WebP Auto-Compress)
+                  </label>
+                  <ImageUploader
+                    bucket={SUPABASE_STORAGE_BUCKETS.EXPEDITIONS}
+                    folder="rute"
+                    label="Upload Foto Rute Jalur"
+                    helperText="Foto otomatis dikompres ke WebP resolusi web tajam & hemat ruang penyimpanan Supabase."
+                    onUploadComplete={(publicUrl) => {
+                      setUploadedRutePhotos((prev) => [...prev, publicUrl]);
+                    }}
+                  />
+                </div>
+
+                {uploadedRutePhotos.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                      Foto Terunggah ({uploadedRutePhotos.length}):
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {uploadedRutePhotos.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="relative group rounded-xl overflow-hidden border border-stone-200 dark:border-stone-800 aspect-video bg-stone-100 dark:bg-stone-800"
+                        >
+                          <img
+                            src={url}
+                            alt={`Foto rute ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setUploadedRutePhotos((prev) => prev.filter((_, i) => i !== idx))
+                            }
+                            className="absolute top-1 right-1 p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-sm opacity-90 group-hover:opacity-100 transition-opacity"
+                            title="Hapus foto ini"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-medium text-stone-500 mb-1">
+                    Atau Tambahkan URL Foto Eksternal (1 link per baris, opsional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="https://..."
+                    value={ruteFotoInput}
+                    onChange={(e) => setRuteFotoInput(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/30 font-mono text-xs"
+                  />
+                </div>
               </div>
 
               <div className="pt-3 border-t border-stone-100 dark:border-stone-800 flex justify-end gap-2">
@@ -742,7 +797,10 @@ export default function AdminArtikelCurationPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsRuteModalOpen(false)}
+                  onClick={() => {
+                    setIsRuteModalOpen(false);
+                    setUploadedRutePhotos([]);
+                  }}
                 >
                   Batal
                 </Button>

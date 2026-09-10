@@ -209,18 +209,31 @@ create table user_roles (
     anggota_id uuid not null references anggota(id) on delete cascade,
     role text not null check (role in (
         'admin',                -- super admin, full akses
-        'ketua_organisasi',     -- ketua umum organisasi
-        'ketua_medan_operasi',  -- approve calon siswa → siswa
-        'danlat',               -- instruktur lapangan Medan Operasi
-        'ketua_dp',             -- Ketua Dewan Pengurus, approve siswa → medan operasi
+        'ketua_organisasi',     -- Ketua Organisasi / Ketua DP (pimpinan eksekutif tertinggi)
+        'ketua_medan_operasi',  -- penanggung jawab manajerial diklat lapangan
+        'danlat',               -- Komandan Latihan, wewenang ACC kelulusan Calon Siswa -> Siswa
+        'ketua_dp',             -- ekuivalen ketua_organisasi (hal yang sama)
         'pengurus_dp',          -- anggota Dewan Pengurus
-        'panitia'               -- panitia kaderisasi (input presensi, evaluasi)
+        'panitia'               -- panitia kaderisasi (input presensi, catatan kesehatan, checklist)
     )),
     periode_mulai date,
     periode_selesai date,
     is_active boolean not null default true,
     created_at timestamptz not null default now(),
     unique (anggota_id, role, periode_mulai) -- boleh role sama di periode berbeda
+);
+
+-- Penilaian wawancara calon siswa oleh Danlat / Instruktur
+create table wawancara_calon_siswa (
+    id uuid primary key default gen_random_uuid(),
+    anggota_id uuid not null references anggota(id) on delete cascade,
+    pewawancara_id uuid references anggota(id), -- Danlat atau instruktur pewawancara
+    nilai_wawancara numeric(5,2) check (nilai_wawancara >= 0 and nilai_wawancara <= 100),
+    rekomendasi text check (rekomendasi in ('sangat_direkomendasikan', 'direkomendasikan', 'dipertimbangkan', 'tidak_direkomendasikan')),
+    catatan text,
+    tanggal date not null default current_date,
+    created_at timestamptz not null default now(),
+    unique (anggota_id)
 );
 
 -- ============================================================
@@ -653,12 +666,20 @@ create trigger trg_validate_kta_penerbitan
     for each row
     execute function validate_kta_penerbitan();
 
+-- Sertifikat resmi: kaderisasi internal, delegasi eksternal, dan penghargaan institusional
 create table sertifikat (
     id uuid primary key default gen_random_uuid(),
-    anggota_id uuid not null references anggota(id) on delete restrict,
-    jenis text not null,
+    anggota_id uuid references anggota(id) on delete restrict, -- nullable: null untuk penghargaan institusional Gandawesi
+    judul text, -- judul lengkap piagam
+    nomor_sertifikat text, -- nomor SK / registrasi
+    jenis text not null, -- kategori piagam / kompetensi
     tanggal_terbit date not null default current_date,
-    file text
+    deskripsi text,
+    file text, -- path Supabase Storage (documents/certificates)
+    asal text check (asal in ('internal', 'eksternal')) default 'internal',
+    penerima_tipe text check (penerima_tipe in ('anggota', 'organisasi')) default 'anggota',
+    lembaga_penerbit text, -- nama instansi penerbit (BBTNGGP, BASARNAS, FPTI, UPI, dll)
+    created_at timestamptz not null default now()
 );
 
 -- ============================================================

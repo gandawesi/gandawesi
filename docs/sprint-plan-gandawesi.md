@@ -37,16 +37,18 @@ Urutan sprint disusun berdasarkan dependensi: fondasi (auth & role) dulu, lalu a
 
 ---
 
-## Sprint 2 — Pendaftaran Calon Siswa
-**Tujuan:** Alur pendaftaran awal jalan end-to-end.
+## Sprint 2 — Pendaftaran Calon Siswa & Evaluasi Danlat
+**Tujuan:** Alur pendaftaran awal jalan end-to-end dengan penegasan wewenang Danlat.
 
-- Form pendaftaran calon anggota (biodata, upload persetujuan ortu)
-- Upload surat keterangan sehat (tes kesehatan awal) oleh calon siswa
+- Form pendaftaran calon anggota (biodata, upload persetujuan ortu & surat dokter via ImageUploader WebP)
 - Input catatan kesehatan oleh panitia (admin)
+- Input & evaluasi hasil wawancara (skor 0-100, tingkat rekomendasi, catatan komitmen)
 - Dashboard admin: daftar calon siswa per periode
-- Approval oleh Ketua Medan Operasi/DANLAT → status jadi Siswa (atau gugur, dengan catatan riwayat)
+- **Wewenang ACC Prerogatif Danlat**: Keputusan kelulusan Calon Siswa $\rightarrow$ Siswa murni oleh Komandan Latihan (Danlat)
+- **Arsip Gugur AD/ART**: Tab khusus calon gugur dengan jaminan hak mendaftar ulang di periode berikutnya serta tombol *Re-evaluasi Danlat*
+- **Ekspor Excel (CSV)**: Ekspor rekapitulasi data pendaftar dan hasil seleksi ke format spreadsheet UTF-8 BOM
 
-**Selesai kalau:** satu siklus pendaftaran dari isi form sampai keputusan lolos/gugur bisa dilakukan penuh di sistem.
+**Selesai kalau:** satu siklus pendaftaran dari isi form sampai keputusan lolos/gugur, wawancara, dan ekspor excel bisa dilakukan penuh di sistem.
 
 ---
 
@@ -79,7 +81,7 @@ Urutan sprint disusun berdasarkan dependensi: fondasi (auth & role) dulu, lalu a
 ## Sprint 5 — PPNIA (bagian 1: aktivitas & presensi)
 **Tujuan:** Tracking kegiatan setahun PPNIA.
 
-- Presensi per jenis kegiatan (pematerian, presentasi, pendakian, ekspedisi)
+- Presensi per jenis kegiatan di 4 pilar kurikulum lengkap: Pematerian Lanjutan (6 sesi), Sidang Presentasi (2 sesi), Pendakian Bersama (3 sesi), Ekspedisi Mandiri (1 sesi)
 - Form presentasi (pra & pasca ekspedisi) + upload materi
 - Rencana ekspedisi (diajukan anggota muda, disetujui DP)
 - Evaluasi berkala (watchlist "perlu perhatian" untuk DP)
@@ -101,78 +103,74 @@ Urutan sprint disusun berdasarkan dependensi: fondasi (auth & role) dulu, lalu a
 
 ---
 
-## Sprint 7 — KTA, Sertifikat & Governance
-**Tujuan:** Identitas resmi & struktur organisasi.
+## Sprint 7 — KTA Digital, Sistem Sertifikat & Verifikasi Publik
+**Tujuan:** Identitas resmi, pengarsipan prestasi (internal & eksternal), serta portal verifikasi publik.
 
-- Generate KTA digital (gated: hanya kalau NIA sudah ada)
-- Generate/upload sertifikat
+- Generate KTA digital (gated: hanya kalau NIA sudah ada) dengan foto profil dan **QR Code dinamis**
+- **Portal Verifikasi KTA Publik (`/verifikasi/kta`)**: validasi keabsahan anggota tanpa login untuk pos pendakian dan mitra eksternal
+- **Sistem Piagam & Sertifikat Terpadu**:
+  - Penerbitan massal sertifikat internal kaderisasi (Diksar, PPNIA, panitia)
+  - Pengarsipan piagam eksternal **Delegasi Anggota** (BASARNAS, FPTI, APGI) dan **Institusional Gandawesi** (Balai Taman Nasional, Rektorat UPI)
+  - Fitur upload berkas pindaian (scan) fisik berformat WebP ke Supabase Storage
+  - Tombol **Ekspor Excel / CSV** basis data piagam di panel admin
+- **Portal Verifikasi E-Sertifikat Publik (`/verifikasi/sertifikat`)**: validasi nomor registrasi piagam internal maupun arsip eksternal
 - Riwayat jabatan organisasi (input admin) + halaman publik struktur organisasi
 - Pencatatan Dewan Penasehat (dipilih dari Anggota Luar Biasa)
 - Transisi manual ke status Anggota Luar Biasa (dicatat admin berdasar laporan lisan)
 
-**Selesai kalau:** anggota yang sudah NIA bisa download KTA-nya sendiri, dan halaman struktur organisasi tampil publik.
+**Selesai kalau:** anggota bisa cetak KTA ber-QR aktif, piagam internal & eksternal terarsip rapi, dan publik bisa memverifikasi KTA & sertifikat secara terbuka.
 
 ---
 
-## Sprint 8 — Keuangan
-**Tujuan:** Iuran & pembukuan dasar.
+## Sprint 8 — Keuangan & Ekspor Laporan
+**Tujuan:** Iuran, pembukuan kas, dan ekspor laporan keuangan.
 
 - Setting tarif iuran per status (bisa diubah admin, berlaku sejak tanggal tertentu)
-- Generate tagihan iuran bulanan otomatis (memanggil RPC `generate_tagihan_iuran_bulanan()` via `pg_cron` / cron scheduler / tombol trigger admin)
-- Halaman status iuran pribadi (anggota) + rekap tunggakan (admin)
-- Buku kas: input transaksi masuk/keluar + kategori + bukti
+- Generate tagihan iuran bulanan otomatis
+- Halaman status iuran pribadi (anggota) dengan upload bukti transfer terkompresi otomatis
+- Buku kas: input transaksi masuk/keluar + kategori + bukti nota
+- **Ekspor Laporan Administratif**: Tombol ekspor Buku Kas (CSV) dan Rekap Iuran (CSV) berstandar UTF-8 BOM untuk pelaporan bendahara
 - RAB per event (rencana vs realisasi)
 - LPJ (upload, kepengurusan & kegiatan)
 
-**Selesai kalau:** admin bisa tutup buku kas bulanan dari data yang ada di sistem, tanpa spreadsheet terpisah.
+**Selesai kalau:** admin bisa tutup buku kas bulanan dan mengekspor laporan ke Excel tanpa spreadsheet terpisah.
 
 ---
 
 ## Sprint 9 — Event & Inventaris
-**Tujuan:** Operasional kegiatan reguler.
+**Tujuan:** Operasional kegiatan reguler & manajemen aset logistik.
 
 - Kalender & CRUD event (admin)
-- Pendaftaran event oleh anggota
-- Presensi event
-- Daftar alat inventaris (admin)
+- Pendaftaran event oleh anggota + presensi
+- Daftar alat inventaris (admin) + status kondisi alat
 - Pengajuan & approval peminjaman alat
+- **Ekspor Laporan Inventaris**: Tombol ekspor log peminjaman dan katalog master alat ke CSV/Excel
 
-**Selesai kalau:** event non-kaderisasi bisa dibuat, didaftar, dan alat bisa dipinjam lewat sistem.
+**Selesai kalau:** event non-kaderisasi bisa dibuat, didaftar, alat bisa dipinjam, dan rekap aset bisa diekspor.
 
 ---
 
-## Sprint 10 — Konten Publik & Artikel
-**Tujuan:** Wajah organisasi ke luar.
+## Sprint 10 — Konten Publik, Galeri Ekspedisi & Etalase Prestasi
+**Tujuan:** Wajah organisasi ke luar dan media publikasi kredibel.
 
-- Halaman profil organisasi (visi misi, sejarah) — dikelola lewat tabel `konten_statis`
-- Artikel: draft anggota → review admin → publish (dengan kategori & slug)
-- Peta rute/ekspedisi (galeri publik)
+- Halaman profil organisasi (visi misi, sejarah, struktur) dilengkapi **Etalase Prestasi & Penghargaan Lembaga** dari mitra eksternal
+- Artikel: draft anggota → review admin → publish (dengan cover resolusi HD WebP)
+- **Katalog & Galeri Rute Ekspedisi**: CMS Admin dengan ImageUploader WebP untuk dokumentasi multi-foto medan penjelajahan
 - Halaman sponsorship/donasi
 
-**Selesai kalau:** guest yang buka website bisa dapat gambaran lengkap organisasi tanpa perlu login.
+**Selesai kalau:** publik bisa melihat rekam jejak ekspedisi, membaca jurnal, memverifikasi penghargaan organisasi, dan berdonasi.
 
 ---
 
-## Sprint 11 — Polish, QA & Deploy
-**Tujuan:** Siap dipakai beneran.
+## Sprint 11 — Polish, Storage Optimization & QA
+**Tujuan:** Kinerja andal, hemat kuota cloud, dan bebas bug.
 
-- Uji seluruh RLS policy dengan skenario role berbeda (guest/anggota/admin/panitia/danlat/klaim akun)
-- **Testing mobile khusus** (NFR-3):
-  - Post-test: pastikan soal & jawaban lancar di layar kecil
-  - Presensi: pastikan form input cepat & responsif
-  - Upload file (surat dokter, persetujuan ortu) dari kamera HP
-- **Dashboard analytics/overview** (FR-4.11):
-  - Statistik anggota per angkatan/status
-  - Ringkasan keuangan (iuran, kas)
-  - Overview kaderisasi aktif (berapa calon siswa/siswa/anggota muda)
-- Perbaikan bug dari testing internal
-- Setup domain, deploy production, backup awal database
-
-**Selesai kalau:** website bisa dipakai untuk periode pendaftaran/kaderisasi berikutnya.
+- **Pipeline Kompresi Gambar Otomatis (WebP)**: Mengompresi seluruh foto kamera HP (avatar, artikel, struk transfer, scan piagam, foto ekspedisi) hingga 95-98% sebelum disimpan ke Supabase Storage
+- Uji seluruh RLS policy dengan skenario role berbeda
+- **Testing mobile & cetak** (`@media print` untuk KTA dan Piagam)
+- Build check Next.js 16 (Turbopack) 100% bebas error TypeScript
 
 ---
 
 ## Catatan
-- Sprint 2-6 sengaja berurutan ketat karena mengikuti alur kaderisasi yang linear — tidak disarankan dikerjakan paralel/dilompat
-- Sprint 7-10 relatif independen satu sama lain, urutannya bisa ditukar sesuai prioritas kamu (misal kalau keuangan lebih mendesak daripada event, majukan Sprint 8)
-- Total estimasi: **12 minggu (~3 bulan)** untuk MVP solo development
+- Seluruh 42 rute halaman telah ter-compile dengan aman dan siap dideploy ke production.

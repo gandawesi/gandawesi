@@ -18,7 +18,9 @@ import {
   Handshake,
   AlertCircle,
   FolderOpen,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportToCSV } from '@/lib/utils/export-csv';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import {
@@ -183,6 +185,62 @@ export default function AdminInventarisPage() {
   const pendingCount = loans.filter((l) => l.status === 'diajukan').length;
   const borrowedCount = loans.filter((l) => l.status === 'dipinjam').length;
 
+  const handleExportAlatCSV = () => {
+    const headers = [
+      'No',
+      'Kode Alat',
+      'Nama Alat Inventaris',
+      'Kategori',
+      'Kondisi Fisik',
+      'Stok Tersedia',
+    ];
+
+    const rows = filteredAlat.map((a, idx) => [
+      idx + 1,
+      a.id,
+      a.nama_alat,
+      a.kategori,
+      a.kondisi,
+      a.stok,
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(`master-inventaris-alat-gandawesi-${dateStr}`, headers, rows);
+  };
+
+  const handleExportLoansCSV = () => {
+    const headers = [
+      'No',
+      'Nama Peminjam',
+      'NIM',
+      'NIA',
+      'Nama Alat',
+      'Kategori Alat',
+      'Jumlah Pinjam',
+      'Tanggal Pinjam',
+      'Batas Pengembalian',
+      'Status Peminjaman',
+      'Disetujui Oleh',
+    ];
+
+    const rows = filteredLoans.map((l, idx) => [
+      idx + 1,
+      l.anggota_nama,
+      l.anggota_nim || '-',
+      l.anggota_nia || '-',
+      l.alat_nama,
+      l.alat_kategori,
+      l.jumlah,
+      l.tanggal_pinjam,
+      l.tanggal_kembali || '-',
+      l.status,
+      l.approved_by_nama || '-',
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(`rekap-peminjaman-alat-gandawesi-${dateStr}`, headers, rows);
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Top Header */}
@@ -289,31 +347,44 @@ export default function AdminInventarisPage() {
       {/* TAB 1: KELOLA PEMINJAMAN */}
       {activeTab === 'peminjaman' && (
         <div className="space-y-4">
-          {/* Status Filter */}
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 overflow-x-auto">
-            {['all', 'diajukan', 'disetujui', 'dipinjam', 'dikembalikan', 'ditolak'].map((s) => (
-              <button
-                key={s}
-                onClick={() => setLoanStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all whitespace-nowrap ${
-                  loanStatusFilter === s
-                    ? 'bg-white dark:bg-stone-800 text-forest-700 dark:text-forest-400 shadow-sm'
-                    : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-              >
-                {s === 'all'
-                  ? 'Semua Status'
-                  : s === 'diajukan'
-                  ? 'Menunggu Approval'
-                  : s === 'disetujui'
-                  ? 'Disetujui'
-                  : s === 'dipinjam'
-                  ? 'Sedang Dipinjam'
-                  : s === 'dikembalikan'
-                  ? 'Selesai Dikembalikan'
-                  : 'Ditolak'}
-              </button>
-            ))}
+          {/* Status Filter & Export */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 overflow-x-auto">
+              {['all', 'diajukan', 'disetujui', 'dipinjam', 'dikembalikan', 'ditolak'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setLoanStatusFilter(s)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all whitespace-nowrap ${
+                    loanStatusFilter === s
+                      ? 'bg-white dark:bg-stone-800 text-forest-700 dark:text-forest-400 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
+                  }`}
+                >
+                  {s === 'all'
+                    ? 'Semua Status'
+                    : s === 'diajukan'
+                    ? 'Menunggu Approval'
+                    : s === 'disetujui'
+                    ? 'Disetujui'
+                    : s === 'dipinjam'
+                    ? 'Sedang Dipinjam'
+                    : s === 'dikembalikan'
+                    ? 'Selesai Dikembalikan'
+                    : 'Ditolak'}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportLoansCSV}
+              className="text-xs font-bold gap-1.5 shrink-0 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:text-forest-600 cursor-pointer self-end sm:self-auto"
+              title="Unduh rekap data peminjaman alat ke Excel / CSV"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-purple-600" />
+              <span>Ekspor Peminjaman (CSV)</span>
+            </Button>
           </div>
 
           {/* Loans Table */}
@@ -466,16 +537,33 @@ export default function AdminInventarisPage() {
       {/* TAB 2: KATALOG & STOK FISIK */}
       {activeTab === 'alat' && (
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <div className="relative w-full sm:w-64">
-              <input
-                type="text"
-                placeholder="Cari alat inventaris..."
-                value={searchAlat}
-                onChange={(e) => setSearchAlat(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs font-medium text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-forest-500/30"
-              />
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="text-xs text-stone-500 font-medium">
+              Total Master Alat: <strong className="text-stone-800 dark:text-stone-200">{filteredAlat.length}</strong> jenis ({totalUnits} unit fisik)
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative w-full sm:w-64">
+                <input
+                  type="text"
+                  placeholder="Cari alat inventaris..."
+                  value={searchAlat}
+                  onChange={(e) => setSearchAlat(e.target.value)}
+                  className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs font-medium text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-forest-500/30"
+                />
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5" />
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportAlatCSV}
+                className="text-xs font-bold gap-1.5 shrink-0 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:text-forest-600 cursor-pointer"
+                title="Unduh master data inventaris alat ke Excel / CSV"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Ekspor Alat (CSV)</span>
+              </Button>
             </div>
           </div>
 

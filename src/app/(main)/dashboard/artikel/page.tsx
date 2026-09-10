@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 import { ArtikelItem, CreateArtikelPayload, ArtikelKategori } from '@/lib/types/content';
 import { getMyArticles, createArticle, submitArticleForReview } from '@/lib/actions/content';
 
@@ -327,17 +328,24 @@ export default function MemberArtikelPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                    URL Gambar Cover (Thumbnail)
-                  </label>
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={formData.thumbnail || ''}
-                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/30"
+                <div className="space-y-2">
+                  <ImageUploader
+                    label="Foto Sampul Artikel (Otomatis Dikecilkan)"
+                    helperText="Foto otomatis dikompresi ke WebP resolusi HD (~150-250 KB) sehingga hemat Supabase Storage."
+                    initialUrl={formData.thumbnail || null}
+                    options={{ maxWidth: 1280, maxHeight: 800, quality: 0.8, format: 'image/webp' }}
+                    onImageCompressed={(res) => setFormData({ ...formData, thumbnail: res.previewUrl })}
+                    onImageRemoved={() => setFormData({ ...formData, thumbnail: '' })}
                   />
+                  <div>
+                    <input
+                      type="url"
+                      placeholder="Atau masukkan URL gambar langsung (https://...)"
+                      value={formData.thumbnail || ''}
+                      onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                      className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 focus:outline-none focus:ring-2 focus:ring-forest-500/30"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -108,7 +108,7 @@ export default function KTADigitalPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-stone-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-stone-800 pb-6 no-print">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
@@ -153,7 +153,7 @@ export default function KTADigitalPage() {
         {/* Card Canvas */}
         <div className="lg:col-span-8 flex flex-col items-center">
           {/* Card Toggle Tabs */}
-          <div className="flex items-center gap-1 p-1 bg-stone-200 dark:bg-stone-800 rounded-xl mb-6 text-xs font-bold">
+          <div className="flex items-center gap-1 p-1 bg-stone-200 dark:bg-stone-800 rounded-xl mb-6 text-xs font-bold no-print">
             <button
               onClick={() => setSide('front')}
               className={`px-4 py-1.5 rounded-lg transition-all cursor-pointer ${
@@ -210,8 +210,16 @@ export default function KTADigitalPage() {
 
               {/* Card Body */}
               <div className="relative z-10 my-auto py-3 flex items-center gap-5">
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-gradient-to-br from-forest-800 to-emerald-950 border-2 border-amber-500/40 flex items-center justify-center text-emerald-200 text-2xl font-black shrink-0 shadow-lg">
-                  {kta.nama.slice(0, 2).toUpperCase()}
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-gradient-to-br from-forest-800 to-emerald-950 border-2 border-amber-500/40 overflow-hidden flex items-center justify-center text-emerald-200 text-2xl font-black shrink-0 shadow-lg">
+                  {kta.foto_profil ? (
+                    <img
+                      src={kta.foto_profil}
+                      alt={kta.nama}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    kta.nama.slice(0, 2).toUpperCase()
+                  )}
                 </div>
                 <div className="space-y-1 min-w-0 flex-1">
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
@@ -249,10 +257,17 @@ export default function KTADigitalPage() {
                   </p>
                 </div>
 
-                <div className="p-1.5 bg-white/5 rounded-xl border border-white/10 shrink-0 text-center">
-                  <QrCode className="w-8 h-8 sm:w-9 sm:h-9 text-slate-300 mx-auto" />
-                  <span className="text-[7px] font-mono text-slate-400 mt-0.5 block">VERIFIED</span>
-                </div>
+                <Link
+                  href={`/verifikasi/kta?nia=${encodeURIComponent(kta.nia || '')}`}
+                  target="_blank"
+                  title="Klik untuk melihat Halaman Verifikasi Publik KTA"
+                  className="p-1.5 bg-white/5 hover:bg-emerald-500/20 rounded-xl border border-white/10 hover:border-emerald-500/30 shrink-0 text-center transition-all cursor-pointer group"
+                >
+                  <QrCode className="w-8 h-8 sm:w-9 sm:h-9 text-slate-300 group-hover:text-emerald-400 mx-auto" />
+                  <span className="text-[7px] font-mono text-slate-400 group-hover:text-emerald-300 mt-0.5 block">
+                    SCAN / VERIFY
+                  </span>
+                </Link>
               </div>
             </div>
           )}
@@ -300,7 +315,7 @@ export default function KTADigitalPage() {
         </div>
 
         {/* Right Details Card */}
-        <div className="lg:col-span-4 space-y-5">
+        <div className="lg:col-span-4 space-y-5 no-print">
           <Card className="p-6 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-4">
             <h3 className="text-sm font-black uppercase tracking-wider text-stone-900 dark:text-stone-100 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />

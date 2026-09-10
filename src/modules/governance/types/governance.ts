@@ -52,7 +52,7 @@ export interface TransisiALBPayload {
 
 export interface SertifikatItem {
   id: string;
-  anggota_id: string;
+  anggota_id: string | null;
   anggota_nama: string;
   anggota_nia: string | null;
   jenis: string;
@@ -61,15 +61,21 @@ export interface SertifikatItem {
   tanggal_terbit: string;
   file: string | null;
   deskripsi: string | null;
+  asal?: 'internal' | 'eksternal';
+  penerima_tipe?: 'anggota' | 'organisasi';
+  lembaga_penerbit?: string | null;
 }
 
 export interface CreateSertifikatPayload {
-  anggota_id: string;
+  anggota_id?: string | null;
+  penerima_tipe?: 'anggota' | 'organisasi';
+  asal?: 'internal' | 'eksternal';
+  lembaga_penerbit?: string | null;
   jenis: string;
   judul: string;
   nomor_sertifikat: string;
   tanggal_terbit: string;
-  file: string | null;
+  file?: string | null;
   deskripsi?: string;
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   fetchSiswaDashboardData,
   fetchMateriList,
@@ -12,6 +12,9 @@ import {
 } from '@/lib/actions/siswa';
 import { fetchSesiKegiatanList } from '@/lib/actions/admin-siswa';
 import { fetchMyMedanOperasiSummary } from '@/lib/actions/medan-operasi';
+import { compressImage } from '@/lib/utils/image-compression';
+import { uploadFileToStorage, createUniqueStorageFileName } from '@/lib/supabase/storage';
+import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 import type {
   MateriKaderisasiItem,
   SoalPostTestItem,
@@ -154,15 +157,54 @@ export default function KaderisasiSiswaPage() {
   };
 
   // Upload final health document
-  const handleUploadTesAkhir = async () => {
-    setUploadingHealth(true);
-    const mockPath = `/uploads/tes_kesehatan_akhir_${Date.now()}.pdf`;
-    const res = await submitTesKesehatanAkhir(mockPath);
-    setUploadingHealth(false);
+  const healthFinalInputRef = useRef<HTMLInputElement>(null);
 
-    if (res.success) {
-      setFeedback({ type: 'success', text: res.message || 'Surat tes kesehatan akhir disimpan!' });
-      loadData();
+  const handleTesAkhirFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingHealth(true);
+    setFeedback(null);
+
+    try {
+      let fileToUpload: File | Blob = file;
+
+      if (file.type.startsWith('image/')) {
+        const compressed = await compressImage(file, {
+          maxWidth: 1600,
+          maxHeight: 1600,
+          quality: 0.82,
+          format: 'image/webp',
+        });
+        fileToUpload = compressed.file;
+      }
+
+      const fileName = createUniqueStorageFileName('kesehatan_akhir', file.name, fileToUpload.type.includes('webp') ? 'webp' : undefined);
+      const targetPath = `siswa/${fileName}`;
+
+      const uploadRes = await uploadFileToStorage(
+        fileToUpload,
+        SUPABASE_STORAGE_BUCKETS.DOCUMENTS,
+        targetPath
+      );
+
+      const targetUrl = uploadRes.publicUrl || `/uploads/${fileName}`;
+      const res = await submitTesKesehatanAkhir(targetUrl);
+
+      if (res.success) {
+        setFeedback({
+          type: 'success',
+          text: 'Surat tes kesehatan akhir berhasil dikompresi & disimpan ke Supabase Storage!',
+        });
+        loadData();
+      } else {
+        setFeedback({ type: 'error', text: res.error || 'Gagal menyimpan surat kesehatan akhir.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message || 'Gagal memproses berkas kesehatan.' });
+    } finally {
+      setUploadingHealth(false);
+      if (healthFinalInputRef.current) healthFinalInputRef.current.value = '';
     }
   };
 
@@ -507,15 +549,30 @@ export default function KaderisasiSiswaPage() {
               </p>
             </div>
 
+            <input
+              ref={healthFinalInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp"
+              className="hidden"
+              onChange={handleTesAkhirFileChange}
+            />
             <Button
               variant="primary"
               size="md"
-              onClick={handleUploadTesAkhir}
+              onClick={() => healthFinalInputRef.current?.click()}
               disabled={uploadingHealth}
               className="w-full sm:w-auto"
             >
-              <UploadCloud className="w-4 h-4 mr-2" />
-              {metrics.hasTesKesehatanAkhir ? 'Perbarui Surat Kesehatan Akhir' : 'Unggah Surat Kesehatan Akhir'}
+              {uploadingHealth ? (
+                <Spinner className="w-4 h-4 mr-2" />
+              ) : (
+                <UploadCloud className="w-4 h-4 mr-2" />
+              )}
+              {uploadingHealth
+                ? 'Mengompresi & Mengunggah...'
+                : metrics.hasTesKesehatanAkhir
+                ? 'Perbarui Surat Kesehatan Akhir (Foto/PDF)'
+                : 'Unggah Surat Kesehatan Akhir (Foto/PDF)'}
             </Button>
           </Card>
         </div>

@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { fetchMyIuranSummary } from '@/lib/actions/keuangan';
 import type { MyIuranSummary } from '@/lib/types/keuangan';
+import { ImageUploader } from '@/components/ui/ImageUploader';
+import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 
 export default function MemberIuranPage() {
   const [summary, setSummary] = useState<MyIuranSummary | null>(null);
@@ -306,14 +308,25 @@ export default function MemberIuranPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Tautan Bukti Transfer (Opsional):</label>
-                  <input
-                    type="url"
-                    placeholder="https://drive.google.com/..."
-                    value={confirmForm.bukti}
-                    onChange={(e) => setConfirmForm((p) => ({ ...p, bukti: e.target.value }))}
-                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-white focus:border-emerald-500"
+                  <ImageUploader
+                    label="Unggah Struk / Bukti Transfer (Otomatis Dikecilkan)"
+                    helperText="Foto struk otomatis dikompresi ke WebP resolusi HD (~80-150 KB) dan diunggah ke Supabase Storage."
+                    bucket={SUPABASE_STORAGE_BUCKETS.RECEIPTS}
+                    folder="iuran"
+                    initialUrl={confirmForm.bukti || null}
+                    options={{ maxWidth: 1280, maxHeight: 1280, quality: 0.8, format: 'image/webp' }}
+                    onUploadComplete={(url) => setConfirmForm((p) => ({ ...p, bukti: url }))}
+                    onImageRemoved={() => setConfirmForm((p) => ({ ...p, bukti: '' }))}
                   />
+                  <div className="mt-2">
+                    <input
+                      type="url"
+                      placeholder="Atau tautan link alternatif (misal: Google Drive)..."
+                      value={confirmForm.bukti}
+                      onChange={(e) => setConfirmForm((p) => ({ ...p, bukti: e.target.value }))}
+                      className="w-full px-3 py-1.5 text-xs bg-stone-950 border border-stone-800 rounded-xl text-stone-400 focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
 
                 <div>

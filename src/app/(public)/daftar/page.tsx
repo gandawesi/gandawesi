@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchActivePeriode, registerCalonSiswa, fetchMyCalonSiswaStatus, submitSuratKesehatan } from '@/lib/actions/registration';
@@ -11,6 +11,9 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert } from '@/components/ui/Alert';
 import { formatDateIndo } from '@/lib/utils/format';
+import { compressImage } from '@/lib/utils/image-compression';
+import { uploadFileToStorage, createUniqueStorageFileName } from '@/lib/supabase/storage';
+import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 import {
   Compass,
   Calendar,
@@ -52,9 +55,6 @@ export default function PendaftaranPage() {
     file_persetujuan_ortu: '',
   });
 
-  // Health doc upload state
-  const [healthDocSimulated, setHealthDocSimulated] = useState(false);
-  const [uploadingHealth, setUploadingHealth] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -97,19 +97,100 @@ export default function PendaftaranPage() {
     }
   };
 
-  const handleUploadSuratDokter = async () => {
-    setUploadingHealth(true);
-    const mockUrl = `/uploads/surat_kesehatan_${Date.now()}.pdf`;
-    const res = await submitSuratKesehatan(mockUrl);
-    setUploadingHealth(false);
+  // File upload states
+  const [healthDocSimulated, setHealthDocSimulated] = useState(false);
+  const [uploadingHealth, setUploadingHealth] = useState(false);
+  const [uploadingOrtu, setUploadingOrtu] = useState(false);
+  const healthInputRef = useRef<HTMLInputElement>(null);
 
-    if (res.success) {
-      setHealthDocSimulated(true);
-      setFeedback({ type: 'success', text: res.message || 'Surat dokter berhasil disimpan!' });
-      const updated = await fetchMyCalonSiswaStatus();
-      setExistingCalon(updated.calonSiswa);
-    } else {
-      setFeedback({ type: 'error', text: res.error || 'Gagal mengunggah berkas.' });
+  const handleSuratDokterFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingHealth(true);
+    setFeedback(null);
+
+    try {
+      let fileToUpload: File | Blob = file;
+
+      // Kompresi otomatis jika file berupa gambar (misal foto surat dari HP)
+      if (file.type.startsWith('image/')) {
+        const compressed = await compressImage(file, {
+          maxWidth: 1600,
+          maxHeight: 1600,
+          quality: 0.82,
+          format: 'image/webp',
+        });
+        fileToUpload = compressed.file;
+      }
+
+      const fileName = createUniqueStorageFileName('surat_dokter', file.name, fileToUpload.type.includes('webp') ? 'webp' : undefined);
+      const targetPath = `calon_siswa/${fileName}`;
+
+      const uploadRes = await uploadFileToStorage(
+        fileToUpload,
+        SUPABASE_STORAGE_BUCKETS.DOCUMENTS,
+        targetPath
+      );
+
+      const targetUrl = uploadRes.publicUrl || `/uploads/${fileName}`;
+      const res = await submitSuratKesehatan(targetUrl);
+
+      if (res.success) {
+        setHealthDocSimulated(true);
+        setFeedback({
+          type: 'success',
+          text: 'Surat dokter berhasil dikompresi & disimpan ke Supabase Storage!',
+        });
+        const updated = await fetchMyCalonSiswaStatus();
+        setExistingCalon(updated.calonSiswa);
+      } else {
+        setFeedback({ type: 'error', text: res.error || 'Gagal menyimpan surat kesehatan.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message || 'Gagal memproses file surat dokter.' });
+    } finally {
+      setUploadingHealth(false);
+      if (healthInputRef.current) healthInputRef.current.value = '';
+    }
+  };
+
+  const handlePersetujuanOrtuChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingOrtu(true);
+    try {
+      let fileToUpload: File | Blob = file;
+
+      if (file.type.startsWith('image/')) {
+        const compressed = await compressImage(file, {
+          maxWidth: 1600,
+          maxHeight: 1600,
+          quality: 0.82,
+          format: 'image/webp',
+        });
+        fileToUpload = compressed.file;
+      }
+
+      const fileName = createUniqueStorageFileName('persetujuan_ortu', file.name, fileToUpload.type.includes('webp') ? 'webp' : undefined);
+      const targetPath = `calon_siswa/${fileName}`;
+
+      const uploadRes = await uploadFileToStorage(
+        fileToUpload,
+        SUPABASE_STORAGE_BUCKETS.DOCUMENTS,
+        targetPath
+      );
+
+      const targetUrl = uploadRes.publicUrl || `/uploads/${fileName}`;
+      setFormData((prev) => ({
+        ...prev,
+        file_persetujuan_ortu: targetUrl,
+      }));
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message || 'Gagal mengompresi surat persetujuan ortu.' });
+    } finally {
+      setUploadingOrtu(false);
     }
   };
 
@@ -248,17 +329,30 @@ export default function PendaftaranPage() {
 
                 {/* Upload or Re-upload Doctor Certificate */}
                 <div className="pt-2">
+                  <input
+                    ref={healthInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    className="hidden"
+                    onChange={handleSuratDokterFileSelected}
+                  />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleUploadSuratDokter}
+                    onClick={() => healthInputRef.current?.click()}
                     disabled={uploadingHealth}
                     className="w-full text-xs"
                   >
-                    <UploadCloud className="w-4 h-4 mr-1.5 text-forest-600" />
-                    {existingCalon.tes_kesehatan_awal?.file_surat_dokter
-                      ? 'Perbarui Surat Dokter'
-                      : 'Unggah Surat Keterangan Sehat'}
+                    {uploadingHealth ? (
+                      <Spinner className="w-4 h-4 mr-1.5 text-forest-600" />
+                    ) : (
+                      <UploadCloud className="w-4 h-4 mr-1.5 text-forest-600" />
+                    )}
+                    {uploadingHealth
+                      ? 'Mengompresi & Mengunggah...'
+                      : existingCalon.tes_kesehatan_awal?.file_surat_dokter
+                      ? 'Perbarui Surat Dokter (Foto/PDF)'
+                      : 'Unggah Surat Keterangan Sehat (Foto/PDF)'}
                   </Button>
                 </div>
               </div>
@@ -414,18 +508,17 @@ export default function PendaftaranPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={() =>
-                      setFormData({
-                        ...formData,
-                        file_persetujuan_ortu: `/uploads/persetujuan_${Date.now()}.pdf`,
-                      })
-                    }
-                    className="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-forest-50 file:text-forest-700 hover:file:bg-forest-100"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    disabled={uploadingOrtu}
+                    onChange={handlePersetujuanOrtuChange}
+                    className="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-forest-50 file:text-forest-700 hover:file:bg-forest-100 disabled:opacity-50"
                   />
+                  {uploadingOrtu && <Spinner size="sm" />}
                 </div>
                 <p className="text-[10px] text-stone-400 mt-1">
-                  Format PDF atau Foto (dapat disusulkan sebelum latihan lapangan)
+                  {formData.file_persetujuan_ortu
+                    ? '✓ Berkas persetujuan orang tua tersimpan di cloud storage.'
+                    : 'Format PDF atau Foto (otomatis dikompresi ke WebP agar hemat kuota)'}
                 </p>
               </div>
             </div>

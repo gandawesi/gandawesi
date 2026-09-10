@@ -70,12 +70,17 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 - FR-1.8: Sistem mendukung evaluasi berkala selama PPNIA sebagai peringatan dini
 - FR-1.9: Sistem mendukung kriteria evaluasi akhir yang dinamis (dapat diubah tiap periode oleh Dewan Pengurus)
 - FR-1.10: Admin dapat menginput NIA secara manual setelah kelulusan evaluasi akhir
+- FR-1.11: Sistem mencatat evaluasi wawancara calon siswa (skor 0-100, tingkat rekomendasi, catatan komitmen) dengan wewenang ACC kelulusan murni di tangan Komandan Latihan (Danlat)
+- FR-1.12: Sistem mengarsipkan calon siswa yang gugur dengan jaminan hak mendaftar ulang di periode berikutnya sesuai AD/ART serta opsi re-evaluasi Danlat
+- FR-1.13: Admin dapat mengekspor seluruh rekapitulasi data pendaftar dan hasil seleksi ke format Excel/CSV
 
 ### 6.2 Keanggotaan & Profil
 - FR-2.1: Setiap anggota memiliki profil dengan status keanggotaan, angkatan, dan riwayat perubahan status
-- FR-2.2: Sistem menerbitkan KTA digital dan sertifikat hanya untuk anggota yang sudah memiliki NIA
+- FR-2.2: Sistem menerbitkan KTA digital resmi dengan foto profil dan QR Code dinamis untuk anggota yang sudah memiliki NIA
 - FR-2.3: Anggota dapat melihat riwayat kaderisasi dan pencapaian pribadinya sendiri
 - FR-2.4: Tersedia direktori anggota yang dapat difilter berdasarkan angkatan/status
+- FR-2.5: Sistem mendukung penerbitan sertifikat internal dan pengarsipan sertifikat eksternal (delegasi anggota dan institusional lembaga) lengkap dengan berkas scan fisik
+- FR-2.6: Sistem menyediakan portal verifikasi publik bebas login untuk memvalidasi keaslian KTA (`/verifikasi/kta`) dan piagam penghargaan (`/verifikasi/sertifikat`)
 
 ### 6.3 Governance
 - FR-3.1: Sistem mencatat riwayat jabatan organisasi (anggota, jabatan, periode) secara penuh, bukan hanya jabatan aktif
@@ -87,10 +92,11 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 ### 6.4 Keuangan
 - FR-4.1: Admin dapat mengatur tarif iuran per status keanggotaan, berlaku sejak tanggal tertentu
 - FR-4.2: Sistem menghasilkan tagihan iuran bulanan berdasarkan status anggota yang berlaku di awal periode
-- FR-4.3: Anggota dapat melihat status iuran pribadinya (lunas/menunggak)
+- FR-4.3: Anggota dapat melihat status iuran pribadinya (lunas/menunggak) dan mengunggah foto struk transfer
 - FR-4.4: Sistem mencatat transaksi kas (masuk/keluar) dengan kategori sumber dana dan bukti transaksi
 - FR-4.5: Sistem mendukung RAB (rencana anggaran) dan realisasi per event
 - FR-4.6: Sistem mencatat data sponsorship/donasi, termasuk keterkaitannya ke event tertentu
+- FR-4.7: Admin dapat mengekspor laporan Buku Kas Umum dan Rekap Iuran ke format CSV/Excel (UTF-8 BOM)
 
 ### 6.5 Event
 - FR-5.1: Admin dapat membuat dan mengelola event (nama, jenis, lokasi, tanggal mulai/selesai, kuota, status)
@@ -101,17 +107,20 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 - FR-6.1: Anggota dapat membuat draft artikel
 - FR-6.2: Admin dapat me-review dan mempublikasikan artikel
 - FR-6.3: Guest dapat membaca artikel yang sudah dipublikasikan
+- FR-6.4: Gambar cover artikel otomatis dikompresi ke WebP resolusi HD sebelum disimpan ke Supabase Storage
 
 ### 6.7 Inventaris Alat
 - FR-7.1: Admin mengelola daftar alat milik organisasi (nama, kategori, kondisi, stok)
 - FR-7.2: Anggota dapat mengajukan peminjaman alat
 - FR-7.3: Admin menyetujui/menolak pengajuan peminjaman
 - FR-7.4: Sistem mencatat status peminjaman (dipinjam/dikembalikan)
+- FR-7.5: Admin dapat mengekspor log peminjaman dan master katalog alat ke format CSV/Excel
 
 ### 6.8 Konten Publik
-- FR-8.1: Halaman profil organisasi (visi misi, sejarah, struktur)
-- FR-8.2: Halaman peta rute/ekspedisi yang pernah dilakukan
+- FR-8.1: Halaman profil organisasi (visi misi, sejarah, struktur) dilengkapi etalase prestasi & penghargaan resmi lembaga dari mitra
+- FR-8.2: Halaman peta rute/ekspedisi dilengkapi galeri foto dokumentasi lapangan terkompresi
 - FR-8.3: Halaman sponsorship/donasi
+- FR-8.4: Halaman verifikasi publik KTA dan sertifikat yang dapat diakses bebas tanpa login
 
 ## 7. Non-Functional Requirements
 
@@ -119,6 +128,7 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 - **NFR-2 Ketersediaan & Retensi Data**: Riwayat status, kaderisasi, evaluasi, dan keuangan anggota tidak boleh hilang meski status berubah. Seluruh relasi riwayat permanen dilindungi dengan constraint `ON DELETE RESTRICT`; operasi hard delete dilarang via API dan digantikan mekanisme soft-delete status (`'dicabut'`).
 - **NFR-3 Aksesibilitas**: Post-test dan presensi harus dapat diakses cepat dan responsif dari perangkat mobile (anggota mengisi lewat HP).
 - **NFR-4 Fleksibilitas Aturan**: Kriteria evaluasi dan tarif iuran harus dapat diubah oleh pengurus tanpa perubahan kode/skema database (data-driven, bukan hardcoded).
+- **NFR-5 Efisiensi Penyimpanan (Storage Optimization)**: Seluruh berkas foto (avatar, artikel, kuitansi iuran, dokumen scan sertifikat, dokumentasi rute) wajib dikompresi otomatis di sisi browser ke format modern WebP (kualitas 80-85%) mereduksi ukuran 95-98% untuk menghemat kuota Supabase Storage.
 
 ### 7.1 Ringkasan Arsitektur Keamanan & Perlindungan Data
 

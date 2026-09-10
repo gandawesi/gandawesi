@@ -32,6 +32,7 @@ import {
   ShieldCheck,
   RefreshCw,
 } from 'lucide-react';
+import { exportToCSV } from '@/lib/utils/export-csv';
 import {
   fetchAdminKeuanganSummary,
   generateTagihanBulanan,
@@ -215,6 +216,63 @@ export default function AdminKeuanganPage() {
     return matchStatus && matchSearch;
   });
 
+  const handleExportKasCSV = () => {
+    if (!summary) return;
+    const headers = [
+      'No',
+      'Tanggal Transaksi',
+      'Tipe Arus Kas',
+      'Kategori',
+      'Keterangan Transaksi',
+      'Nominal (Rp)',
+      'Bukti / Nota URL',
+    ];
+
+    const rows = summary.transaksi_list.map((t, idx) => [
+      idx + 1,
+      t.tanggal,
+      t.tipe === 'masuk' ? 'Kas Masuk (+)' : 'Kas Keluar (-)',
+      t.kategori || '-',
+      t.keterangan || '-',
+      t.nominal,
+      t.bukti || '-',
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(`buku-kas-umum-gandawesi-${dateStr}`, headers, rows);
+  };
+
+  const handleExportIuranCSV = () => {
+    const headers = [
+      'No',
+      'Periode Iuran',
+      'Nama Anggota',
+      'NIM',
+      'NIA',
+      'Angkatan',
+      'Tingkat Keanggotaan',
+      'Nominal Tagihan (Rp)',
+      'Status Pembayaran',
+      'Tanggal Verifikasi / Bayar',
+    ];
+
+    const rows = filteredIuran.map((i, idx) => [
+      idx + 1,
+      i.periode,
+      i.anggota_nama,
+      i.anggota_nim || '-',
+      i.anggota_nia || '-',
+      i.nomor_angkatan ? `Angkatan ${i.nomor_angkatan}` : '-',
+      i.status_keanggotaan.replace(/_/g, ' '),
+      i.nominal,
+      i.status_bayar === 'lunas' ? 'Lunas' : 'Menunggak',
+      i.tanggal_bayar || '-',
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(`rekap-iuran-anggota-gandawesi-${dateStr}`, headers, rows);
+  };
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Header Banner */}
@@ -363,6 +421,16 @@ export default function AdminKeuanganPage() {
               <span className="text-xs text-stone-400 font-mono">
                 Total Transaksi: {summary.transaksi_list.length}
               </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportKasCSV}
+                className="text-xs font-bold gap-1.5 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:text-emerald-600 cursor-pointer"
+                title="Unduh catatan buku kas umum ke Excel / CSV"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Ekspor Kas (CSV)</span>
+              </Button>
             </div>
           </div>
 
@@ -512,6 +580,17 @@ export default function AdminKeuanganPage() {
                   className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-xs"
                 />
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportIuranCSV}
+                className="text-xs font-bold gap-1.5 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:text-amber-500 cursor-pointer"
+                title="Unduh rekap data iuran anggota ke Excel / CSV"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-amber-500" />
+                <span>Ekspor Iuran (CSV)</span>
+              </Button>
             </div>
           </div>
 

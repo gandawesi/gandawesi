@@ -27,7 +27,11 @@ import {
   Briefcase,
   ExternalLink,
   Info,
+  Camera,
+  X,
 } from 'lucide-react';
+import { ImageUploader } from '@/components/ui/ImageUploader';
+import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 
 export default function ProfilPage() {
   const { authUser, profile: authProfile, refreshUser } = useAuth();
@@ -39,6 +43,23 @@ export default function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [avatarUpdating, setAvatarUpdating] = useState(false);
+
+  const handleAvatarUploaded = async (newUrl: string) => {
+    setAvatarUpdating(true);
+    const res = await updateProfile({ foto_profil: newUrl });
+    setAvatarUpdating(false);
+    if (res.success) {
+      if (profile) setProfile({ ...profile, foto_profil: newUrl });
+      setShowAvatarModal(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+      refreshUser();
+    } else {
+      setErrorMessage(res.error || 'Gagal menyimpan foto profil baru.');
+    }
+  };
 
   // Form edit states
   const [formData, setFormData] = useState({
@@ -199,9 +220,14 @@ export default function ProfilPage() {
                 name={profile?.nama || authUser?.email || 'Anggota Gandawesi'}
                 size="xl"
               />
-              <div className="mt-2 text-[10px] text-stone-400 text-center max-w-[120px] leading-tight">
-                Upload foto profil ditunda (pemeliharaan)
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(true)}
+                className="absolute -bottom-1 -right-1 p-2 rounded-full bg-forest-700 hover:bg-forest-600 text-white shadow-lg border-2 border-white dark:border-[#0c1410] transition-all hover:scale-110"
+                title="Ganti Foto Profil"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div>
@@ -525,6 +551,53 @@ export default function ProfilPage() {
           </Card>
         </div>
       </div>
+
+      {/* Modal Ubah Foto Profil */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-stone-900 dark:text-white">
+                  Perbarui Foto Profil
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Foto otomatis dikompresi ke format WebP super ringan dan tajam.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="p-1 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <ImageUploader
+              label="Pilih Foto Profil Baru"
+              helperText="Foto otomatis diperkecil ke 400x400 WebP (~25-40 KB) dan disimpan ke Supabase Storage."
+              bucket={SUPABASE_STORAGE_BUCKETS.AVATARS}
+              folder="avatars"
+              initialUrl={profile?.foto_profil || null}
+              options={{ maxWidth: 400, maxHeight: 400, quality: 0.85, format: 'image/webp' }}
+              onUploadComplete={(url) => handleAvatarUploaded(url)}
+            />
+
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={avatarUpdating}
+                onClick={() => setShowAvatarModal(false)}
+              >
+                Tutup
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

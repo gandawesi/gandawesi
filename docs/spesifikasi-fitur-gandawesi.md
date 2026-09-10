@@ -93,7 +93,7 @@ Status lain (tidak termasuk jalur linear di atas):
 | Tes kesehatan | Dua sumber data: catatan manual dari panitia + upload surat keterangan sehat dari dokter |
 | Wawancara | Penilaian motivasi, pemahaman nilai cinta alam, ketahanan mental, dan komitmen waktu latihan fisik |
 | Approval | **Komandan Latihan (DANLAT)** — murni wewenang Danlat, bukan Dewan Pengurus (DP) |
-| Gugur | Bisa gugur, riwayat disimpan, boleh daftar lagi tahun berikutnya |
+| Gugur & Arsip AD/ART | Sesuai AD/ART Gandawesi: Calon siswa yang dinyatakan belum memenuhi syarat/gugur **berhak mendaftar kembali pada periode/angkatan berikutnya**. Sistem menyediakan tab khusus "Arsip Gugur" dan fitur **Re-evaluasi Danlat** untuk membuka kembali tinjauan berkas jika ada banding/perbaikan data. |
 
 ### 3.2 Tahap Siswa (~3 bulan)
 | Aspek | Detail |
@@ -195,27 +195,38 @@ Status lain (tidak termasuk jalur linear di atas):
 - Pengajuan peminjaman → approval oleh admin
 - Status: dipinjam/dikembalikan
 
-### 4.6 KTA Digital & Sertifikat
-- Hanya untuk anggota yang sudah punya NIA (Anggota Biasa ke atas)
-- Sertifikat terkait pencapaian (kaderisasi, ekspedisi, dll)
+### 4.6 KTA Digital & Sistem Sertifikat (Internal & Eksternal)
+- **KTA Digital**:
+  - Diterbitkan untuk anggota yang telah mengantongi Nomor Induk Anggota (NIA) resmi.
+  - Dilengkapi foto profil asli dan **QR Code dinamis** yang terhubung langsung ke portal verifikasi publik (`/verifikasi/kta?nia=...`).
+  - Mendukung layout cetak khusus (`@media print`) dengan tata letak bersih.
+- **Sistem Piagam & Sertifikat**:
+  - **Sertifikat Internal**: Piagam kelulusan kaderisasi (Diksar, PPNIA, pelantikan lapangan) atau kepanitiaan yang diterbitkan dan disahkan oleh Dewan Pengurus Gandawesi.
+  - **Sertifikat Eksternal (Delegasi Anggota)**: Piagam pelatihan, kompetisi panjat tebing FPTI, sertifikasi pemandu gunung APGI, atau diklat Vertical Rescue BASARNAS yang diikuti oleh anggota sebagai utusan/delegasi resmi Gandawesi.
+  - **Sertifikat / Piagam Institusional**: Penghargaan resmi dari mitra luar kampus yang dianugerahkan langsung kepada lembaga organisasi Gandawesi FPTI UPI (misal: Piagam Apresiasi Konservasi dari Balai Besar Taman Nasional atau Ormawa Award dari Rektorat UPI).
+  - Dilengkapi fitur pengunggahan berkas pindaian (scan) fisik berformat WebP ke Supabase Storage, tombol download dokumen asli, serta integrasi nomor registrasi ke portal verifikasi publik.
 
 ### 4.7 Struktur Organisasi & Jabatan
 - Riwayat jabatan penuh (anggota, jabatan, periode mulai-selesai)
 - Halaman publik "Struktur Organisasi" per periode (opsional, tidak mandatory)
 - Termasuk: Ketua Organisasi, Ketua Medan Operasi, Pengurus lain, Dewan Penasehat
 
-### 4.8 Keuangan
+### 4.8 Keuangan & Ekspor Laporan
 - **Iuran wajib**: nominal per status keanggotaan (Anggota Muda/Biasa/Luar Biasa), nominal bisa berubah tergantung kebijakan pengurus yang menjabat
   - Anggota Muda mulai wajib iuran sejak status ini
   - Perubahan status di tengah bulan → iuran bulan itu tetap pakai tarif lama, tarif baru berlaku bulan berikutnya
   - Tunggakan = catatan administratif saja, tanpa sanksi otomatis
+  - Konfirmasi bayar iuran mendukung unggah foto struk/screenshot transfer bank langsung dari HP dengan kompresi WebP otomatis.
 - **RAB per event**: rencana anggaran + realisasi
-- **Buku kas umum**: pemasukan (iuran, sponsorship, donasi, subsidi kampus, usaha mandiri) & pengeluaran, dengan bukti transaksi
+- **Buku kas umum**: pemasukan (iuran, sponsorship, donasi, subsidi kampus, usaha mandiri) & pengeluaran, dengan bukti nota fisik terkompresi.
+- **Ekspor Laporan Administratif (Excel / CSV)**:
+  - Tombol ekspor Buku Kas (CSV) dan Rekap Iuran (CSV) berstandar UTF-8 BOM untuk pelaporan pertanggungjawaban bendahara.
 - **Laporan keuangan periodik**: transparansi ke anggota
 - **LPJ**: kepengurusan tahunan & per kegiatan/ekspedisi
 
-### 4.9 Peta Rute/Ekspedisi
-- Dokumentasi rute pendakian/ekspedisi yang pernah dilakukan (galeri pencapaian ke publik)
+### 4.9 Peta Rute & Galeri Dokumentasi Ekspedisi
+- Dokumentasi rute pendakian/ekspedisi yang pernah dilakukan (galeri pencapaian ke publik).
+- Dilengkapi modul CMS Admin dengan `ImageUploader` untuk mengunggah multi-foto medan jelajah rute yang otomatis dikompresi ke format WebP di cloud storage bucket `expeditions`.
 
 ### 4.10 Sponsorship/Donasi
 - Halaman informasi cara berkontribusi (individu, brand, alumni)
@@ -224,6 +235,32 @@ Status lain (tidak termasuk jalur linear di atas):
 - Kelola seluruh modul di atas
 - Statistik anggota per angkatan/status
 - Approval di titik-titik keputusan (khusus role terkait: DANLAT, Ketua Organisasi / Ketua DP, seluruh Dewan Pengurus)
+
+### 4.12 Layanan Verifikasi Publik Bebas Login
+- **Verifikasi KTA Publik (`/verifikasi/kta`)**:
+  - Dapat diakses secara terbuka tanpa login oleh pihak luar (petugas pos registrasi pendakian gunung, Balai Taman Nasional, panitia lomba panjat tebing/SAR, sponsor).
+  - Memverifikasi keabsahan Nomor Induk Anggota (NIA) atau kode QR KTA.
+  - Menampilkan nama lengkap, foto profil, status keanggotaan aktif, nomor & nama angkatan, program studi, dan tanggal pengesahan.
+- **Verifikasi E-Sertifikat Publik (`/verifikasi/sertifikat`)**:
+  - Memeriksa keabsahan nomor registrasi sertifikat digital dan piagam penghargaan.
+  - Menampilkan kop resmi sertifikat, nama penerima (anggota atau institusi Gandawesi), jenis pencapaian, tanggal terbit, nama instansi penerbit (internal maupun eksternal), serta tombol akses dokumen scan asli.
+
+### 4.13 Manajemen Storage & Kompresi Berkas Otomatis Sisi Klien
+- Untuk mencegah penumpukan kuota penyimpanan Supabase Storage (kuota gratis 1 GB), seluruh input gambar di seluruh aplikasi diintegrasikan dengan komponen `ImageUploader` yang mengompresi gambar dari smartphone/kamera (JPG, PNG, HEIC) ke format modern **WebP** dengan kualitas 80-85%.
+- Kompresi mereduksi ukuran file hingga **95-98%** (misal foto 5MB menjadi ~100-180 KB).
+- Struktur bucket Supabase Storage:
+  - `avatars`: Foto profil anggota (persegi 400x400 WebP).
+  - `articles`: Foto cover dan ilustrasi artikel/jurnal (resolusi HD WebP).
+  - `receipts`: Struk dan bukti transfer bank pembayaran iuran kas.
+  - `documents`: Surat dokter tes kesehatan, surat persetujuan orang tua, dan pindaian (scan) sertifikat fisik.
+  - `expeditions`: Dokumentasi galeri foto medan dan rute ekspedisi.
+
+### 4.14 Sistem Ekspor Laporan Administratif (Excel / CSV dengan UTF-8 BOM)
+- Menyediakan fungsi universal `exportToCSV` dengan Byte Order Mark (`\uFEFF`) agar seluruh karakter teks langsung terpisah menjadi kolom tabel yang rapi saat dibuka di Microsoft Excel Windows tanpa kendala decoding.
+- Diterapkan pada 3 modul panel admin utama:
+  1. **Seleksi Calon Siswa**: Ekspor rekap biodata pendaftar, kelengkapan berkas, catatan kesehatan dokter, skor & rekomendasi wawancara, status kelulusan Danlat.
+  2. **Buku Kas & Iuran**: Ekspor buku kas umum dan rekapitulasi iuran anggota per periode.
+  3. **Inventaris & Aset**: Ekspor log riwayat peminjaman alat dan master katalog aset fisik.
 
 ---
 

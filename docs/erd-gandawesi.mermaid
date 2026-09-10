@@ -95,6 +95,17 @@ erDiagram
         timestamptz created_at
     }
 
+    wawancara_calon_siswa {
+        uuid id PK
+        uuid anggota_id FK "UK"
+        uuid pewawancara_id FK "nullable - Danlat/instruktur"
+        numeric nilai_wawancara
+        text rekomendasi "sangat_direkomendasikan | direkomendasikan | dipertimbangkan | tidak_direkomendasikan"
+        text catatan
+        date tanggal
+        timestamptz created_at
+    }
+
     %% Relasi Keanggotaan Inti
     angkatan ||--o{ periode_pendaftaran : "buka pendaftaran"
     angkatan ||--o{ anggota : "anggota per angkatan"
@@ -102,6 +113,7 @@ erDiagram
     anggota ||--o{ riwayat_tahap : "riwayat tahap"
     anggota ||--o{ riwayat_tahap : "approved_by"
     anggota ||--o{ tes_kesehatan : "tes kesehatan"
+    anggota ||--o| wawancara_calon_siswa : "evaluasi wawancara Danlat"
     anggota ||--o| klaim_akun : "klaim akun"
     anggota ||--o{ user_roles : "punya role"
 
@@ -448,15 +460,22 @@ erDiagram
 
     sertifikat {
         uuid id PK
-        uuid anggota_id FK
+        uuid anggota_id FK "nullable - null untuk piagam organisasi"
+        text judul
+        text nomor_sertifikat
         text jenis
         date tanggal_terbit
+        text deskripsi
         text file "path Storage"
+        text asal "internal | eksternal"
+        text penerima_tipe "anggota | organisasi"
+        text lembaga_penerbit
+        timestamptz created_at
     }
 
     %% Relasi Achievement
     anggota ||--o{ kta : "KTA digital"
-    anggota ||--o{ sertifikat : "sertifikat"
+    anggota ||--o{ sertifikat : "sertifikat (pribadi/delegasi)"
 
     %% ============================================================
     %% 9. KONTEN PUBLIK

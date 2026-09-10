@@ -31,7 +31,13 @@ import {
   MessageSquare,
   ShieldCheck,
   Star,
+  RotateCcw,
+  Archive,
+  Info,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportToCSV } from '@/lib/utils/export-csv';
 
 export default function AdminCalonSiswaPage() {
   const [calonList, setCalonList] = useState<CalonSiswaItem[]>([]);
@@ -154,6 +160,51 @@ export default function AdminCalonSiswaPage() {
   const countLolos = calonList.filter((c) => c.keputusan_tahap?.status === 'lolos').length;
   const countGugur = calonList.filter((c) => c.keputusan_tahap?.status === 'gugur').length;
 
+  const handleExportCSV = () => {
+    const headers = [
+      'No',
+      'Nama Lengkap',
+      'NIM',
+      'Jurusan',
+      'No HP',
+      'Email',
+      'Surat Ortu',
+      'Surat Dokter',
+      'Catatan Medis Panitia',
+      'Skor Wawancara',
+      'Rekomendasi Wawancara',
+      'Pewawancara',
+      'Catatan Wawancara',
+      'Status Kelulusan',
+      'Catatan Danlat',
+    ];
+
+    const rows = filteredList.map((c, idx) => [
+      idx + 1,
+      c.nama,
+      c.nim || '-',
+      c.jurusan || '-',
+      c.no_hp || '-',
+      c.email || '-',
+      c.file_persetujuan_ortu ? 'Terlampir' : 'Belum Ada',
+      c.tes_kesehatan_awal?.file_surat_dokter ? 'Ada' : 'Belum Ada',
+      c.tes_kesehatan_awal?.catatan_panitia || '-',
+      c.hasil_wawancara?.nilai_wawancara ?? '-',
+      c.hasil_wawancara?.rekomendasi ? c.hasil_wawancara.rekomendasi.replace(/_/g, ' ') : '-',
+      c.hasil_wawancara?.pewawancara_nama || '-',
+      c.hasil_wawancara?.catatan_pewawancara || '-',
+      c.keputusan_tahap?.status === 'lolos'
+        ? 'Lolos ke Siswa'
+        : c.keputusan_tahap?.status === 'gugur'
+        ? 'Gugur Seleksi (Dapat Daftar Ulang)'
+        : 'Dalam Proses / Ditinjau',
+      c.keputusan_tahap?.catatan || '-',
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(`rekap-calon-siswa-gandawesi-${dateStr}`, headers, rows);
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
@@ -245,23 +296,63 @@ export default function AdminCalonSiswaPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs self-stretch sm:self-auto justify-center">
-            {(['all', 'dalam_proses', 'lolos', 'gugur'] as const).map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-lg font-medium capitalize transition-all cursor-pointer ${
-                  statusFilter === st
-                    ? 'bg-white dark:bg-forest-900 text-stone-900 dark:text-white shadow-xs'
-                    : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-              >
-                {st === 'all' ? 'Semua' : st.replace('_', ' ')}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs flex-1 sm:flex-none justify-center">
+              {[
+                { id: 'all', label: `Semua (${countTotal})` },
+                { id: 'dalam_proses', label: `Ditinjau (${countTotal - countLolos - countGugur})` },
+                { id: 'lolos', label: `Lolos Siswa (${countLolos})` },
+                { id: 'gugur', label: `Arsip Gugur (${countGugur})` },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                    statusFilter === tab.id
+                      ? tab.id === 'gugur'
+                        ? 'bg-rose-600 text-white shadow-xs font-bold'
+                        : 'bg-white dark:bg-forest-900 text-stone-900 dark:text-white shadow-xs font-bold'
+                      : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="text-xs font-bold gap-1.5 shrink-0 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:text-forest-600 cursor-pointer"
+              title="Unduh seluruh rekap calon siswa ke Excel / CSV"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Ekspor Excel</span>
+            </Button>
           </div>
         </div>
       </Card>
+
+      {/* AD/ART Information Banner for Rejected / Gugur Applicants */}
+      {statusFilter === 'gugur' && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 flex items-start gap-3 text-xs">
+          <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-amber-950 dark:text-amber-100">
+                Arsip Calon Siswa yang Gugur Seleksi
+              </h4>
+              <span className="text-[10px] px-2 py-0.5 bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 rounded-full font-semibold">
+                AD/ART Gandawesi
+              </span>
+            </div>
+            <p className="text-stone-600 dark:text-stone-400 leading-relaxed">
+              Berdasarkan ketentuan AD/ART Gandawesi mengenai Kaderisasi & Keanggotaan, calon siswa yang dinyatakan gugur atau belum memenuhi syarat kelulusan seleksi ini <strong>berhak mendaftar kembali pada periode/angkatan berikutnya</strong>. Catatan evaluasi di bawah disimpan sebagai riwayat pembinaan dan referensi peninjauan berkas di masa mendatang. Danlat dapat meninjau atau merevisi status jika diperlukan.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Applicants Table */}
       {loading ? (
@@ -440,9 +531,20 @@ export default function AdminCalonSiswaPage() {
                           <CheckCircle2 className="w-3.5 h-3.5" /> Lolos ke Siswa
                         </span>
                       ) : calon.keputusan_tahap?.status === 'gugur' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
-                          <XCircle className="w-3.5 h-3.5" /> Gugur
-                        </span>
+                        <div className="space-y-1">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">
+                            <XCircle className="w-3.5 h-3.5" /> Gugur Seleksi
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-stone-600 dark:text-stone-300 font-medium bg-stone-100 dark:bg-stone-800/80 px-2 py-0.5 rounded-md">
+                            <RotateCcw className="w-2.5 h-2.5 text-forest-600" />
+                            Dapat Daftar Ulang Periode Depan
+                          </span>
+                          {calon.keputusan_tahap?.catatan && (
+                            <p className="text-[10px] text-stone-500 italic line-clamp-1">
+                              Alasan: &quot;{calon.keputusan_tahap.catatan}&quot;
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
                           <Clock className="w-3.5 h-3.5" /> Sedang Ditinjau
@@ -452,19 +554,35 @@ export default function AdminCalonSiswaPage() {
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setDecisionModalTarget(calon);
-                          setDecisionType('lolos');
-                          setDecisionNote(calon.keputusan_tahap?.catatan || '');
-                        }}
-                        className="text-xs font-semibold"
-                      >
-                        <Award className="w-3.5 h-3.5 mr-1 text-forest-600" />
-                        ACC Danlat
-                      </Button>
+                      {calon.keputusan_tahap?.status === 'gugur' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setDecisionModalTarget(calon);
+                            setDecisionType('gugur');
+                            setDecisionNote(calon.keputusan_tahap?.catatan || '');
+                          }}
+                          className="text-xs font-semibold text-stone-600 hover:text-stone-900 dark:text-stone-300"
+                        >
+                          <Archive className="w-3.5 h-3.5 mr-1 text-rose-500" />
+                          Tinjau / Re-evaluasi
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setDecisionModalTarget(calon);
+                            setDecisionType(calon.keputusan_tahap?.status === 'gugur' ? 'gugur' : 'lolos');
+                            setDecisionNote(calon.keputusan_tahap?.catatan || '');
+                          }}
+                          className="text-xs font-semibold"
+                        >
+                          <Award className="w-3.5 h-3.5 mr-1 text-forest-600" />
+                          {calon.keputusan_tahap?.status === 'lolos' ? 'Ubah ACC Danlat' : 'ACC Danlat'}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -666,13 +784,35 @@ export default function AdminCalonSiswaPage() {
                 <div>
                   <span className="text-stone-400 block">Surat Persetujuan Ortu:</span>
                   <span className="font-semibold text-stone-800 dark:text-stone-200">
-                    {decisionModalTarget.file_persetujuan_ortu ? '✓ Terlampir' : '✗ Belum Ada'}
+                    {decisionModalTarget.file_persetujuan_ortu ? (
+                      <a
+                        href={decisionModalTarget.file_persetujuan_ortu}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-forest-600 dark:text-forest-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        ✓ Terlampir (Lihat Berkas)
+                      </a>
+                    ) : (
+                      '✗ Belum Ada'
+                    )}
                   </span>
                 </div>
                 <div>
                   <span className="text-stone-400 block">Surat Dokter:</span>
                   <span className="font-semibold text-stone-800 dark:text-stone-200">
-                    {decisionModalTarget.tes_kesehatan_awal?.file_surat_dokter ? '✓ Ada' : '✗ Belum Ada'}
+                    {decisionModalTarget.tes_kesehatan_awal?.file_surat_dokter ? (
+                      <a
+                        href={decisionModalTarget.tes_kesehatan_awal.file_surat_dokter}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-forest-600 dark:text-forest-400 hover:underline inline-flex items-center gap-1"
+                      >
+                        ✓ Ada (Lihat Berkas)
+                      </a>
+                    ) : (
+                      '✗ Belum Ada'
+                    )}
                   </span>
                 </div>
               </div>
@@ -739,9 +879,20 @@ export default function AdminCalonSiswaPage() {
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-[11px]">
-              * Keputusan ACC kelulusan tahap Calon Siswa menuju Siswa adalah mandat prerogatif <strong>Komandan Latihan (Danlat)</strong>, bukan Dewan Pengurus (DP).
-            </div>
+            {decisionType === 'gugur' ? (
+              <div className="p-3 rounded-xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-900/40 text-rose-900 dark:text-rose-200 text-[11px] space-y-1">
+                <p className="font-bold flex items-center gap-1">
+                  <RotateCcw className="w-3.5 h-3.5" /> Ketentuan AD/ART Gandawesi:
+                </p>
+                <p>
+                  Calon siswa yang dinyatakan gugur tetap <strong>berhak mendaftar kembali pada periode seleksi berikutnya</strong>. Catatan evaluasi di atas akan tersimpan di arsip seleksi untuk referensi pembinaan.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-[11px]">
+                * Keputusan ACC kelulusan tahap Calon Siswa menuju Siswa adalah mandat prerogatif <strong>Komandan Latihan (Danlat)</strong>, bukan Dewan Pengurus (DP).
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
               <Button
