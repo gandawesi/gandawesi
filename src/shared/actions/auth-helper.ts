@@ -1,12 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import type { ActionResponse } from '@/shared/types/action-response';
+import type { Database } from '@/lib/types/database.types';
+
+export type AnggotaRow = Database['public']['Tables']['anggota']['Row'];
+export type AngkatanRow = Database['public']['Tables']['angkatan']['Row'];
+
+export type AnggotaWithAngkatan = AnggotaRow & {
+  angkatan?: AngkatanRow | null;
+};
 
 export interface AuthenticatedMemberResult {
   supabase: SupabaseClient;
   userId: string | null;
   memberId: string | null;
-  member: any | null;
+  member: AnggotaWithAngkatan | null;
   error?: string;
 }
 
@@ -43,7 +51,7 @@ export async function getAuthenticatedMember(
       supabase,
       userId,
       memberId: member?.id ?? null,
-      member: member ?? null,
+      member: (member as unknown as AnggotaWithAngkatan) ?? null,
     };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Gagal memverifikasi akun pengguna';
@@ -66,7 +74,7 @@ export async function getCurrentMemberId(supabaseClient?: SupabaseClient): Promi
 export function actionSuccess(): ActionResponse<void>;
 export function actionSuccess(message: string): ActionResponse<void>;
 export function actionSuccess<T>(data: T, message?: string): ActionResponse<T>;
-export function actionSuccess<T = void>(dataOrMessage?: T | string, message?: string): ActionResponse<any> {
+export function actionSuccess<T = void>(dataOrMessage?: T | string, message?: string): ActionResponse<T> {
   if (typeof dataOrMessage === 'string' && message === undefined) {
     return {
       success: true,

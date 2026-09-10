@@ -79,11 +79,11 @@ export default function AdminGovernancePage() {
     setDewanPenasehatList(res.dewanPenasehatList);
     setCandidatesALB(res.candidatesALB);
     setAllALBList(res.allALBList);
-    if (res.candidatesALB.length > 0 && !jabatanForm.anggota_id) {
-      setJabatanForm((prev) => ({ ...prev, anggota_id: res.candidatesALB[0].id }));
+    if (res.candidatesALB.length > 0) {
+      setJabatanForm((prev) => (!prev.anggota_id ? { ...prev, anggota_id: res.candidatesALB[0].id } : prev));
     }
-    if (res.allALBList.length > 0 && !penasehatForm.anggota_id) {
-      setPenasehatForm((prev) => ({ ...prev, anggota_id: res.allALBList[0].id }));
+    if (res.allALBList.length > 0) {
+      setPenasehatForm((prev) => (!prev.anggota_id ? { ...prev, anggota_id: res.allALBList[0].id } : prev));
     }
     setLoading(false);
   }, []);
