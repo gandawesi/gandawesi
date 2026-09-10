@@ -40,7 +40,6 @@ import {
   Save,
   ShieldCheck,
   X,
-  FileText,
   UserX,
   Sparkles,
   Mountain,

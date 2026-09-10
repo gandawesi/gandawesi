@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileText,
-  Shield,
   ArrowRight,
   Info,
 } from 'lucide-react';

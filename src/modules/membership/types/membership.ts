@@ -1,4 +1,4 @@
-import type { MemberStatus, FunctionalRole } from '@/lib/constants';
+import type { MemberStatus } from '@/lib/constants';
 
 export interface AnggotaDirektoriItem {
   id: string;

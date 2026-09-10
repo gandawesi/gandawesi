@@ -12,7 +12,6 @@ import type { MyEvaluasiAkhirSummary } from '@/lib/types/evaluasi-nia';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
-import { Badge } from '@/components/ui/Badge';
 import {
   BookOpen,
   Activity,
@@ -450,7 +449,6 @@ export default function PPNIAPortalPage() {
                 const isPematerian = item.jenis_kegiatan === 'pematerian';
                 const isPresentasi = item.jenis_kegiatan === 'presentasi';
                 const isPendakian = item.jenis_kegiatan === 'pendakian';
-                const isEkspedisi = item.jenis_kegiatan === 'ekspedisi';
 
                 const badgeBg = isPematerian
                   ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'

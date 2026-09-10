@@ -9,14 +9,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  ArrowRight,
   CreditCard,
-  QrCode,
   Send,
   X,
-  FileText,
   Calendar,
-  Sparkles,
   Info,
 } from 'lucide-react';
 import { fetchMyIuranSummary } from '@/lib/actions/keuangan';

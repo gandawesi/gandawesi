@@ -1,21 +1,16 @@
-import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import {
   Compass,
   Mountain,
   Shield,
   Users,
-  Award,
   ArrowRight,
   CheckCircle2,
   TreePine,
-  Sparkles,
-  MapPin,
-  Calendar,
 } from 'lucide-react';
 import { APP_NAME, APP_SUBTITLE } from '@/lib/constants';
 

@@ -3,28 +3,21 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import {
   Package,
-  Calendar,
   Clock,
-  CheckCircle2,
   AlertCircle,
   X,
   Search,
-  Filter,
-  ShieldAlert,
-  ArrowRight,
   ClipboardList,
   Layers,
-  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { formatDateIndo } from '@/lib/utils/format';
-import { AlatItem, PeminjamanAlatItem, KondisiAlat } from '@/lib/types/inventaris';
+import { AlatItem, PeminjamanAlatItem } from '@/lib/types/inventaris';
 import { getAlatList, getMyPeminjaman, ajukanPeminjaman } from '@/lib/actions/inventaris';
 
 const KATEGORI_OPTIONS = [

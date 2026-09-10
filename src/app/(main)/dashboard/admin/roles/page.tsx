@@ -8,17 +8,12 @@ import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import {
   ShieldCheck,
   Plus,
   X,
-  UserCog,
-  CheckCircle2,
-  AlertCircle,
   Search,
-  Calendar,
 } from 'lucide-react';
 
 export default function AdminRolesPage() {

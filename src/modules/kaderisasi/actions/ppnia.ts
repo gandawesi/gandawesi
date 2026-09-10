@@ -15,7 +15,6 @@ import type {
   AnggotaMudaPPNIAItem,
   PresentasiPPNIAItem,
   RencanaEkspedisiItem,
-  EvaluasiBerkalaItem,
   SesiKegiatanPPNIAItem,
   PresensiPPNIAItem,
   MyPPNIASummary,

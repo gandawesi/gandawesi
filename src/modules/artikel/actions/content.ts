@@ -9,7 +9,6 @@ import {
   KontenStatisItem,
   RuteEkspedisiItem,
   CreateRuteEkspedisiPayload,
-  RuteWaypoint,
   ArtikelKomentarItem,
   CreateKomentarPayload,
   SponsorshipItem,
@@ -18,7 +17,7 @@ import {
 } from '@/lib/types/content';
 
 // Initial fallback mock data for articles
-let MOCK_ARTIKEL: ArtikelItem[] = [
+const MOCK_ARTIKEL: ArtikelItem[] = [
   {
     id: 'art-1',
     penulis_id: 'am-1',
@@ -110,7 +109,7 @@ Ketua Umum Gandawesi menegaskan bahwa latihan rutin ini merupakan pilar keselama
 ];
 
 // Initial fallback mock data for static content
-let MOCK_KONTEN_STATIS: Record<string, KontenStatisItem> = {
+const MOCK_KONTEN_STATIS: Record<string, KontenStatisItem> = {
   'visi-misi': {
     id: 'ks-1',
     slug: 'visi-misi',
@@ -147,7 +146,7 @@ Hingga saat ini, Gandawesi telah melahirkan lebih dari 32 angkatan resmi yang me
 };
 
 // Initial fallback mock data for expedition routes with GIS Waypoints
-let MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
+const MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
   {
     id: 'rute-1',
     nama: 'Ekspedisi Karst & Sistem Perguaan Sawarna',
@@ -395,7 +394,7 @@ let MOCK_KOMENTAR: ArtikelKomentarItem[] = [
 ];
 
 // Initial fallback mock data for sponsorship
-let MOCK_SPONSORSHIP: SponsorshipItem[] = [
+const MOCK_SPONSORSHIP: SponsorshipItem[] = [
   {
     id: 'sp-1',
     nama_sponsor: 'Eiger Adventure Outdoor Equipment',

@@ -1,23 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import {
-  Award,
   ShieldCheck,
   QrCode,
   Printer,
-  Download,
   RotateCw,
   Lock,
   Compass,
   Sparkles,
   ArrowRight,
   FileText,
-  MapPin,
   CheckCircle2,
 } from 'lucide-react';
 import { fetchMyKTADigital } from '@/lib/actions/governance';

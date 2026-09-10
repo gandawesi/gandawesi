@@ -127,7 +127,7 @@ export async function fetchMateriList(): Promise<MateriKaderisasiItem[]> {
     }
 
     // Fetch user post-test scores if logged in
-    let userScores = new Map<string, number>();
+    const userScores = new Map<string, number>();
     if (member) {
       const { data: hasilList } = await supabase
         .from('hasil_post_test')

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { UploadCloud, CheckCircle2, X, Sparkles, AlertCircle, CloudCheck, Loader2 } from 'lucide-react';
+import { UploadCloud, CheckCircle2, X, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { compressImage, CompressImageOptions, CompressImageResult } from '@/shared/utils/image-compression';
 import { uploadFileToStorage, createUniqueStorageFileName } from '@/lib/supabase/storage';
 

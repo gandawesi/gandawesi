@@ -16,25 +16,20 @@ import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import { Modal } from '@/components/ui/Modal';
 import {
-  ClipboardList,
   CheckCircle2,
   XCircle,
   Clock,
   HeartPulse,
   FileCheck,
   Search,
-  Filter,
   UserCheck,
-  AlertTriangle,
   Award,
-  X,
   MessageSquare,
   ShieldCheck,
   Star,
   RotateCcw,
   Archive,
   Info,
-  Download,
   FileSpreadsheet,
 } from 'lucide-react';
 import { exportToCSV } from '@/lib/utils/export-csv';

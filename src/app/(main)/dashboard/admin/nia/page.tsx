@@ -12,21 +12,17 @@ import {
 } from '@/lib/actions/evaluasi-nia';
 import type {
   KriteriaEvaluasiItem,
-  NilaiEvaluasiItem,
   EvaluasiAkhirAnggotaItem,
 } from '@/lib/types/evaluasi-nia';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   Award,
   Users,
   CheckCircle2,
-  XCircle,
   Clock,
   Search,
   Filter,
@@ -35,13 +31,9 @@ import {
   Save,
   ShieldCheck,
   X,
-  FileText,
   KeyRound,
   Sparkles,
   Sliders,
-  AlertTriangle,
-  Send,
-  BookOpen,
 } from 'lucide-react';
 
 export default function AdminNIAPage() {

@@ -4,18 +4,10 @@ import React, { useState, useEffect, useTransition } from 'react';
 import {
   HeartHandshake,
   ShieldCheck,
-  Building,
-  CreditCard,
-  QrCode,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
-  ArrowRight,
-  Wallet,
-  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { SponsorshipItem } from '@/lib/types/content';
 import { getPublicSponsorshipList, submitDonasiPublic } from '@/lib/actions/content';

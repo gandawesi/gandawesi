@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { RuteEkspedisiItem } from '@/lib/types/content';
 import {
-  Compass,
   MapPin,
   Calendar,
   Users,
@@ -12,7 +11,6 @@ import {
   Camera,
   Layers,
   Activity,
-  CheckCircle2,
   Navigation,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

@@ -16,18 +16,12 @@ import {
   FileCheck,
   Plus,
   Trash2,
-  Calendar,
-  X,
-  CheckCircle2,
-  AlertTriangle,
   Search,
-  ExternalLink,
   ShieldCheck,
   Users,
   Building2,
   Globe,
   FileSpreadsheet,
-  FileText,
   Eye,
 } from 'lucide-react';
 import {
@@ -200,6 +194,15 @@ export default function AdminSertifikatPage() {
     const dateStr = new Date().toISOString().split('T')[0];
     exportToCSV(`rekap-sertifikat-gandawesi-${dateStr}`, headers, rows);
   };
+
+  if (loading) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center gap-3">
+        <Spinner size="lg" />
+        <p className="text-xs text-stone-500">Memuat data sertifikat & piagam penghargaan...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">

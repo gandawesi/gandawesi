@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Compass, AlertCircle, Sparkles, ShieldCheck, UserCheck } from 'lucide-react';
+import { Compass, AlertCircle, ShieldCheck, UserCheck } from 'lucide-react';
 
 function GoogleIcon() {
   return (

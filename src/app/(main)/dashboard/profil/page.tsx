@@ -13,19 +13,13 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import {
-  User,
   Mail,
-  Phone,
-  MapPin,
-  GraduationCap,
-  Calendar,
   Award,
   Shield,
   Edit3,
   CheckCircle2,
   AlertCircle,
   Briefcase,
-  ExternalLink,
   Info,
   Camera,
   X,

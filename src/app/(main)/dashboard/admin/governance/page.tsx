@@ -4,25 +4,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import { Modal } from '@/components/ui/Modal';
 import {
   Users,
   Briefcase,
-  Crown,
   Sparkles,
   GraduationCap,
   Plus,
   Trash2,
   AlertTriangle,
-  CheckCircle2,
-  Calendar,
-  X,
   Building,
-  ArrowRight,
-  UserCheck,
 } from 'lucide-react';
 import {
   fetchGovernanceAdminData,
@@ -36,7 +29,6 @@ import type {
   JabatanOrganisasiItem,
   DewanPenasehatItem,
   CandidateALBItem,
-  TransisiALBPayload,
 } from '@/lib/types/governance';
 
 export default function AdminGovernancePage() {
@@ -188,6 +180,15 @@ export default function AdminGovernancePage() {
       setFeedback({ type: 'error', text: res.error || 'Gagal memperbarui status anggota.' });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center gap-3">
+        <Spinner size="lg" />
+        <p className="text-xs text-stone-500">Memuat data kepengurusan & dewan penasehat...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">

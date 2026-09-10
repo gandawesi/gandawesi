@@ -1,25 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import {
   Calendar,
   MapPin,
-  Users,
   Clock,
   CheckCircle2,
   AlertCircle,
-  ChevronRight,
-  Filter,
-  Sparkles,
   CalendarDays,
   BookmarkCheck,
   X,
   Compass,
-  ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { EventItem } from '@/lib/types/event';
 import { getEvents, registerEvent, cancelRegistration } from '@/lib/actions/event';

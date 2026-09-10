@@ -16,7 +16,7 @@ import { MOCK_ALAT, MOCK_PEMINJAMAN } from '@/lib/mock-data';
 
 // Mutable runtime state for mock fallback in offline / maintenance mode
 let mockAlatStore: AlatItem[] = [...MOCK_ALAT];
-let mockPeminjamanStore: PeminjamanAlatItem[] = [...MOCK_PEMINJAMAN];
+const mockPeminjamanStore: PeminjamanAlatItem[] = [...MOCK_PEMINJAMAN];
 
 function revalidateInventarisPaths() {
   revalidatePath('/dashboard/inventaris');

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
 import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
@@ -14,22 +13,15 @@ import {
   Wallet,
   ArrowDownLeft,
   ArrowUpRight,
-  TrendingUp,
-  TrendingDown,
   Plus,
   Trash2,
-  CheckCircle2,
   AlertTriangle,
   FileSpreadsheet,
   Settings,
-  Calendar,
   Search,
-  X,
   FileText,
-  DollarSign,
   Download,
   ExternalLink,
-  ShieldCheck,
   RefreshCw,
 } from 'lucide-react';
 import { exportToCSV } from '@/lib/utils/export-csv';
@@ -40,17 +32,10 @@ import {
   createTransaksiKas,
   deleteTransaksiKas,
   saveTarifIuran,
-  saveEventAnggaran,
-  saveLPJ,
-  deleteLPJ,
 } from '@/lib/actions/keuangan';
 import type {
   AdminKeuanganSummary,
-  TransaksiKasItem,
   IuranItem,
-  TarifIuranItem,
-  EventAnggaranItem,
-  LPJItem,
 } from '@/lib/types/keuangan';
 
 export default function AdminKeuanganPage() {

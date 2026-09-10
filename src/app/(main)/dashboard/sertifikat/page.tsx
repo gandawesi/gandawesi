@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,13 +13,11 @@ import {
   Printer,
   ExternalLink,
   Search,
-  Sparkles,
   ShieldCheck,
   X,
   Eye,
   Building2,
   FileText,
-  Compass,
 } from 'lucide-react';
 import { fetchMySertifikatList } from '@/lib/actions/governance';
 import type { SertifikatItem } from '@/lib/types/governance';

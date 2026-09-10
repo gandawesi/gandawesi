@@ -1,6 +1,5 @@
-import React from 'react';
 import Link from 'next/link';
-import { Compass, MapPin, Mail, ShieldAlert, Mountain } from 'lucide-react';
+import { Compass, MapPin, Mountain } from 'lucide-react';
 import { APP_NAME, APP_SUBTITLE } from '@/lib/constants';
 
 export function Footer() {

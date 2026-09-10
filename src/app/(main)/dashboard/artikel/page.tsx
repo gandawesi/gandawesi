@@ -1,25 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import {
   FileText,
   Plus,
   Send,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  Clock,
   Eye,
-  AlertCircle,
   X,
-  Calendar,
-  Sparkles,
-  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { ImageUploader } from '@/components/ui/ImageUploader';
-import { ArtikelItem, CreateArtikelPayload, ArtikelKategori } from '@/lib/types/content';
+import { ArtikelItem, CreateArtikelPayload } from '@/lib/types/content';
 import { getMyArticles, createArticle, submitArticleForReview } from '@/lib/actions/content';
 
 export default function MemberArtikelPage() {

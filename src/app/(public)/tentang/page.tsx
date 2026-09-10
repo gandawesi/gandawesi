@@ -1,19 +1,15 @@
-import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import {
-  Compass,
   Mountain,
   BookOpen,
   Target,
   Shield,
   Award,
-  Users,
   ArrowRight,
-  Sparkles,
   Building2,
   Calendar,
   ExternalLink,

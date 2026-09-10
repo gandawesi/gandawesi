@@ -24,14 +24,11 @@ import type {
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import {
   ShieldAlert,
   Users,
-  Award,
   AlertTriangle,
   CheckCircle2,
   XCircle,
@@ -41,15 +38,12 @@ import {
   Plus,
   Calendar,
   Save,
-  ShieldCheck,
   X,
   FileText,
   Mountain,
   BookOpen,
   MapPin,
   ExternalLink,
-  Send,
-  Layers,
   Activity,
   CheckSquare,
 } from 'lucide-react';

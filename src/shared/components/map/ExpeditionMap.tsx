@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { RuteEkspedisiItem, RuteWaypoint } from '@/lib/types/content';
@@ -10,11 +10,9 @@ import {
   Mountain,
   Compass,
   Layers,
-  ChevronRight,
   Maximize2,
   Minimize2,
   Calendar,
-  Users,
 } from 'lucide-react';
 
 interface ExpeditionMapProps {

@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { fetchPendingClaims, approveClaim, rejectClaim } from '@/lib/actions/admin-claims';
 import type { KlaimAkunItem } from '@/lib/types/membership';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Alert } from '@/components/ui/Alert';
@@ -18,13 +16,10 @@ import {
   XCircle,
   Clock,
   Shield,
-  Search,
   MessageSquare,
-  AlertCircle,
 } from 'lucide-react';
 
 export default function AdminKlaimPage() {
-  const { isAdmin, isPanitiaOrAdmin } = useAuth();
   const [claims, setClaims] = useState<KlaimAkunItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'all' | 'menunggu' | 'disetujui' | 'ditolak'>('all');

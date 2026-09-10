@@ -37,10 +37,7 @@ import {
   Calendar,
   Save,
   CheckSquare,
-  AlertTriangle,
   X,
-  FileText,
-  UserCheck,
   Check,
   HelpCircle,
 } from 'lucide-react';

@@ -15,7 +15,6 @@ import {
   Printer,
   Copy,
   Check,
-  Compass,
   ArrowRight,
   GraduationCap,
   Calendar,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchDirectory, fetchAngkatanList } from '@/lib/actions/directory';
 import type { AnggotaDirektoriItem, AngkatanItem } from '@/lib/types/membership';
-import { MEMBER_STATUS_LABELS, MemberStatus } from '@/lib/constants';
+import { MEMBER_STATUS_LABELS } from '@/lib/constants';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -14,7 +14,6 @@ import { Pagination } from '@/components/ui/Pagination';
 import {
   Users,
   Search,
-  Filter,
   GraduationCap,
   Shield,
   Sparkles,

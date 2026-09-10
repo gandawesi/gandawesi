@@ -1,18 +1,10 @@
-import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   Calendar,
-  User,
   ArrowLeft,
-  Share2,
-  Bookmark,
-  Compass,
-  Clock,
   ChevronRight,
-  Shield,
-  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { getArticleBySlug, getPublicArticles, getArticleComments } from '@/lib/actions/content';

@@ -425,7 +425,7 @@ export async function fetchMyKTADigital(): Promise<KTADigitalData> {
       .maybeSingle();
 
     let ktaId = ktaRecord?.id;
-    let tglTerbit = ktaRecord?.tanggal_terbit || profile.tanggal_berubah_status || '2025-12-20';
+    const tglTerbit = ktaRecord?.tanggal_terbit || profile.tanggal_berubah_status || '2025-12-20';
 
     if (!ktaRecord) {
       const { data: newKTA } = await supabase

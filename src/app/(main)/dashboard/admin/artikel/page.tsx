@@ -3,20 +3,11 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import {
   FileText,
-  CheckCircle2,
-  XCircle,
   Eye,
-  Clock,
-  Compass,
   Edit2,
-  Trash2,
   Plus,
   X,
-  Sparkles,
   BookOpen,
-  Check,
-  Send,
-  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';

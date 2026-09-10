@@ -1,18 +1,10 @@
-import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   FileText,
   Calendar,
-  User,
   ArrowRight,
-  Compass,
-  Bookmark,
-  Sparkles,
-  Search,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { getPublicArticles } from '@/lib/actions/content';
 
@@ -32,7 +24,6 @@ export default async function PublicArtikelPage({
   const articles = await getPublicArticles(activeKategori);
 
   const featured = articles[0];
-  const list = articles.slice(1);
 
   const kategoriTabs = [
     { label: 'Semua Tulisan', val: 'all' },

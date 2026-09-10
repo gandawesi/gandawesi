@@ -17,16 +17,12 @@ import { SUPABASE_STORAGE_BUCKETS } from '@/lib/constants';
 import {
   Compass,
   Calendar,
-  CheckCircle2,
-  AlertCircle,
-  FileText,
   UploadCloud,
   Clock,
   ShieldCheck,
   LogIn,
   HeartPulse,
   UserCheck,
-  Award,
   MessageSquare,
   Star,
 } from 'lucide-react';
@@ -35,7 +31,6 @@ export default function PendaftaranPage() {
   const { authUser, isGuest, signInWithGoogle, refreshUser } = useAuth();
 
   const [periode, setPeriode] = useState<PeriodePendaftaranItem | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [existingCalon, setExistingCalon] = useState<CalonSiswaItem | null>(null);
 
@@ -61,7 +56,6 @@ export default function PendaftaranPage() {
       setLoading(true);
       const perRes = await fetchActivePeriode();
       setPeriode(perRes.periode);
-      setIsOpen(perRes.isOpen);
 
       if (authUser) {
         const statusRes = await fetchMyCalonSiswaStatus();
@@ -98,7 +92,6 @@ export default function PendaftaranPage() {
   };
 
   // File upload states
-  const [healthDocSimulated, setHealthDocSimulated] = useState(false);
   const [uploadingHealth, setUploadingHealth] = useState(false);
   const [uploadingOrtu, setUploadingOrtu] = useState(false);
   const healthInputRef = useRef<HTMLInputElement>(null);
@@ -137,7 +130,6 @@ export default function PendaftaranPage() {
       const res = await submitSuratKesehatan(targetUrl);
 
       if (res.success) {
-        setHealthDocSimulated(true);
         setFeedback({
           type: 'success',
           text: 'Surat dokter berhasil dikompresi & disimpan ke Supabase Storage!',

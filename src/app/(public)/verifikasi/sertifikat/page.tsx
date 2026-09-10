@@ -15,12 +15,7 @@ import {
   Printer,
   Copy,
   Check,
-  Calendar,
-  Sparkles,
-  ShieldCheck,
-  FileCheck,
   FileText,
-  User,
   ExternalLink,
 } from 'lucide-react';
 

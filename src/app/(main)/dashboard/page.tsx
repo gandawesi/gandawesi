@@ -1,53 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
-import { Spinner } from '@/components/ui/Spinner';
 import {
-  Compass,
   Shield,
   Users,
   Award,
   Calendar,
   Package,
   Wallet,
-  CheckCircle2,
-  AlertCircle,
   ArrowRight,
   TrendingUp,
-  FileCheck,
   FileText,
-  BookOpen,
-  Layers,
-  Sparkles,
-  ClipboardList,
-  Building,
 } from 'lucide-react';
 import { DashboardAnalytics, getDashboardAnalytics } from '@/lib/actions/dashboard';
 import { StatCard, StatGrid } from '@/components/ui/StatCard';
 import { formatRupiah } from '@/lib/utils/format';
 
 function DashboardContent() {
-  const { authUser, profile, isAdmin, isPanitiaOrAdmin, isAnggotaAktif } = useAuth();
+  const { authUser, profile, isAdmin } = useAuth();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
       try {
-        setLoading(true);
         const data = await getDashboardAnalytics();
         setAnalytics(data);
       } catch (err) {
         console.error('Error loading dashboard analytics:', err);
-      } finally {
-        setLoading(false);
       }
     }
     loadStats();

@@ -24,7 +24,6 @@ import type {
 import type { MyMedanOperasiSummary } from '@/lib/types/medan-operasi';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import {
   Award,
@@ -35,9 +34,7 @@ import {
   CheckCircle2,
   Clock,
   ChevronRight,
-  Shield,
   UploadCloud,
-  FileCheck,
   AlertCircle,
   X,
   Send,
@@ -69,7 +66,6 @@ export default function KaderisasiSiswaPage() {
 
   // Tab 2: Alat
   const [alatList, setAlatList] = useState<AlatSiswaItem[]>([]);
-  const [editingAlat, setEditingAlat] = useState<AlatSiswaItem | null>(null);
 
   // Tab 3: Materi & Post-Test
   const [materiList, setMateriList] = useState<MateriKaderisasiItem[]>([]);

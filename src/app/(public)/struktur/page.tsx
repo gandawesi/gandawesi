@@ -1,24 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import {
-  Users,
   Shield,
-  Award,
   Crown,
   Briefcase,
   Compass,
-  Calendar,
   Sparkles,
   ArrowRight,
-  GraduationCap,
 } from 'lucide-react';
 import { fetchPublicStrukturOrganisasi } from '@/lib/actions/governance';
-import type { StrukturOrganisasiPublicData, JabatanOrganisasiItem, DewanPenasehatItem } from '@/lib/types/governance';
+import type { StrukturOrganisasiPublicData } from '@/lib/types/governance';
 
 export default function PublicStrukturOrganisasiPage() {
   const [data, setData] = useState<StrukturOrganisasiPublicData | null>(null);

@@ -7,7 +7,6 @@ import {
   CreateEventPayload,
   UpdateEventPayload,
   PendaftaranEventItem,
-  PresensiEventItem,
 } from '@/lib/types/event';
 
 // Initial fallback mock data for testing & offline mode
@@ -94,7 +93,7 @@ let MOCK_EVENTS: EventItem[] = [
   },
 ];
 
-let MOCK_PENDAFTARAN: Record<string, PendaftaranEventItem[]> = {
+const MOCK_PENDAFTARAN: Record<string, PendaftaranEventItem[]> = {
   'evt-1': [
     {
       id: 'reg-1',

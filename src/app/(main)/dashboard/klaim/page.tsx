@@ -16,10 +16,7 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
-  ArrowRight,
   UserCheck,
-  Building,
-  GraduationCap,
 } from 'lucide-react';
 
 export default function KlaimAkunPage() {

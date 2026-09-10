@@ -2,21 +2,14 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import {
-  Package,
   Plus,
   Edit2,
   Trash2,
-  CheckCircle2,
-  XCircle,
-  Clock,
   Check,
   X,
   Search,
-  Layers,
-  ArrowRight,
   RotateCcw,
   Handshake,
-  AlertCircle,
   FolderOpen,
   FileSpreadsheet,
 } from 'lucide-react';
@@ -27,9 +20,7 @@ import {
   AlatItem,
   PeminjamanAlatItem,
   CreateAlatPayload,
-  UpdateAlatPayload,
   PeminjamanStatus,
-  KondisiAlat,
 } from '@/lib/types/inventaris';
 import {
   getAlatList,
