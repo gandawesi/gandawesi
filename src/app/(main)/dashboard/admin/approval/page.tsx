@@ -13,8 +13,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 export default function AdminApprovalHubPage() {
   const approvalModules = [
     {
-      title: 'Calon Anggota & Berkas',
-      description: 'Verifikasi biodata calon siswa, surat persetujuan orang tua, dan formulir pendaftaran.',
+      title: 'Calon Siswa ke Siswa (Danlat)',
+      description: 'Verifikasi berkas orang tua, tes kesehatan, evaluasi hasil wawancara, dan penetapan ACC kelulusan oleh Komandan Latihan (Danlat).',
       href: '/dashboard/admin/calon-siswa',
       icon: ClipboardList,
       color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',

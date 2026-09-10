@@ -949,7 +949,7 @@ export default function AdminSiswaPage() {
             <form onSubmit={handleExecuteDecision} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Keputusan Akhir Ketua DP:
+                  Keputusan Akhir Ketua Organisasi / Ketua DP:
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button

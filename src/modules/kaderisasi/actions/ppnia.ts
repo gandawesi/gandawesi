@@ -464,6 +464,12 @@ export async function savePresensiSesiPPNIABatch(
 }
 
 export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
+  const mockActivities = MOCK_SESI_PPNIA.map((sesi, index) => ({
+    ...sesi,
+    hadir: index < 9, // First 9 sessions completed and attended
+    catatan_kehadiran: index < 9 ? 'Presensi terekam resmi oleh Dewan Pengurus' : 'Jadwal mendatang',
+  }));
+
   const fallbackSummary: MyPPNIASummary = {
     status_keanggotaan: 'anggota_muda',
     nomor_angkatan: 32,
@@ -482,6 +488,7 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
     },
     presentasi_list: MOCK_PRESENTASI_PPNIA.filter((p) => p.anggota_id === 'am-1'),
     ekspedisi_saya: MOCK_RENCANA_EKSPEDISI[0],
+    daftar_kegiatan: mockActivities,
   };
 
   try {
@@ -492,12 +499,13 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
       return fallbackSummary;
     }
 
-    // Parallel fetch attendance, latest evaluation, presentations, and expedition plan
-    const [presRes, evalRes, presenRes, ekspRes] = await Promise.all([
-      supabase.from('presensi_kaderisasi').select('hadir, sesi_kegiatan!inner(jenis_kegiatan)').eq('anggota_id', member.id),
+    // Parallel fetch attendance, latest evaluation, presentations, expedition plan, and sessions
+    const [presRes, evalRes, presenRes, ekspRes, sesiRes] = await Promise.all([
+      supabase.from('presensi_kaderisasi').select('hadir, sesi_kegiatan_id, sesi_kegiatan!inner(jenis_kegiatan)').eq('anggota_id', member.id),
       supabase.from('evaluasi_berkala').select('*').eq('anggota_id', member.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       supabase.from('presentasi').select('*').eq('anggota_id', member.id).order('tanggal', { ascending: false }),
       supabase.from('rencana_ekspedisi').select('*, peserta:peserta_ekspedisi(id, anggota_id, anggota:anggota_id(nama, nim))').eq('pengaju_id', member.id).maybeSingle(),
+      supabase.from('sesi_kegiatan').select('*').in('jenis_kegiatan', ['pematerian', 'presentasi', 'pendakian', 'ekspedisi']).order('tanggal', { ascending: true }),
     ]);
 
     const myPres = presRes.data || [];
@@ -508,6 +516,24 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
 
     const totalHadir = hadPem + hadPre + hadPen + hadEks;
     const pct = Math.min(100, Math.round((totalHadir / 12) * 100));
+
+    const presMap = new Map<string, boolean>();
+    myPres.forEach((p: any) => presMap.set(p.sesi_kegiatan_id, p.hadir));
+
+    const sourceSessions = (sesiRes.data && sesiRes.data.length > 0) ? sesiRes.data : MOCK_SESI_PPNIA;
+    const activitiesWithPresence = sourceSessions.map((s: any) => ({
+      id: s.id,
+      jenis_kegiatan: s.jenis_kegiatan,
+      judul: s.judul,
+      tanggal: s.tanggal,
+      waktu: s.waktu || null,
+      lokasi: s.lokasi || null,
+      pemateri_instruktur: s.pemateri_instruktur || null,
+      catatan: s.catatan || null,
+      angkatan_id: s.angkatan_id || null,
+      hadir: presMap.has(s.id) ? !!presMap.get(s.id) : true,
+      catatan_kehadiran: presMap.has(s.id) ? (presMap.get(s.id) ? 'Hadir' : 'Tidak Hadir') : 'Terjadwal',
+    }));
 
     return {
       status_keanggotaan: member.status_keanggotaan,
@@ -541,6 +567,7 @@ export async function fetchMyPPNIASummary(): Promise<MyPPNIASummary> {
           nim: p.anggota?.nim || null,
         })),
       } : MOCK_RENCANA_EKSPEDISI[0],
+      daftar_kegiatan: activitiesWithPresence,
     };
   } catch (err) {
     return fallbackSummary;

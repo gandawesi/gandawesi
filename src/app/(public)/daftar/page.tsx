@@ -24,6 +24,8 @@ import {
   HeartPulse,
   UserCheck,
   Award,
+  MessageSquare,
+  Star,
 } from 'lucide-react';
 
 export default function PendaftaranPage() {
@@ -211,11 +213,11 @@ export default function PendaftaranPage() {
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-400">
                   {existingCalon.keputusan_tahap?.catatan ||
-                    'Evaluasi berkas dan fisik sedang dalam proses peninjauan oleh Ketua Medan Operasi dan DANLAT.'}
+                    'Evaluasi berkas, tes kesehatan, dan hasil wawancara sedang dalam proses peninjauan oleh Komandan Latihan (Danlat).'}
                 </p>
                 {existingCalon.keputusan_tahap?.approver_nama && (
                   <p className="text-[11px] text-stone-400 pt-1 border-t border-stone-100 dark:border-stone-800">
-                    Penilai: {existingCalon.keputusan_tahap.approver_nama}
+                    Persetujuan/ACC: {existingCalon.keputusan_tahap.approver_nama}
                   </p>
                 )}
               </div>
@@ -259,6 +261,32 @@ export default function PendaftaranPage() {
                       : 'Unggah Surat Keterangan Sehat'}
                   </Button>
                 </div>
+              </div>
+
+              {/* Interview Status Card */}
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-blue-500" />
+                    Hasil Wawancara Motivasi & Komitmen
+                  </span>
+                  {existingCalon.hasil_wawancara ? (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                      <Star className="w-3 h-3" />
+                      Skor: {existingCalon.hasil_wawancara.nilai_wawancara ?? '-'}/100
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                      Menunggu Jadwal
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-stone-600 dark:text-stone-400">
+                  {existingCalon.hasil_wawancara?.catatan_pewawancara
+                    ? `Catatan Pewawancara (${existingCalon.hasil_wawancara.pewawancara_nama || 'Danlat'}): "${existingCalon.hasil_wawancara.catatan_pewawancara}"`
+                    : 'Sesi wawancara dengan Komandan Latihan (Danlat) akan dijadwalkan setelah kelengkapan berkas pendaftaran diverifikasi.'}
+                </p>
               </div>
             </div>
 

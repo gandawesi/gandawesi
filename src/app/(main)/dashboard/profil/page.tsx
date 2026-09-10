@@ -81,9 +81,9 @@ export default function ProfilPage() {
             tahap: 'calon_siswa',
             status: 'lolos',
             approved_by: null,
-            approver_nama: 'Ketua DP',
+            approver_nama: 'Komandan Latihan (Danlat)',
             tanggal: '2023-09-15',
-            catatan: 'Lolos seleksi fisik dan wawancara',
+            catatan: 'Lolos seleksi fisik, wawancara motivasi, dan verifikasi berkas oleh Danlat',
             created_at: '2023-09-15T00:00:00Z',
           },
           {
@@ -92,9 +92,9 @@ export default function ProfilPage() {
             tahap: 'siswa',
             status: 'lolos',
             approved_by: null,
-            approver_nama: 'Danlat',
+            approver_nama: 'Ketua Organisasi / Ketua DP',
             tanggal: '2023-11-20',
-            catatan: 'Menyelesaikan seluruh kurikulum materi dasar & medan latihan',
+            catatan: 'Menyelesaikan seluruh kurikulum materi dasar & evaluasi kelulusan',
             created_at: '2023-11-20T00:00:00Z',
           },
         ]);

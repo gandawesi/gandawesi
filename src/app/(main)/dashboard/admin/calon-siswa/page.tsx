@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   fetchCalonSiswaList,
   saveCatatanKesehatanPanitia,
+  saveHasilWawancara,
   decideCalonSiswaStatus,
   fetchAllPeriodeList,
 } from '@/lib/actions/admin-calon-siswa';
@@ -27,6 +28,9 @@ import {
   AlertTriangle,
   Award,
   X,
+  MessageSquare,
+  ShieldCheck,
+  Star,
 } from 'lucide-react';
 
 export default function AdminCalonSiswaPage() {
@@ -43,7 +47,16 @@ export default function AdminCalonSiswaPage() {
   const [healthModalTarget, setHealthModalTarget] = useState<CalonSiswaItem | null>(null);
   const [healthNoteText, setHealthNoteText] = useState('');
 
-  // Decision Modal state
+  // Interview Result Modal state
+  const [interviewModalTarget, setInterviewModalTarget] = useState<CalonSiswaItem | null>(null);
+  const [interviewForm, setInterviewForm] = useState({
+    nilai_wawancara: 85,
+    rekomendasi: 'sangat_direkomendasikan' as 'sangat_direkomendasikan' | 'direkomendasikan' | 'dipertimbangkan' | 'tidak_direkomendasikan',
+    catatan_pewawancara: '',
+    pewawancara_nama: 'Rian Hidayat (Danlat)',
+  });
+
+  // Decision Modal state (Wewenang Danlat)
   const [decisionModalTarget, setDecisionModalTarget] = useState<CalonSiswaItem | null>(null);
   const [decisionType, setDecisionType] = useState<'lolos' | 'gugur'>('lolos');
   const [decisionNote, setDecisionNote] = useState('');
@@ -80,6 +93,23 @@ export default function AdminCalonSiswaPage() {
     }
   };
 
+  const handleSaveInterview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!interviewModalTarget) return;
+
+    setProcessingId(interviewModalTarget.id);
+    const res = await saveHasilWawancara(interviewModalTarget.id, interviewForm);
+    setProcessingId(null);
+    setInterviewModalTarget(null);
+
+    if (res.success) {
+      setFeedback({ type: 'success', text: res.message || 'Hasil wawancara berhasil dicatat!' });
+      loadData();
+    } else {
+      setFeedback({ type: 'error', text: res.error || 'Gagal menyimpan hasil wawancara.' });
+    }
+  };
+
   const handleExecuteDecision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!decisionModalTarget) return;
@@ -95,7 +125,7 @@ export default function AdminCalonSiswaPage() {
     setDecisionNote('');
 
     if (res.success) {
-      setFeedback({ type: 'success', text: res.message || 'Keputusan berhasil dieksekusi!' });
+      setFeedback({ type: 'success', text: res.message || 'Keputusan ACC berhasil dieksekusi!' });
       loadData();
     } else {
       setFeedback({ type: 'error', text: res.error || 'Gagal mengeksekusi keputusan.' });
@@ -119,9 +149,10 @@ export default function AdminCalonSiswaPage() {
   });
 
   const countTotal = calonList.length;
+  const countDokter = calonList.filter((c) => c.tes_kesehatan_awal?.file_surat_dokter).length;
+  const countWawancara = calonList.filter((c) => c.hasil_wawancara?.nilai_wawancara != null).length;
   const countLolos = calonList.filter((c) => c.keputusan_tahap?.status === 'lolos').length;
   const countGugur = calonList.filter((c) => c.keputusan_tahap?.status === 'gugur').length;
-  const countDokter = calonList.filter((c) => c.tes_kesehatan_awal?.file_surat_dokter).length;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
@@ -129,14 +160,14 @@ export default function AdminCalonSiswaPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-forest-700 dark:text-forest-400 uppercase tracking-wider mb-1">
-            <ClipboardList className="w-4 h-4" />
-            <span>Kaderisasi Tahap 1</span>
+            <ShieldCheck className="w-4 h-4 text-forest-600" />
+            <span>Kaderisasi Tahap 1 · Wewenang ACC: Komandan Latihan (Danlat)</span>
           </div>
           <h1 className="text-2xl font-extrabold text-stone-900 dark:text-white">
             Kelola & Seleksi Calon Siswa
           </h1>
           <p className="text-xs text-stone-500 mt-1">
-            Verifikasi berkas orang tua, input evaluasi medis panitia, dan putuskan kelulusan ke tahap Siswa
+            Verifikasi berkas orang tua, catatan medis, hasil wawancara, dan keputusan ACC kelulusan ke tahap Siswa oleh <strong>Komandan Latihan (Danlat)</strong> — bukan Dewan Pengurus.
           </p>
         </div>
 
@@ -167,7 +198,7 @@ export default function AdminCalonSiswaPage() {
       )}
 
       {/* Metric Cards */}
-      <StatGrid columns={4}>
+      <StatGrid columns={5}>
         <StatCard
           icon={UserCheck}
           label="Total Pendaftar"
@@ -181,8 +212,14 @@ export default function AdminCalonSiswaPage() {
           color="rose"
         />
         <StatCard
+          icon={MessageSquare}
+          label="Wawancara Selesai"
+          value={countWawancara}
+          color="blue"
+        />
+        <StatCard
           icon={CheckCircle2}
-          label="Lolos ke Siswa"
+          label="Lolos (ACC Danlat)"
           value={countLolos}
           color="emerald"
         />
@@ -251,9 +288,10 @@ export default function AdminCalonSiswaPage() {
                   <th className="py-3 px-4">Calon Siswa</th>
                   <th className="py-3 px-4">NIM / Jurusan</th>
                   <th className="py-3 px-4">Surat Ortu</th>
-                  <th className="py-3 px-4">Tes Kesehatan Awal</th>
+                  <th className="py-3 px-4">Tes Kesehatan</th>
+                  <th className="py-3 px-4">Hasil Wawancara</th>
                   <th className="py-3 px-4">Status Tahap</th>
-                  <th className="py-3 px-4 text-right">Aksi Keputusan</th>
+                  <th className="py-3 px-4 text-right">Aksi ACC Danlat</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
@@ -318,6 +356,83 @@ export default function AdminCalonSiswaPage() {
                       </div>
                     </td>
 
+                    {/* Hasil Wawancara */}
+                    <td className="py-3.5 px-4 min-w-[200px]">
+                      {calon.hasil_wawancara ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                (calon.hasil_wawancara.nilai_wawancara ?? 0) >= 80
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                                  : (calon.hasil_wawancara.nilai_wawancara ?? 0) >= 70
+                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                                  : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
+                              }`}
+                            >
+                              <Star className="w-3 h-3" />
+                              Skor: {calon.hasil_wawancara.nilai_wawancara ?? '-'}/100
+                            </span>
+                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">
+                              {calon.hasil_wawancara.rekomendasi === 'sangat_direkomendasikan'
+                                ? 'Sangat Direkomendasikan'
+                                : calon.hasil_wawancara.rekomendasi === 'direkomendasikan'
+                                ? 'Direkomendasikan'
+                                : calon.hasil_wawancara.rekomendasi === 'dipertimbangkan'
+                                ? 'Dipertimbangkan'
+                                : 'Tidak Direkomendasikan'}
+                            </span>
+                          </div>
+
+                          {calon.hasil_wawancara.catatan_pewawancara && (
+                            <p className="text-[11px] text-stone-600 dark:text-stone-400 line-clamp-1 italic">
+                              &quot;{calon.hasil_wawancara.catatan_pewawancara}&quot;
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between text-[10px] text-stone-400 pt-0.5">
+                            <span>Oleh: {calon.hasil_wawancara.pewawancara_nama || 'Danlat'}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setInterviewModalTarget(calon);
+                                setInterviewForm({
+                                  nilai_wawancara: calon.hasil_wawancara?.nilai_wawancara ?? 85,
+                                  rekomendasi: calon.hasil_wawancara?.rekomendasi ?? 'sangat_direkomendasikan',
+                                  catatan_pewawancara: calon.hasil_wawancara?.catatan_pewawancara ?? '',
+                                  pewawancara_nama: calon.hasil_wawancara?.pewawancara_nama ?? 'Rian Hidayat (Danlat)',
+                                });
+                              }}
+                              className="text-forest-600 hover:text-forest-700 underline font-medium cursor-pointer"
+                            >
+                              Edit Wawancara
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <span className="text-amber-600 text-[11px] font-semibold flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Belum Wawancara
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInterviewModalTarget(calon);
+                              setInterviewForm({
+                                nilai_wawancara: 85,
+                                rekomendasi: 'sangat_direkomendasikan',
+                                catatan_pewawancara: '',
+                                pewawancara_nama: 'Rian Hidayat (Danlat)',
+                              });
+                            }}
+                            className="text-[10px] text-forest-600 hover:text-forest-700 underline font-medium block cursor-pointer"
+                          >
+                            + Input Wawancara
+                          </button>
+                        </div>
+                      )}
+                    </td>
+
                     {/* Status Tahap */}
                     <td className="py-3.5 px-4">
                       {calon.keputusan_tahap?.status === 'lolos' ? (
@@ -345,10 +460,10 @@ export default function AdminCalonSiswaPage() {
                           setDecisionType('lolos');
                           setDecisionNote(calon.keputusan_tahap?.catatan || '');
                         }}
-                        className="text-xs"
+                        className="text-xs font-semibold"
                       >
                         <Award className="w-3.5 h-3.5 mr-1 text-forest-600" />
-                        Putuskan
+                        ACC Danlat
                       </Button>
                     </td>
                   </tr>
@@ -414,24 +529,172 @@ export default function AdminCalonSiswaPage() {
         )}
       </Modal>
 
-      {/* Modal 2: Keputusan Kelulusan Tahap (Ketua Medan Operasi / DANLAT) */}
+      {/* Modal 2: Input / Edit Hasil Wawancara */}
+      <Modal
+        isOpen={!!interviewModalTarget}
+        onClose={() => setInterviewModalTarget(null)}
+        title={
+          <span className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-blue-500" />
+            Evaluasi Wawancara: {interviewModalTarget?.nama}
+          </span>
+        }
+        description="Penilaian motivasi, pemahaman nilai pecinta alam, ketahanan mental, dan komitmen waktu latihan."
+        maxWidth="md"
+      >
+        {interviewModalTarget && (
+          <form onSubmit={handleSaveInterview} className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                  Nilai / Skor Wawancara (0-100)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  required
+                  value={interviewForm.nilai_wawancara}
+                  onChange={(e) =>
+                    setInterviewForm((prev) => ({
+                      ...prev,
+                      nilai_wawancara: parseInt(e.target.value) || 0,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                  Rekomendasi Seleksi
+                </label>
+                <select
+                  value={interviewForm.rekomendasi}
+                  onChange={(e) =>
+                    setInterviewForm((prev) => ({
+                      ...prev,
+                      rekomendasi: e.target.value as any,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+                >
+                  <option value="sangat_direkomendasikan">Sangat Direkomendasikan</option>
+                  <option value="direkomendasikan">Direkomendasikan</option>
+                  <option value="dipertimbangkan">Dipertimbangkan</option>
+                  <option value="tidak_direkomendasikan">Tidak Direkomendasikan</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Pewawancara (Instruktur / Danlat)
+              </label>
+              <input
+                type="text"
+                required
+                value={interviewForm.pewawancara_nama}
+                onChange={(e) =>
+                  setInterviewForm((prev) => ({
+                    ...prev,
+                    pewawancara_nama: e.target.value,
+                  }))
+                }
+                placeholder="Nama instruktur / Danlat yang mewawancarai..."
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
+                Catatan Evaluasi Motivasi, Ketahanan Mental & Komitmen
+              </label>
+              <textarea
+                rows={4}
+                required
+                value={interviewForm.catatan_pewawancara}
+                onChange={(e) =>
+                  setInterviewForm((prev) => ({
+                    ...prev,
+                    catatan_pewawancara: e.target.value,
+                  }))
+                }
+                placeholder="Contoh: Motivasi tinggi, pemahaman nilai cinta alam baik, siap mengikuti komitmen bina jasmani 2x seminggu tanpa hambatan jadwal..."
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setInterviewModalTarget(null)}
+              >
+                Batal
+              </Button>
+              <Button type="submit" size="sm" disabled={processingId === interviewModalTarget.id}>
+                {processingId === interviewModalTarget.id ? 'Menyimpan...' : 'Simpan Hasil Wawancara'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal 3: Keputusan Kelulusan Tahap (Wewenang Komandan Latihan / DANLAT) */}
       <Modal
         isOpen={!!decisionModalTarget}
         onClose={() => setDecisionModalTarget(null)}
         title={
           <span className="flex items-center gap-2">
             <Award className="w-4 h-4 text-forest-600" />
-            Keputusan Seleksi: {decisionModalTarget?.nama}
+            Wewenang ACC Danlat: {decisionModalTarget?.nama}
           </span>
         }
-        description="Penetapan status kelulusan peserta seleksi calon siswa."
+        description="Penetapan keputusan kelulusan Calon Siswa menuju tahap Siswa oleh Komandan Latihan (Danlat) — bukan Dewan Pengurus (DP)."
         maxWidth="md"
       >
         {decisionModalTarget && (
           <form onSubmit={handleExecuteDecision} className="space-y-4 text-xs">
+            {/* Briefing summary for Danlat */}
+            <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 space-y-2">
+              <span className="font-bold text-stone-700 dark:text-stone-300 block uppercase text-[10px] tracking-wider">
+                Rekap Seleksi Calon Siswa:
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <span className="text-stone-400 block">Surat Persetujuan Ortu:</span>
+                  <span className="font-semibold text-stone-800 dark:text-stone-200">
+                    {decisionModalTarget.file_persetujuan_ortu ? '✓ Terlampir' : '✗ Belum Ada'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block">Surat Dokter:</span>
+                  <span className="font-semibold text-stone-800 dark:text-stone-200">
+                    {decisionModalTarget.tes_kesehatan_awal?.file_surat_dokter ? '✓ Ada' : '✗ Belum Ada'}
+                  </span>
+                </div>
+              </div>
+
+              {decisionModalTarget.hasil_wawancara && (
+                <div className="pt-2 border-t border-stone-200 dark:border-stone-800 text-[11px]">
+                  <span className="text-stone-400 block">Hasil Wawancara Danlat/Panitia:</span>
+                  <p className="font-semibold text-stone-800 dark:text-stone-200">
+                    Skor: {decisionModalTarget.hasil_wawancara.nilai_wawancara}/100 ({decisionModalTarget.hasil_wawancara.rekomendasi.replace('_', ' ')})
+                  </p>
+                  {decisionModalTarget.hasil_wawancara.catatan_pewawancara && (
+                    <p className="text-stone-500 italic mt-0.5">
+                      &quot;{decisionModalTarget.hasil_wawancara.catatan_pewawancara}&quot;
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-2">
-                Tentukan Hasil Kelulusan
+                Tentukan Hasil Kelulusan (Wewenang Danlat)
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -444,7 +707,7 @@ export default function AdminCalonSiswaPage() {
                   }`}
                 >
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span className="font-bold">Lolos ke Siswa</span>
+                  <span className="font-bold">ACC Lolos ke Siswa</span>
                 </button>
 
                 <button
@@ -464,23 +727,21 @@ export default function AdminCalonSiswaPage() {
 
             <div>
               <label className="font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 block mb-1">
-                Catatan Evaluasi / Alasan Keputusan
+                Catatan Evaluasi / Alasan Keputusan Danlat
               </label>
               <textarea
                 rows={3}
                 required
                 value={decisionNote}
                 onChange={(e) => setDecisionNote(e.target.value)}
-                placeholder="Contoh: Berkas lengkap, tes kebugaran memenuhi ambang batas, dinyatakan siap mengikuti kurikulum tahap Siswa..."
+                placeholder="Contoh: Berkas lengkap, tes kebugaran memenuhi ambang batas, hasil wawancara meyakinkan, di-ACC oleh Danlat untuk kurikulum Siswa..."
                 className="w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0f1814] px-3.5 py-2.5 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/40"
               />
             </div>
 
-            {decisionType === 'lolos' && (
-              <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 text-[11px]">
-                * Status anggota akan otomatis diperbarui menjadi <strong>&quot;Siswa&quot;</strong> via trigger database `trg_sync_status_kaderisasi`.
-              </div>
-            )}
+            <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-[11px]">
+              * Keputusan ACC kelulusan tahap Calon Siswa menuju Siswa adalah mandat prerogatif <strong>Komandan Latihan (Danlat)</strong>, bukan Dewan Pengurus (DP).
+            </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
               <Button
@@ -500,7 +761,7 @@ export default function AdminCalonSiswaPage() {
                 {processingId === decisionModalTarget.id
                   ? 'Memproses...'
                   : decisionType === 'lolos'
-                  ? 'Konfirmasi Lolos ke Siswa'
+                  ? 'Konfirmasi ACC ke Siswa (Danlat)'
                   : 'Konfirmasi Gugur'}
               </Button>
             </div>

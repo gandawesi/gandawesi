@@ -388,7 +388,7 @@ export async function decideKelulusanSiswa(
     return actionSuccess(
       undefined,
       decision === 'lolos'
-        ? 'Simulasi: Siswa dinyatakan LOLOS ke Medan Operasi oleh Ketua DP.'
+        ? 'Simulasi: Siswa dinyatakan LOLOS ke Medan Operasi oleh Ketua Organisasi / Ketua DP.'
         : 'Simulasi: Keputusan Gugur telah dicatat.'
     );
   }

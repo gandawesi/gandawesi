@@ -74,6 +74,9 @@ export interface SesiKegiatanPPNIAItem {
   jenis_kegiatan: JenisKegiatanPPNIA;
   judul: string;
   tanggal: string;
+  waktu?: string | null;
+  lokasi?: string | null;
+  pemateri_instruktur?: string | null;
   catatan: string | null;
   angkatan_id?: string | null;
 }
@@ -88,6 +91,11 @@ export interface PresensiPPNIAItem {
   anggota_nim?: string | null;
 }
 
+export interface MyPPNIAKegiatanItem extends SesiKegiatanPPNIAItem {
+  hadir: boolean;
+  catatan_kehadiran?: string | null;
+}
+
 export interface MyPPNIASummary {
   status_keanggotaan: string;
   nomor_angkatan: number | null;
@@ -100,4 +108,5 @@ export interface MyPPNIASummary {
   evaluasi_terkini: EvaluasiBerkalaItem | null;
   presentasi_list: PresentasiPPNIAItem[];
   ekspedisi_saya: RencanaEkspedisiItem | null;
+  daftar_kegiatan?: MyPPNIAKegiatanItem[];
 }

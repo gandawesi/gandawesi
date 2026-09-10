@@ -61,7 +61,7 @@ export const ADMIN_NAV_ITEMS: DashboardNavItem[] = [
   { href: '/dashboard/admin/klaim', label: 'Verifikasi Klaim', icon: UserCheck },
   { href: '/dashboard/admin/import', label: 'Impor Data CSV', icon: FileSpreadsheet },
   { href: '/dashboard/admin/roles', label: 'Kelola Hak Akses', icon: UserCog },
-  { href: '/dashboard/admin/calon-siswa', label: 'Calon Anggota', icon: ClipboardList },
+  { href: '/dashboard/admin/calon-siswa', label: 'Calon Siswa (Danlat)', icon: ClipboardList },
   { href: '/dashboard/admin/siswa', label: 'Tahap Siswa (DP)', icon: Award },
   { href: '/dashboard/admin/medan-operasi', label: 'Medan Operasi (Danlat)', icon: Compass },
   { href: '/dashboard/admin/ppnia', label: 'PPNIA (Dewan Pengurus)', icon: ShieldAlert },

@@ -50,10 +50,10 @@ export type FunctionalRole =
 
 export const USER_ROLE_LABELS: Record<FunctionalRole, string> = {
   admin: 'Super Admin',
-  ketua_organisasi: 'Ketua Organisasi',
+  ketua_organisasi: 'Ketua Organisasi (Ketua DP)',
   ketua_medan_operasi: 'Ketua Medan Operasi',
   danlat: 'Komandan Latihan',
-  ketua_dp: 'Ketua Dewan Pengurus',
+  ketua_dp: 'Ketua Organisasi (Ketua DP)',
   pengurus_dp: 'Pengurus Dewan Pengurus',
   panitia: 'Panitia Kaderisasi',
 };

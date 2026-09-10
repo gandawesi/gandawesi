@@ -341,10 +341,141 @@ export const MOCK_RENCANA_EKSPEDISI: RencanaEkspedisiItem[] = [
 ];
 
 export const MOCK_SESI_PPNIA: SesiKegiatanPPNIAItem[] = [
-  { id: 'ses-ppnia-1', jenis_kegiatan: 'pematerian', judul: 'Materi Lanjutan: Manajemen Ekspedisi & Manajemen Risiko Lapangan', tanggal: '2025-10-02', catatan: 'Ruang Rapat DP, wajib untuk seluruh Anggota Muda' },
-  { id: 'ses-ppnia-2', jenis_kegiatan: 'presentasi', judul: 'Sidang Seminar Proposal Pra-Ekspedisi Kuartal IV', tanggal: '2025-10-15', catatan: 'Aula FPTI UPI' },
-  { id: 'ses-ppnia-3', jenis_kegiatan: 'pendakian', judul: 'Pendakian Latihan Bersama Gunung Guntur & Bivak Badai', tanggal: '2025-10-25', catatan: 'Simulasi manajemen logistik 3 hari 2 malam' },
-  { id: 'ses-ppnia-4', jenis_kegiatan: 'ekspedisi', judul: 'Ekspedisi Mandiri PPNIA Tahap 1', tanggal: '2025-11-10', catatan: 'Pelaksanaan ekspedisi per tim' },
+  // ==========================================
+  // PILAR 1: PEMATERIAN LANJUTAN (6 Sesi)
+  // ==========================================
+  {
+    id: 'ses-ppnia-1',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Manajemen Ekspedisi & Analisis Manajemen Risiko Lapangan',
+    tanggal: '2025-09-20',
+    waktu: '09.00 - 13.00 WIB',
+    lokasi: 'Sekretariat Gandawesi & Ruang Rapat DP',
+    pemateri_instruktur: 'Bambang Trihatmodjo (Alumni Angkatan 27)',
+    catatan: 'Penyusunan Standard Operating Procedure (SOP), identifikasi potensi bahaya objektif/subjektif, dan rantai komando darurat.',
+  },
+  {
+    id: 'ses-ppnia-2',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Navigasi Darat Lanjutan: Resection Malam & Penggunaan Altimeter Digital',
+    tanggal: '2025-10-04',
+    waktu: '13.00 - 17.30 WIB',
+    lokasi: 'Laboratorium Geografi FPTI UPI & Lapangan Terbuka',
+    pemateri_instruktur: 'Rian Hidayat (Danlat)',
+    catatan: 'Teknik orientasi kontur tanpa kompas komersial, membaca morfologi punggungan malam hari, dan kalibrasi barometer cuaca.',
+  },
+  {
+    id: 'ses-ppnia-3',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Logistik Ekspedisi, Packing Beban Berat & Nutrisi Pendakian Jarak Jauh',
+    tanggal: '2025-10-18',
+    waktu: '10.00 - 14.00 WIB',
+    lokasi: 'Gudang Logistik & Inventaris Gandawesi',
+    pemateri_instruktur: 'Bayu Wicaksono (Dewan Pengurus)',
+    catatan: 'Kalkulasi kalori harian per anggota tim, water rationing, pemilihan bahan logistik awet tahan lama, dan distribusi beban 25kg+.',
+  },
+  {
+    id: 'ses-ppnia-4',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Wilderness First Aid (WFA) & Teknik Evakuasi Tandu Darurat Rimba',
+    tanggal: '2025-11-01',
+    waktu: '08.30 - 15.00 WIB',
+    lokasi: 'Bumi Perkemahan Sukawana Lembang',
+    pemateri_instruktur: 'dr. Hendra Setiawan (Tim Medis Gandawesi)',
+    catatan: 'Simulasi penanganan hipotermia akut, fraktur tulang tertutup, gigitan satwa berbisa, dan pembuatan tandu darurat dahan pohon.',
+  },
+  {
+    id: 'ses-ppnia-5',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Metodologi Riset Lapangan, Konservasi Alam & Pemetaan Rute GIS',
+    tanggal: '2025-11-15',
+    waktu: '13.00 - 17.00 WIB',
+    lokasi: 'Ruang Multimedia FPTI UPI',
+    pemateri_instruktur: 'Fajar Ramadhan, M.Sc (Pakar SIG)',
+    catatan: 'Penggunaan perangkat lunak QGIS untuk plotting jalur kontur, pencatatan keanekaragaman hayati, dan pengolahan data GPX satelit.',
+  },
+  {
+    id: 'ses-ppnia-6',
+    jenis_kegiatan: 'pematerian',
+    judul: 'Komunikasi Lapangan, Etika Pecinta Alam & Kepemimpinan Ekspedisi',
+    tanggal: '2025-11-29',
+    waktu: '09.30 - 13.30 WIB',
+    lokasi: 'Sekretariat Gandawesi',
+    pemateri_instruktur: 'Ketua Organisasi & Ketua Dewan Pengurus',
+    catatan: 'Protokol komunikasi radio HT frekuensi VHF/UHF, kode morse darurat, etika Leave No Trace (LNT), dan dinamika penyelesaian konflik tim.',
+  },
+
+  // ==========================================
+  // PILAR 2: SIDANG PRESENTASI (2 Sesi)
+  // ==========================================
+  {
+    id: 'ses-ppnia-7',
+    jenis_kegiatan: 'presentasi',
+    judul: 'Sidang Seminar Proposal Pra-Ekspedisi Mandiri Kuartal IV',
+    tanggal: '2025-12-10',
+    waktu: '08.00 - 16.00 WIB',
+    lokasi: 'Auditorium FPTI UPI',
+    pemateri_instruktur: 'Panelis Dewan Pengurus & Dewan Penasehat',
+    catatan: 'Pemaparan komprehensif rencana operasional ekspedisi, estimasi anggaran biaya (RAB), mitigasi risiko, dan uji kesiapan tim per regu.',
+  },
+  {
+    id: 'ses-ppnia-8',
+    jenis_kegiatan: 'presentasi',
+    judul: 'Sidang Pleno Laporan Pertanggungjawaban (LPJ) Pasca-Ekspedisi',
+    tanggal: '2026-01-20',
+    waktu: '08.30 - 17.00 WIB',
+    lokasi: 'Auditorium Utama Gedung FPTI UPI',
+    pemateri_instruktur: 'Seluruh Dewan Pengurus (DP) & Alumni',
+    catatan: 'Pertanggungjawaban hasil observasi ilmiah, laporan keuangan detail, pemutaran film dokumenter ekspedisi, dan penyerahan artefak tim.',
+  },
+
+  // ==========================================
+  // PILAR 3: PENDAKIAN BERSAMA (3 Sesi)
+  // ==========================================
+  {
+    id: 'ses-ppnia-9',
+    jenis_kegiatan: 'pendakian',
+    judul: 'Pendakian Latihan Bersama 1: Navigasi Lembah & Bivak Badai Gunung Guntur',
+    tanggal: '2025-10-24',
+    waktu: '3 Hari 2 Malam',
+    lokasi: 'Jalur Citiis - Kaldera Gunung Guntur Garut',
+    pemateri_instruktur: 'Tim Pendamping DP & Instruktur Lapangan',
+    catatan: 'Simulasi navigasi di medan pasir terbuka, pembuatan shelter bivak terpaan badai, dan manajemen sumber air minum terbatas.',
+  },
+  {
+    id: 'ses-ppnia-10',
+    jenis_kegiatan: 'pendakian',
+    judul: 'Pendakian Latihan Bersama 2: Rintisan Jalur & River Crossing Gunung Manglayang',
+    tanggal: '2025-11-21',
+    waktu: '2 Hari 1 Malam',
+    lokasi: 'Jalur Barubeureum - Palasari Gunung Manglayang',
+    pemateri_instruktur: 'Danlat & Pengurus Divisi Rimba Gunung',
+    catatan: 'Praktek perintisan jalur hutan rapat non-jalur umum, orientasi kompas bidik, serta teknik melintasi sungai berarus deras.',
+  },
+  {
+    id: 'ses-ppnia-11',
+    jenis_kegiatan: 'pendakian',
+    judul: 'Pendakian Latihan Bersama 3: Aklimatisasi Ketinggian & Survival Gunung Ciremai',
+    tanggal: '2025-12-18',
+    waktu: '3 Hari 2 Malam',
+    lokasi: 'Jalur Apuy - Kawah Puncak Ciremai (3.078 mdpl)',
+    pemateri_instruktur: 'Ketua Dewan Pengurus & Instruktur Lapangan',
+    catatan: 'Uji daya tahan tubuh pada ketinggian ekstrem, penanganan acute mountain sickness (AMS) ringan, dan observasi ekosistem puncak.',
+  },
+
+  // ==========================================
+  // PILAR 4: EKSPEDISI MANDIRI (1 Sesi)
+  // ==========================================
+  {
+    id: 'ses-ppnia-12',
+    jenis_kegiatan: 'ekspedisi',
+    judul: 'Ekspedisi Mandiri PPNIA: Eksplorasi Kawasan Karst & Ekosistem Gua Terpencil',
+    tanggal: '2026-01-05',
+    waktu: '7 Hari 6 Malam',
+    lokasi: 'Kawasan Karst Cibungbulang - Ciampea Jawa Barat',
+    pemateri_instruktur: 'Tim Anggota Muda Mandiri (Diverifikasi oleh Dewan Pengurus)',
+    catatan: 'Puncak kurikulum PPNIA: Pemetaan rute lorong gua karst, inventarisasi flora/fauna endemik, serta pengabdian masyarakat sekitar rimba.',
+  },
 ];
 
 export const MOCK_KRITERIA_EVALUASI: KriteriaEvaluasiItem[] = [

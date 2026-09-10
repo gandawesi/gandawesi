@@ -20,6 +20,17 @@ export interface TesKesehatanItem {
   created_at: string;
 }
 
+export interface HasilWawancaraItem {
+  id: string;
+  anggota_id: string;
+  nilai_wawancara: number | null; // Skor skala 0-100
+  rekomendasi: 'sangat_direkomendasikan' | 'direkomendasikan' | 'dipertimbangkan' | 'tidak_direkomendasikan';
+  catatan_pewawancara: string | null;
+  pewawancara_nama: string | null;
+  tanggal: string;
+  created_at?: string;
+}
+
 export interface CalonSiswaItem {
   id: string;
   auth_user_id: string | null;
@@ -46,6 +57,7 @@ export interface CalonSiswaItem {
     status: string;
   } | null;
   tes_kesehatan_awal?: TesKesehatanItem | null;
+  hasil_wawancara?: HasilWawancaraItem | null;
   keputusan_tahap?: {
     id: string;
     tahap: string;

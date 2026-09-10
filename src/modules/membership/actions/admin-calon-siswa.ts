@@ -105,6 +105,66 @@ export async function saveCatatanKesehatanPanitia(
   }
 }
 
+export async function saveHasilWawancara(
+  anggotaId: string,
+  payload: {
+    nilai_wawancara: number;
+    rekomendasi: 'sangat_direkomendasikan' | 'direkomendasikan' | 'dipertimbangkan' | 'tidak_direkomendasikan';
+    catatan_pewawancara: string;
+    pewawancara_nama: string;
+  }
+): Promise<ActionResponse> {
+  try {
+    const supabase = await createClient();
+
+    // Check if table hasil_wawancara exists or save in evaluasi
+    const { data: existing } = await supabase
+      .from('hasil_wawancara')
+      .select('id')
+      .eq('anggota_id', anggotaId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('hasil_wawancara')
+        .update({
+          nilai_wawancara: payload.nilai_wawancara,
+          rekomendasi: payload.rekomendasi,
+          catatan_pewawancara: payload.catatan_pewawancara,
+          pewawancara_nama: payload.pewawancara_nama,
+          tanggal: new Date().toISOString().split('T')[0],
+        })
+        .eq('id', existing.id);
+    } else {
+      await supabase.from('hasil_wawancara').insert({
+        anggota_id: anggotaId,
+        nilai_wawancara: payload.nilai_wawancara,
+        rekomendasi: payload.rekomendasi,
+        catatan_pewawancara: payload.catatan_pewawancara,
+        pewawancara_nama: payload.pewawancara_nama,
+        tanggal: new Date().toISOString().split('T')[0],
+      });
+    }
+
+    return actionSuccess(undefined, 'Hasil wawancara calon siswa berhasil disimpan!');
+  } catch {
+    // In mock/simulated mode, update in-memory mock item if present
+    const item = MOCK_CALON_SISWA_LIST.find((c) => c.id === anggotaId);
+    if (item) {
+      item.hasil_wawancara = {
+        id: `waw-${Date.now()}`,
+        anggota_id: anggotaId,
+        nilai_wawancara: payload.nilai_wawancara,
+        rekomendasi: payload.rekomendasi,
+        catatan_pewawancara: payload.catatan_pewawancara,
+        pewawancara_nama: payload.pewawancara_nama,
+        tanggal: new Date().toISOString().split('T')[0],
+      };
+    }
+    return actionSuccess(undefined, 'Simulasi: Hasil evaluasi wawancara calon siswa berhasil dicatat.');
+  }
+}
+
 export async function decideCalonSiswaStatus(
   anggotaId: string,
   decision: 'lolos' | 'gugur',
@@ -115,13 +175,13 @@ export async function decideCalonSiswaStatus(
     const approverAnggotaId = await getCurrentMemberId(supabase);
 
     // Insert or update riwayat_tahap
-    // If decision === 'lolos', trigger trg_sync_status_kaderisasi promotes anggota to 'siswa' automatically!
+    // ACC kelulusan Calon Siswa -> Siswa dilakukan oleh Komandan Latihan (Danlat)
     const { error } = await supabase.from('riwayat_tahap').insert({
       anggota_id: anggotaId,
       tahap: 'calon_siswa',
       status: decision,
       approved_by: approverAnggotaId,
-      catatan,
+      catatan: `[ACC Danlat] ${catatan}`,
       tanggal: new Date().toISOString().split('T')[0],
     });
 
@@ -131,16 +191,28 @@ export async function decideCalonSiswaStatus(
 
     const message =
       decision === 'lolos'
-        ? 'Calon siswa dinyatakan LOLOS dan otomatis dipromosikan ke tahap Siswa!'
-        : 'Calon siswa dinyatakan GUGUR. Riwayat evaluasi tersimpan di sistem.';
+        ? 'Calon siswa berhasil di-ACC oleh Komandan Latihan (Danlat) dan dipromosikan ke tahap Siswa!'
+        : 'Calon siswa dinyatakan GUGUR oleh Danlat. Riwayat evaluasi tersimpan di sistem.';
 
     return actionSuccess(undefined, message);
   } catch {
+    const item = MOCK_CALON_SISWA_LIST.find((c) => c.id === anggotaId);
+    if (item) {
+      item.status_keanggotaan = decision === 'lolos' ? 'siswa' : 'calon_siswa';
+      item.keputusan_tahap = {
+        id: `rw-${Date.now()}`,
+        tahap: 'calon_siswa',
+        status: decision,
+        catatan,
+        approver_nama: 'Komandan Latihan (Danlat)',
+        tanggal: new Date().toISOString().split('T')[0],
+      };
+    }
     return actionSuccess(
       undefined,
       decision === 'lolos'
-        ? 'Simulasi: Calon siswa dinyatakan LOLOS ke tahap Siswa.'
-        : 'Simulasi: Keputusan GUGUR telah dicatat.'
+        ? 'Simulasi: Calon siswa berhasil di-ACC oleh Komandan Latihan (Danlat) ke tahap Siswa.'
+        : 'Simulasi: Keputusan GUGUR oleh Danlat telah dicatat.'
     );
   }
 }

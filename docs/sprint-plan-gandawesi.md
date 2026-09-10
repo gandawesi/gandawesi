@@ -58,7 +58,7 @@ Urutan sprint disusun berdasarkan dependensi: fondasi (auth & role) dulu, lalu a
 - Modul pematerian: admin buat materi + soal & kunci jawaban (tabel terpisah), siswa kerjakan lewat HP dan dinilai aman di server via RPC `submit_post_test`
 - Tes kesehatan akhir (pola sama seperti awal, dibandingkan dengan hasil awal)
 - Dashboard rekap kehadiran & nilai untuk bahan keputusan panitia
-- Approval oleh Ketua DP → status jadi lolos Medan Operasi (atau gugur)
+- Approval oleh Ketua Organisasi / Ketua DP → status jadi lolos Medan Operasi (atau gugur)
 
 **Selesai kalau:** panitia bisa lihat rekap lengkap satu siswa sebelum memutuskan kelulusan.
 

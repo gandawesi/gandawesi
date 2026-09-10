@@ -38,17 +38,20 @@ Website ini melayani tiga jenis pengguna utama: **Guest** (publik), **Admin/Peng
 
 ## 2.1 Role Akses Granular Sistem (`user_roles`)
 
-Untuk mendukung wewenang persetujuan yang terdesentralisasi namun aman, sistem memisahkan **Status Keanggotaan** (jalur kaderisasi) dengan **Role Fungsional** (hak akses sistem). Hak akses granular dikelola dalam tabel `user_roles` dengan 7 peran resmi:
+Untuk mendukung wewenang persetujuan yang terdesentralisasi namun aman, sistem memisahkan **Status Keanggotaan** (jalur kaderisasi) dengan **Role Fungsional** (hak akses sistem). Hak akses granular dikelola dalam tabel `user_roles` dengan peran fungsional resmi:
 
 | Role (`user_roles.role`) | Nama Peran | Deskripsi & Wewenang Utama | Titik Keputusan / Approval |
 |---|---|---|---|
 | `admin` | Super Admin | Akses penuh ke seluruh CMS, manajemen akun/role, konfigurasi tarif, dan penutupan buku kas | Seluruh modul sistem |
-| `ketua_organisasi` | Ketua Organisasi | Pimpinan tertinggi organisasi, pengawasan umum & LPJ tahunan | Kepengurusan & evaluasi umum |
-| `ketua_medan_operasi` | Ketua Medan Operasi | Penanggung jawab operasional diklat lapangan | Approval kelulusan Calon Siswa $\rightarrow$ Siswa |
-| `danlat` | Komandan Latihan | Instruktur utama lapangan saat Medan Operasi | Pengisian evaluasi individu & kelompok lapangan |
-| `ketua_dp` | Ketua Dewan Pengurus | Pimpinan badan eksekutif Dewan Pengurus | Approval kelulusan Siswa $\rightarrow$ Medan Operasi |
-| `pengurus_dp` | Pengurus DP | Anggota aktif Dewan Pengurus | Evaluasi berkala PPNIA & approval akhir PPNIA $\rightarrow$ Anggota Biasa |
-| `panitia` | Panitia Kaderisasi | Tim operasional pelaksana diklat | Input presensi kegiatan, catatan kesehatan, & checklist alat |
+| `ketua_organisasi` / `ketua_dp` | Ketua Organisasi / Ketua DP | **Pimpinan tertinggi organisasi sekaligus pimpinan eksekutif Dewan Pengurus (hal yang sama, bukan dua peran berbeda).** Pengawasan umum, LPJ tahunan, dan penetapan kebijakan | Approval kelulusan Siswa $\rightarrow$ Medan Operasi & pengawasan umum |
+| `ketua_medan_operasi` | Ketua Medan Operasi | Penanggung jawab manajerial operasional diklat lapangan | Koordinasi umum diklat lapangan |
+| `danlat` | Komandan Latihan | Instruktur utama lapangan & penanggung jawab teknis seleksi kader | **Approval / ACC kelulusan Calon Siswa $\rightarrow$ Siswa** & evaluasi lapangan Medan Operasi |
+| `pengurus_dp` | Pengurus DP | Anggota aktif jajaran Dewan Pengurus | Evaluasi berkala PPNIA & approval akhir PPNIA $\rightarrow$ Anggota Biasa |
+| `panitia` | Panitia Kaderisasi | Tim operasional pelaksana diklat | Input presensi kegiatan, catatan kesehatan, catatan wawancara, & checklist alat |
+
+> [!IMPORTANT]
+> **Penyamaan Istilah Kepemimpinan:**
+> **Ketua Organisasi dan Ketua Dewan Pengurus (Ketua DP) adalah entitas dan jabatan yang SAMA, bukan hal yang berbeda.** Dewan Pengurus adalah badan eksekutif organisasi Gandawesi yang dipimpin langsung oleh Ketua Organisasi. Dalam database/sistem, kode peran `ketua_organisasi` dan `ketua_dp` diperlakukan secara ekuivalen sebagai pimpinan tertinggi organisasi.
 
 > **Prinsip Arsitektur:**
 > 1. **Temporal & Multi-Role:** Setiap role memiliki masa berlaku (`periode_mulai` s.d. `periode_selesai`) dan flag `is_active`. Satu anggota bisa memegang beberapa role sekaligus (misalnya `pengurus_dp` merangkap `panitia`).
@@ -64,13 +67,13 @@ Status keanggotaan berjalan satu arah (linear), dengan opsi gugur di beberapa ta
 Guest → daftar
   ↓
 Calon Siswa (~1 bulan)
-  ↓ lolos → Ketua Medan Operasi / DANLAT yang approve
+  ↓ lolos → Komandan Latihan (DANLAT) yang approve / ACC (Bukan Dewan Pengurus / DP)
 Siswa (~3 bulan)
-  ↓ lolos → Ketua Dewan Pengurus (DP) yang approve
+  ↓ lolos → Ketua Organisasi / Ketua Dewan Pengurus (DP) yang approve
 Medan Operasi (~12 hari)
   ↓ lolos → dapat nama angkatan, jadi "Anggota Muda [Angkatan]"
 PPNIA (~1 tahun)
-  ↓ lolos → seluruh DP yang approve
+  ↓ lolos → seluruh Dewan Pengurus (DP) yang approve
 Evaluasi Akhir → NIA keluar → Anggota Biasa
   ↓ lulus studi
 Anggota Luar Biasa (alumni, permanen)
@@ -81,14 +84,15 @@ Dewan Penasehat
 Status lain (tidak termasuk jalur linear di atas):
 - **Anggota Kehormatan** — dosen, ketua himpunan, dll (diberikan langsung, bukan lewat alur kaderisasi)
 - **Dewan Pengurus (DP)** — badan eksekutif aktif, dipilih dari Anggota Biasa
-- **Danlat / Instruktur lapangan** — role terpisah dari DP, mendampingi Medan Operasi
+- **Danlat / Instruktur lapangan** — role terpisah dari DP, mendampingi seleksi & Medan Operasi
 
 ### 3.1 Tahap Calon Siswa (~1 bulan)
 | Aspek | Detail |
 |---|---|
-| Aktivitas | Formulir pendaftaran (dibuka 2 minggu), persetujuan orang tua, tes kesehatan awal |
+| Aktivitas | Formulir pendaftaran (dibuka 2 minggu), persetujuan orang tua, tes kesehatan awal, wawancara motivasi & komitmen |
 | Tes kesehatan | Dua sumber data: catatan manual dari panitia + upload surat keterangan sehat dari dokter |
-| Approval | Ketua Medan Operasi / DANLAT |
+| Wawancara | Penilaian motivasi, pemahaman nilai cinta alam, ketahanan mental, dan komitmen waktu latihan fisik |
+| Approval | **Komandan Latihan (DANLAT)** — murni wewenang Danlat, bukan Dewan Pengurus (DP) |
 | Gugur | Bisa gugur, riwayat disimpan, boleh daftar lagi tahun berikutnya |
 
 ### 3.2 Tahap Siswa (~3 bulan)
@@ -99,7 +103,7 @@ Status lain (tidak termasuk jalur linear di atas):
 | Pematerian | Presensi kehadiran + post-test online (soal dibuat admin, dijawab lewat HP) |
 | Tes kesehatan akhir | Pola sama seperti tes awal, untuk membandingkan ada peningkatan atau tidak |
 | Kelulusan | Tidak ada bobot/skor otomatis — keputusan penuh panitia/admin |
-| Approval | Ketua Dewan Pengurus (DP) |
+| Approval | Ketua Organisasi / Ketua Dewan Pengurus (DP) |
 | Gugur | Bisa gugur, riwayat disimpan, boleh daftar lagi tahun berikutnya |
 
 ### 3.3 Tahap Medan Operasi (~12 hari)
@@ -126,7 +130,7 @@ Status lain (tidak termasuk jalur linear di atas):
 |---|---|
 | Format NIA | Contoh: `GW.30.232.AB` = Gandawesi . angkatan ke-30 . nomor urut global . singkatan nama angkatan |
 | Penomoran | Nomor urut global diisi **manual** oleh admin (bukan auto-generate), pengecekan duplikat dikelola admin di luar sistem |
-| Setelah dapat status ini | Bisa dipilih jadi ketua organisasi/ketua Medan Operasi (hasil dicatat, tanpa voting online), bisa jadi pengurus, wajib LPJ |
+| Setelah dapat status ini | Bisa dipilih jadi Ketua Organisasi (Ketua DP) / Ketua Medan Operasi (hasil dicatat, tanpa voting online), bisa jadi pengurus, wajib LPJ |
 | LPJ | Dua jenis: LPJ kepengurusan tahunan & LPJ per kegiatan/ekspedisi yang dipegang |
 | Riwayat jabatan | Disimpan penuh (siapa menjabat apa, periode berapa) — basis halaman Struktur Organisasi (opsional, tidak mandatory) |
 | Pencabutan status | Ada mekanismenya di aturan organisasi, tapi belum pernah dipakai |
@@ -146,14 +150,16 @@ Status lain (tidak termasuk jalur linear di atas):
 | Aspek | Detail |
 |---|---|
 | Sumber | Dipilih dari Anggota Luar Biasa |
-| Yang memilih | Ketua Organisasi / Dewan Pengurus |
+| Yang memilih | Ketua Organisasi (Ketua DP) |
 | Jumlah | Fleksibel, tidak dipatok |
 | Masa jabatan | Mengikuti periode Dewan Pengurus yang menjabat |
 | Sifat peran | Pasif — dihubungi saat dibutuhkan |
 | Beda dengan instruktur diklat | Ya, dua peran terpisah meski sama-sama berasal dari Anggota Luar Biasa |
 | Pencatatan | Field sederhana: anggota, periode mulai, periode selesai |
 
-> **Catatan istilah penting:** "DP" pada seluruh alur approval kaderisasi (Siswa, PPNIA) merujuk ke **Dewan Pengurus**, bukan Dewan Penasehat. Dua entitas ini harus dibedakan jelas di sistem (tabel/role terpisah).
+> **Catatan istilah penting:**
+> 1. "DP" pada seluruh alur approval kaderisasi (Siswa, PPNIA) merujuk ke **Dewan Pengurus**, bukan Dewan Penasehat. Dua entitas ini harus dibedakan jelas di sistem (tabel/role terpisah).
+> 2. **Ketua Organisasi dan Ketua Dewan Pengurus (Ketua DP) adalah entitas dan jabatan yang SAMA, bukan hal yang berbeda.** Dewan Pengurus adalah badan eksekutif organisasi Gandawesi yang dikepalai langsung oleh Ketua Organisasi.
 
 ---
 
@@ -217,7 +223,7 @@ Status lain (tidak termasuk jalur linear di atas):
 ### 4.11 Dashboard Admin
 - Kelola seluruh modul di atas
 - Statistik anggota per angkatan/status
-- Approval di titik-titik keputusan (khusus role terkait: Ketua Medan Operasi/DANLAT, Ketua DP, seluruh DP)
+- Approval di titik-titik keputusan (khusus role terkait: DANLAT, Ketua Organisasi / Ketua DP, seluruh Dewan Pengurus)
 
 ---
 

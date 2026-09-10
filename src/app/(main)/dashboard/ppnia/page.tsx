@@ -43,7 +43,8 @@ export default function PPNIAPortalPage() {
   const [summary, setSummary] = useState<MyPPNIASummary | null>(null);
   const [evalAkhir, setEvalAkhir] = useState<MyEvaluasiAkhirSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'presentasi' | 'ekspedisi' | 'sidang_nia'>('presentasi');
+  const [activeTab, setActiveTab] = useState<'kegiatan' | 'presentasi' | 'ekspedisi' | 'sidang_nia'>('kegiatan');
+  const [kegiatanFilter, setKegiatanFilter] = useState<'all' | 'pematerian' | 'presentasi' | 'pendakian' | 'ekspedisi'>('all');
 
   // Presentasi Form State
   const [presForm, setPresForm] = useState({
@@ -331,8 +332,22 @@ export default function PPNIAPortalPage() {
       {/* Tabs Navigation */}
       <div className="flex border-b border-slate-800 gap-2 overflow-x-auto">
         <button
+          onClick={() => setActiveTab('kegiatan')}
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+            activeTab === 'kegiatan'
+              ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Jadwal & Agenda Kegiatan
+          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+            {summary.daftar_kegiatan?.length || 12} Sesi
+          </span>
+        </button>
+        <button
           onClick={() => setActiveTab('presentasi')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'presentasi'
               ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -346,7 +361,7 @@ export default function PPNIAPortalPage() {
         </button>
         <button
           onClick={() => setActiveTab('ekspedisi')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'ekspedisi'
               ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -362,7 +377,7 @@ export default function PPNIAPortalPage() {
         </button>
         <button
           onClick={() => setActiveTab('sidang_nia')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'sidang_nia'
               ? 'border-amber-500 text-amber-400 bg-amber-500/5'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -381,6 +396,144 @@ export default function PPNIAPortalPage() {
           ) : null}
         </button>
       </div>
+
+      {/* ============================================================ */}
+      {/* TAB 0: AGENDA & KEGIATAN PPNIA                               */}
+      {/* ============================================================ */}
+      {activeTab === 'kegiatan' && (
+        <div className="space-y-6">
+          {/* Header & Filter Controls */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-400" />
+                Kalender & Kurikulum Kegiatan PPNIA
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Daftar 12 kegiatan resmi pemenuhan 4 pilar kaderisasi PPNIA selama ~1 tahun pembinaan.
+              </p>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs overflow-x-auto">
+              {[
+                { key: 'all', label: 'Semua Pilar', count: summary.daftar_kegiatan?.length || 12 },
+                { key: 'pematerian', label: 'Pematerian Lanjutan', count: summary.pematerian_count.total },
+                { key: 'presentasi', label: 'Sidang Presentasi', count: summary.presentasi_count.total },
+                { key: 'pendakian', label: 'Pendakian Bersama', count: summary.pendakian_count.total },
+                { key: 'ekspedisi', label: 'Ekspedisi Mandiri', count: summary.ekspedisi_count.total },
+              ].map((pill) => (
+                <button
+                  key={pill.key}
+                  type="button"
+                  onClick={() => setKegiatanFilter(pill.key as any)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    kegiatanFilter === pill.key
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>{pill.label}</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300">
+                    {pill.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(summary.daftar_kegiatan || [])
+              .filter((item) => kegiatanFilter === 'all' || item.jenis_kegiatan === kegiatanFilter)
+              .map((item, idx) => {
+                const isPematerian = item.jenis_kegiatan === 'pematerian';
+                const isPresentasi = item.jenis_kegiatan === 'presentasi';
+                const isPendakian = item.jenis_kegiatan === 'pendakian';
+                const isEkspedisi = item.jenis_kegiatan === 'ekspedisi';
+
+                const badgeBg = isPematerian
+                  ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                  : isPresentasi
+                  ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                  : isPendakian
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+
+                const badgeText = isPematerian
+                  ? 'Pilar 1: Pematerian Lanjutan'
+                  : isPresentasi
+                  ? 'Pilar 2: Sidang Presentasi'
+                  : isPendakian
+                  ? 'Pilar 3: Pendakian Bersama'
+                  : 'Pilar 4: Ekspedisi Mandiri';
+
+                return (
+                  <Card
+                    key={item.id || idx}
+                    className="p-5 bg-slate-900/60 border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      {/* Top row: Pillar Badge & Attendance Badge */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeBg}`}>
+                          {badgeText}
+                        </span>
+
+                        {item.hadir ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Presensi Hadir
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                            <Clock className="w-3.5 h-3.5" /> Terjadwal
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Judul Kegiatan */}
+                      <div>
+                        <h4 className="text-sm font-extrabold text-white leading-snug">
+                          {item.judul}
+                        </h4>
+                        {item.catatan && (
+                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                            {item.catatan}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Metadata Specs: Tanggal, Lokasi, Instruktur */}
+                    <div className="pt-3 border-t border-slate-800/80 space-y-1.5 text-xs text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>{item.tanggal}</span>
+                        {item.waktu && <span className="text-slate-500">· {item.waktu}</span>}
+                      </div>
+
+                      {item.lokasi && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                          <span className="truncate">{item.lokasi}</span>
+                        </div>
+                      )}
+
+                      {item.pemateri_instruktur && (
+                        <div className="flex items-center gap-2">
+                          <Users className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span className="truncate text-slate-400">
+                            Instruktur/Pemateri: <strong className="text-slate-200">{item.pemateri_instruktur}</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       {/* ============================================================ */}
       {/* TAB 1: FORM PENGAJUAN PRESENTASI                             */}
