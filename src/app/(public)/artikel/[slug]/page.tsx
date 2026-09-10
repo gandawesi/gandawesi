@@ -15,7 +15,8 @@ import {
   Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { getArticleBySlug, getPublicArticles } from '@/lib/actions/content';
+import { getArticleBySlug, getPublicArticles, getArticleComments } from '@/lib/actions/content';
+import ArticleComments from '@/modules/artikel/components/ArticleComments';
 
 export async function generateMetadata({
   params,
@@ -44,9 +45,12 @@ export default async function PublicArticleDetailPage({
     notFound();
   }
 
-  const related = (await getPublicArticles(article.kategori))
-    .filter((a) => a.slug !== slug)
-    .slice(0, 2);
+  const [related, comments] = await Promise.all([
+    getPublicArticles(article.kategori).then((items) =>
+      items.filter((a) => a.slug !== slug).slice(0, 2)
+    ),
+    getArticleComments(article.id),
+  ]);
 
   const dateFormatted = article.tanggal_publish
     ? new Date(article.tanggal_publish).toLocaleDateString('id-ID', {
@@ -153,6 +157,9 @@ export default async function PublicArticleDetailPage({
           </p>
         </div>
       </div>
+
+      {/* Discussion & Comments */}
+      <ArticleComments artikelId={article.id} initialComments={comments} />
 
       {/* Related Articles */}
       {related.length > 0 && (

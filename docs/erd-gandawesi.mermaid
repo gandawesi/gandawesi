@@ -1,7 +1,7 @@
 %% ============================================================
 %% ERD Gandawesi — Mermaid Entity Relationship Diagram
 %% Berdasarkan schema-gandawesi.sql (versi final)
-%% Total: 28 tabel
+%% Total: 29 tabel
 %% ============================================================
 
 erDiagram
@@ -411,12 +411,25 @@ erDiagram
         timestamptz created_at
     }
 
+    artikel_komentar {
+        uuid id PK
+        uuid artikel_id FK
+        text nama
+        text email "nullable"
+        text isi
+        text status_keanggotaan "nullable"
+        text nia "nullable"
+        boolean is_verified_member "default false"
+        timestamptz created_at
+    }
+
     %% Relasi Event & Artikel
     anggota ||--o{ pendaftaran_event : "mendaftar"
     event ||--o{ pendaftaran_event : "peserta"
     anggota ||--o{ presensi_event : "hadir"
     event ||--o{ presensi_event : "kehadiran"
     anggota ||--o{ artikel : "menulis"
+    artikel ||--o{ artikel_komentar : "memiliki komentar"
 
     %% ============================================================
     %% 7. INVENTARIS
@@ -497,4 +510,9 @@ erDiagram
         text deskripsi
         text peserta "deskripsi text"
         text_array foto
+        float koordinat_lat "GPS Latitude"
+        float koordinat_lng "GPS Longitude"
+        integer elevasi_mdpl "Elevasi puncak mdpl"
+        text tingkat_kesulitan "mudah | sedang | sulit | ekstrem"
+        jsonb waypoints "daftar pos & checkpoint GIS"
     }

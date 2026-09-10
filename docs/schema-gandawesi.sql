@@ -574,6 +574,21 @@ create table artikel (
     created_at timestamptz not null default now()
 );
 
+-- Kolom komentar & diskusi artikel warta publik (anggota terverifikasi & publik)
+create table artikel_komentar (
+    id uuid primary key default gen_random_uuid(),
+    artikel_id uuid not null references artikel(id) on delete cascade,
+    nama text not null,
+    email text,
+    isi text not null,
+    status_keanggotaan text, -- mis. 'Anggota Biasa · NIA GW.32.235.GW' atau 'Tamu Publik'
+    nia text,
+    is_verified_member boolean not null default false,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_artikel_komentar_artikel on artikel_komentar(artikel_id, created_at);
+
 -- ============================================================
 -- 7. INVENTARIS
 -- ============================================================
@@ -703,7 +718,12 @@ create table rute_ekspedisi (
     tanggal date,
     deskripsi text,
     peserta text, -- deskripsi peserta (cukup text untuk MVP, tidak perlu pivot table)
-    foto text[] -- array url foto
+    foto text[], -- array url foto
+    koordinat_lat double precision, -- latitude GPS titik rute/basecamp utama
+    koordinat_lng double precision, -- longitude GPS titik rute/basecamp utama
+    elevasi_mdpl integer, -- elevasi puncak/titik tertinggi rute ekspedisi
+    tingkat_kesulitan text check (tingkat_kesulitan in ('mudah', 'sedang', 'sulit', 'ekstrem')),
+    waypoints jsonb -- daftar titik pos/checkpoint: [{"nama": "Pos 1", "lat": -6.9, "lng": 108.4, "tipe": "pos", "elevasi_mdpl": 1200}]
 );
 
 -- ============================================================

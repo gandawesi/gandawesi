@@ -39,6 +39,15 @@ export interface KontenStatisItem {
   updated_at: string;
 }
 
+export interface RuteWaypoint {
+  nama: string;
+  lat: number;
+  lng: number;
+  tipe: 'basecamp' | 'pos' | 'puncak' | 'objek';
+  elevasi_mdpl?: number;
+  keterangan?: string;
+}
+
 export interface RuteEkspedisiItem {
   id: string;
   nama: string;
@@ -47,6 +56,11 @@ export interface RuteEkspedisiItem {
   deskripsi: string | null;
   peserta: string | null;
   foto: string[] | null;
+  koordinat_lat?: number | null;
+  koordinat_lng?: number | null;
+  elevasi_mdpl?: number | null;
+  tingkat_kesulitan?: 'mudah' | 'sedang' | 'sulit' | 'ekstrem' | null;
+  waypoints?: RuteWaypoint[] | null;
 }
 
 export interface CreateRuteEkspedisiPayload {
@@ -56,6 +70,30 @@ export interface CreateRuteEkspedisiPayload {
   deskripsi: string;
   peserta: string;
   foto?: string[];
+  koordinat_lat?: number;
+  koordinat_lng?: number;
+  elevasi_mdpl?: number;
+  tingkat_kesulitan?: 'mudah' | 'sedang' | 'sulit' | 'ekstrem';
+  waypoints?: RuteWaypoint[];
+}
+
+export interface ArtikelKomentarItem {
+  id: string;
+  artikel_id: string;
+  nama: string;
+  email?: string | null;
+  isi: string;
+  status_keanggotaan?: string | null;
+  nia?: string | null;
+  is_verified_member: boolean;
+  created_at: string;
+}
+
+export interface CreateKomentarPayload {
+  artikel_id: string;
+  nama: string;
+  email?: string | null;
+  isi: string;
 }
 
 export interface SponsorshipItem {

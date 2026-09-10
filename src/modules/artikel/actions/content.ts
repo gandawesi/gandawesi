@@ -9,6 +9,9 @@ import {
   KontenStatisItem,
   RuteEkspedisiItem,
   CreateRuteEkspedisiPayload,
+  RuteWaypoint,
+  ArtikelKomentarItem,
+  CreateKomentarPayload,
   SponsorshipItem,
   CreateDonasiPayload,
   ArtikelKategori,
@@ -143,7 +146,7 @@ Hingga saat ini, Gandawesi telah melahirkan lebih dari 32 angkatan resmi yang me
   },
 };
 
-// Initial fallback mock data for expedition routes
+// Initial fallback mock data for expedition routes with GIS Waypoints
 let MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
   {
     id: 'rute-1',
@@ -155,6 +158,44 @@ let MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
     foto: [
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80',
+    ],
+    koordinat_lat: -6.9835,
+    koordinat_lng: 106.3150,
+    elevasi_mdpl: 35,
+    tingkat_kesulitan: 'sulit',
+    waypoints: [
+      {
+        nama: 'Basecamp Desa Sawarna',
+        lat: -6.9820,
+        lng: 106.3120,
+        tipe: 'basecamp',
+        elevasi_mdpl: 15,
+        keterangan: 'Titik kumpul, briefing operasional, dan pengecekan rigging alat SRT',
+      },
+      {
+        nama: 'Mulut Gua Lalay (Horizontal)',
+        lat: -6.9835,
+        lng: 106.3150,
+        tipe: 'pos',
+        elevasi_mdpl: 25,
+        keterangan: 'Awal pemetaan lorong sungai aktif bawah tanah sepanjang 600 meter',
+      },
+      {
+        nama: 'Pitch Vertikal Gua Sikantor (35m)',
+        lat: -6.9855,
+        lng: 106.3180,
+        tipe: 'pos',
+        elevasi_mdpl: 40,
+        keterangan: 'Titik anchor rigging utama lintasan Single Rope Technique bebas gantung',
+      },
+      {
+        nama: 'Sump Chamber (Batas Akhir)',
+        lat: -6.9880,
+        lng: 106.3210,
+        tipe: 'objek',
+        elevasi_mdpl: 10,
+        keterangan: 'Batas akhir survei lorong tergenang air garam & muara bawah tanah',
+      },
     ],
   },
   {
@@ -168,6 +209,44 @@ let MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
       'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=800&q=80',
     ],
+    koordinat_lat: -6.8920,
+    koordinat_lng: 108.4050,
+    elevasi_mdpl: 3078,
+    tingkat_kesulitan: 'sulit',
+    waypoints: [
+      {
+        nama: 'Basecamp Jalur Apuy',
+        lat: -6.9150,
+        lng: 108.3850,
+        tipe: 'basecamp',
+        elevasi_mdpl: 1165,
+        keterangan: 'Registrasi simaksi, briefing jalur, dan cek perlengkapan tim pendaki',
+      },
+      {
+        nama: 'Pos 3 Tegal Masawa',
+        lat: -6.9050,
+        lng: 108.3950,
+        tipe: 'pos',
+        elevasi_mdpl: 2050,
+        keterangan: 'Peralihan kanopi hutan pinus menuju zona hutan lumut pegunungan',
+      },
+      {
+        nama: 'Pos 5 Sanghyang Rangkah',
+        lat: -6.8980,
+        lng: 108.4010,
+        tipe: 'pos',
+        elevasi_mdpl: 2600,
+        keterangan: 'Shelter camp sebelum summit attack dini hari melintasi trek bebatuan',
+      },
+      {
+        nama: 'Puncak Kawah Ciremai (3.078 mdpl)',
+        lat: -6.8920,
+        lng: 108.4050,
+        tipe: 'puncak',
+        elevasi_mdpl: 3078,
+        keterangan: 'Titik tertinggi Jawa Barat, kaldera kawah ganda, dan upacara bendera',
+      },
+    ],
   },
   {
     id: 'rute-3',
@@ -180,6 +259,138 @@ let MOCK_RUTE_EKSPEDISI: RuteEkspedisiItem[] = [
       'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=800&q=80',
     ],
+    koordinat_lat: -6.9950,
+    koordinat_lng: 106.7420,
+    elevasi_mdpl: 320,
+    tingkat_kesulitan: 'sedang',
+    waypoints: [
+      {
+        nama: 'Start Point Cikidang',
+        lat: -6.9850,
+        lng: 106.7350,
+        tipe: 'basecamp',
+        elevasi_mdpl: 350,
+        keterangan: 'Persiapan pelampung, helm whitewater, dan briefing river signals',
+      },
+      {
+        nama: 'Jeram Gigi & Turbin (Grade III)',
+        lat: -6.9920,
+        lng: 106.7400,
+        tipe: 'pos',
+        elevasi_mdpl: 330,
+        keterangan: 'Simulasi manuver ferry glide, eddy in, dan eddy out arus deras',
+      },
+      {
+        nama: 'Jeram Air Terjun (Grade IV)',
+        lat: -6.9980,
+        lng: 106.7450,
+        tipe: 'pos',
+        elevasi_mdpl: 310,
+        keterangan: 'Patahan drop hidrolik 2 meter dengan standing wave tajam',
+      },
+      {
+        nama: 'Finish Point Delta Pelabuhan Ratu',
+        lat: -7.0050,
+        lng: 106.7550,
+        tipe: 'objek',
+        elevasi_mdpl: 280,
+        keterangan: 'Pendaratan akhir perahu dan debriefing ekspedisi ORAD Gandawesi',
+      },
+    ],
+  },
+  {
+    id: 'rute-4',
+    nama: 'Riset Biodiversitas Ekosistem Lembah Suryakencana Gunung Gede Pangrango',
+    lokasi: 'Taman Nasional Gunung Gede Pangrango, Jawa Barat',
+    tanggal: '2024-05-10',
+    deskripsi: 'Eksplorasi ekologi padang savana edelweiss, dokumentasi avifauna endemik Jawa, dan navigasi malam lintas jalur Gunung Putri menuju Cibodas.',
+    peserta: 'Regu Konservasi & Ekspedisi Gandawesi (10 Anggota)',
+    foto: [
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+    ],
+    koordinat_lat: -6.7800,
+    koordinat_lng: 106.9800,
+    elevasi_mdpl: 2958,
+    tingkat_kesulitan: 'sedang',
+    waypoints: [
+      {
+        nama: 'Pintu Masuk Jalur Gunung Putri',
+        lat: -6.7600,
+        lng: 106.9950,
+        tipe: 'basecamp',
+        elevasi_mdpl: 1450,
+        keterangan: 'Pemeriksaan tiket simaksi, sampah nihil, dan logistik lapangan',
+      },
+      {
+        nama: 'Pos 3 Tanah Merah',
+        lat: -6.7700,
+        lng: 106.9900,
+        tipe: 'pos',
+        elevasi_mdpl: 1850,
+        keterangan: 'Pemeriksaan suplai hidrasi dan penyesuaian ritme pendakian medan terjal',
+      },
+      {
+        nama: 'Alun-alun Suryakencana (Savana Edelweiss)',
+        lat: -6.7800,
+        lng: 106.9850,
+        tipe: 'pos',
+        elevasi_mdpl: 2750,
+        keterangan: 'Pemasangan basecamp riset dan pencatatan flora Anaphalis javanica',
+      },
+      {
+        nama: 'Puncak Gunung Gede (2.958 mdpl)',
+        lat: -6.7850,
+        lng: 106.9800,
+        tipe: 'puncak',
+        elevasi_mdpl: 2958,
+        keterangan: 'Titik pemantauan kawah aktif Ratu, Wadon, dan Lanang',
+      },
+    ],
+  },
+];
+
+// Initial fallback mock data for comments
+let MOCK_KOMENTAR: ArtikelKomentarItem[] = [
+  {
+    id: 'kom-1',
+    artikel_id: 'art-1',
+    nama: 'Farhan Dwi Cahyo',
+    nia: 'GW.32.237.GW',
+    status_keanggotaan: 'Anggota Biasa · Giri Wardhana (32)',
+    is_verified_member: true,
+    isi: 'Luar biasa ekspedisi karst Sawarna! Untuk jalur pitch vertikal 35 meter apakah anchor-nya memakai natural anchor atau pemasangan hanger spit bolt?',
+    created_at: '2025-05-19T08:20:00Z',
+  },
+  {
+    id: 'kom-2',
+    artikel_id: 'art-1',
+    nama: 'Alya Putri Salsabila',
+    nia: 'GW.32.235.GW',
+    status_keanggotaan: 'Penulis · Giri Wardhana (32)',
+    is_verified_member: true,
+    isi: 'Halo Kak Farhan, kami mengombinasikan dua hanger bolt stainless steel dengan backup natural anchor pilar stalagmit kokoh untuk menjamin faktor keselamatan redundansi 100%.',
+    created_at: '2025-05-19T09:15:00Z',
+  },
+  {
+    id: 'kom-3',
+    artikel_id: 'art-1',
+    nama: 'Rizki Darmawan',
+    email: 'rizki.outdoor@gmail.com',
+    is_verified_member: false,
+    status_keanggotaan: 'Tamu Publik',
+    isi: 'Sangat menginspirasi teman-teman Gandawesi UPI. Apakah dokumentasi ekspedisi caving ini juga mempublikasikan peta morfologi lorong 2D-nya?',
+    created_at: '2025-05-20T14:10:00Z',
+  },
+  {
+    id: 'kom-4',
+    artikel_id: 'art-2',
+    nama: 'Dewi Lestari',
+    email: 'dewi.lestari@student.upi.edu',
+    is_verified_member: false,
+    status_keanggotaan: 'Tamu Publik',
+    isi: 'Poin nomor 3 sangat krusial! Seringkali di pos camp pendakian banyak sampah sisa konsumsi tertinggal. Semoga edukasi Leave No Trace ini konsisten disebarluaskan ke publik pendaki.',
+    created_at: '2025-06-03T10:00:00Z',
   },
 ];
 
@@ -687,6 +898,11 @@ export async function createRuteEkspedisi(
       deskripsi: payload.deskripsi.trim(),
       peserta: payload.peserta.trim(),
       foto: payload.foto || [],
+      koordinat_lat: payload.koordinat_lat !== undefined && payload.koordinat_lat !== null ? Number(payload.koordinat_lat) : null,
+      koordinat_lng: payload.koordinat_lng !== undefined && payload.koordinat_lng !== null ? Number(payload.koordinat_lng) : null,
+      elevasi_mdpl: payload.elevasi_mdpl !== undefined && payload.elevasi_mdpl !== null ? Number(payload.elevasi_mdpl) : null,
+      tingkat_kesulitan: payload.tingkat_kesulitan || null,
+      waypoints: payload.waypoints || [],
     };
 
     const { data, error } = await supabase.from('rute_ekspedisi').insert(insertData).select().single();
@@ -772,3 +988,107 @@ export async function submitDonasiPublic(
     return { success: false, error: err.message || 'Gagal mengirim komitmen dukungan' };
   }
 }
+
+// ============================================================
+// 12. KOMENTAR & DISKUSI ARTIKEL PUBLIK
+// ============================================================
+export async function getArticleComments(artikelId: string): Promise<ArtikelKomentarItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('artikel_komentar')
+      .select('*')
+      .eq('artikel_id', artikelId)
+      .order('created_at', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return MOCK_KOMENTAR.filter((k) => k.artikel_id === artikelId);
+    }
+
+    return data;
+  } catch {
+    return MOCK_KOMENTAR.filter((k) => k.artikel_id === artikelId);
+  }
+}
+
+export async function postArticleComment(
+  payload: CreateKomentarPayload
+): Promise<{ success: boolean; data?: ArtikelKomentarItem; error?: string }> {
+  try {
+    if (!payload.artikel_id || !payload.isi?.trim()) {
+      return { success: false, error: 'Isi komentar tidak boleh kosong' };
+    }
+
+    const supabase = await createClient();
+    const currentAnggota = await getCurrentAnggota(supabase);
+
+    let commenterName = payload.nama?.trim() || 'Pembaca Gandawesi';
+    let isVerified = false;
+    let statusKeanggotaan = 'Tamu Publik';
+    let nia: string | null = null;
+
+    if (currentAnggota) {
+      commenterName = currentAnggota.nama;
+      nia = currentAnggota.nia || null;
+      statusKeanggotaan = currentAnggota.is_admin
+        ? `Pengurus / Admin · ${currentAnggota.nia || 'Gandawesi'}`
+        : `Anggota Aktif · ${currentAnggota.nia || 'Gandawesi'}`;
+      isVerified = true;
+    }
+
+    const insertData = {
+      artikel_id: payload.artikel_id,
+      nama: commenterName,
+      email: payload.email?.trim() || null,
+      isi: payload.isi.trim(),
+      status_keanggotaan: statusKeanggotaan,
+      nia: nia,
+      is_verified_member: isVerified,
+    };
+
+    const { data, error } = await supabase
+      .from('artikel_komentar')
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      console.warn('DB postArticleComment fallback:', error.message);
+      const newMockComment: ArtikelKomentarItem = {
+        id: `kom-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        ...insertData,
+      };
+      MOCK_KOMENTAR.push(newMockComment);
+      revalidatePath('/artikel');
+      return { success: true, data: newMockComment };
+    }
+
+    revalidatePath('/artikel');
+    return { success: true, data };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Gagal mengirim komentar' };
+  }
+}
+
+export async function deleteArticleComment(
+  commentId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from('artikel_komentar').delete().eq('id', commentId);
+
+    if (error) {
+      console.warn('DB deleteArticleComment fallback:', error.message);
+      MOCK_KOMENTAR = MOCK_KOMENTAR.filter((c) => c.id !== commentId);
+    } else {
+      MOCK_KOMENTAR = MOCK_KOMENTAR.filter((c) => c.id !== commentId);
+    }
+
+    revalidatePath('/artikel');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Gagal menghapus komentar' };
+  }
+}
+

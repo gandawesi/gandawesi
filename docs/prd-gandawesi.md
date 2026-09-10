@@ -106,8 +106,9 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 ### 6.6 Artikel
 - FR-6.1: Anggota dapat membuat draft artikel
 - FR-6.2: Admin dapat me-review dan mempublikasikan artikel
-- FR-6.3: Guest dapat membaca artikel yang sudah dipublikasikan
+- FR-6.3: Admin mengelola artikel (review, publish, archive)
 - FR-6.4: Gambar cover artikel otomatis dikompresi ke WebP resolusi HD sebelum disimpan ke Supabase Storage
+- FR-6.5: Ruang diskusi & komentar publik pada artikel dengan badge verifikasi otomatis bagi anggota terotentikasi dan fitur moderasi admin
 
 ### 6.7 Inventaris Alat
 - FR-7.1: Admin mengelola daftar alat milik organisasi (nama, kategori, kondisi, stok)
@@ -118,7 +119,7 @@ Detail lengkap tiap tahap, kriteria approval, dan aturan bisnis ada di dokumen *
 
 ### 6.8 Konten Publik
 - FR-8.1: Halaman profil organisasi (visi misi, sejarah, struktur) dilengkapi etalase prestasi & penghargaan resmi lembaga dari mitra
-- FR-8.2: Halaman peta rute/ekspedisi dilengkapi galeri foto dokumentasi lapangan terkompresi
+- FR-8.2: Halaman peta rute/ekspedisi interaktif GIS berbasis Leaflet & OpenStreetMap (titik pos waypoints, elevasi mdpl, garis polyline topografi) dilengkapi galeri foto dokumentasi lapangan WebP terkompresi
 - FR-8.3: Halaman sponsorship/donasi
 - FR-8.4: Halaman verifikasi publik KTA dan sertifikat yang dapat diakses bebas tanpa login
 

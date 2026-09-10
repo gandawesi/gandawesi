@@ -27,6 +27,7 @@ import {
   KontenStatisItem,
   RuteEkspedisiItem,
   CreateRuteEkspedisiPayload,
+  RuteWaypoint,
   ArtikelKategori,
 } from '@/lib/types/content';
 import {
@@ -64,9 +65,14 @@ export default function AdminArtikelCurationPage() {
     deskripsi: '',
     peserta: '',
     foto: [],
+    koordinat_lat: undefined,
+    koordinat_lng: undefined,
+    elevasi_mdpl: undefined,
+    tingkat_kesulitan: 'sedang',
   });
   const [ruteFotoInput, setRuteFotoInput] = useState('');
   const [uploadedRutePhotos, setUploadedRutePhotos] = useState<string[]>([]);
+  const [waypointLines, setWaypointLines] = useState('');
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(
     null
@@ -178,18 +184,55 @@ export default function AdminArtikelCurationPage() {
 
     const fotoArray = [...uploadedRutePhotos, ...manualUrls];
 
+    // Parse waypoints from textarea if present
+    const waypointsParsed: RuteWaypoint[] = [];
+    if (waypointLines.trim()) {
+      waypointLines.split('\n').forEach((line) => {
+        const parts = line.split('|').map((s) => s.trim());
+        if (parts.length >= 3) {
+          const [nama, latStr, lngStr, elevStr, tipeStr] = parts;
+          const lat = parseFloat(latStr);
+          const lng = parseFloat(lngStr);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            waypointsParsed.push({
+              nama,
+              lat,
+              lng,
+              elevasi_mdpl: elevStr ? parseInt(elevStr) : undefined,
+              tipe: (['basecamp', 'pos', 'puncak', 'objek'].includes(tipeStr)
+                ? tipeStr
+                : 'pos') as any,
+            });
+          }
+        }
+      });
+    }
+
     startTransition(async () => {
       const res = await createRuteEkspedisi({
         ...ruteFormData,
         foto: fotoArray,
+        waypoints: waypointsParsed.length > 0 ? waypointsParsed : undefined,
       });
 
       if (res.success) {
         setNotification({ type: 'success', message: 'Rute ekspedisi baru berhasil ditambahkan!' });
         setIsRuteModalOpen(false);
-        setRuteFormData({ nama: '', lokasi: '', tanggal: '', deskripsi: '', peserta: '', foto: [] });
+        setRuteFormData({
+          nama: '',
+          lokasi: '',
+          tanggal: '',
+          deskripsi: '',
+          peserta: '',
+          foto: [],
+          koordinat_lat: undefined,
+          koordinat_lng: undefined,
+          elevasi_mdpl: undefined,
+          tingkat_kesulitan: 'sedang',
+        });
         setRuteFotoInput('');
         setUploadedRutePhotos([]);
+        setWaypointLines('');
         await loadData();
       } else {
         setNotification({ type: 'error', message: res.error || 'Gagal menambahkan rute ekspedisi' });
@@ -448,6 +491,7 @@ export default function AdminArtikelCurationPage() {
                 <tr>
                   <th className="py-3.5 px-4">Nama Ekspedisi</th>
                   <th className="py-3.5 px-4">Lokasi</th>
+                  <th className="py-3.5 px-4">Topografi & GIS</th>
                   <th className="py-3.5 px-4">Tanggal</th>
                   <th className="py-3.5 px-4">Tim & Peserta</th>
                   <th className="py-3.5 px-4 text-center">Foto</th>
@@ -461,6 +505,27 @@ export default function AdminArtikelCurationPage() {
                     </td>
                     <td className="py-3.5 px-4 text-stone-600 dark:text-stone-400">
                       {r.lokasi}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-col gap-1">
+                        {r.elevasi_mdpl ? (
+                          <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                            🏔️ {r.elevasi_mdpl} mdpl
+                          </span>
+                        ) : (
+                          <span className="text-stone-400 text-[11px]">–</span>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          {r.tingkat_kesulitan && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
+                              {r.tingkat_kesulitan}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-stone-400">
+                            {r.waypoints?.length || 0} pos
+                          </span>
+                        </div>
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-stone-500">
                       {r.tanggal || '–'}
@@ -728,6 +793,113 @@ export default function AdminArtikelCurationPage() {
                   onChange={(e) => setRuteFormData({ ...ruteFormData, deskripsi: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-forest-500/30"
                 />
+              </div>
+
+              {/* GIS & Waypoints Configuration */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-950/50 border border-stone-200 dark:border-stone-800 space-y-3">
+                <div className="font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                  <span>Parameter GIS & Topografi Peta</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold">
+                    OpenStreetMap
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                      Latitude Koordinat
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      placeholder="Mis. -6.8920"
+                      value={ruteFormData.koordinat_lat ?? ''}
+                      onChange={(e) =>
+                        setRuteFormData({
+                          ...ruteFormData,
+                          koordinat_lat: e.target.value ? parseFloat(e.target.value) : undefined,
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 text-xs font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                      Longitude Koordinat
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      placeholder="Mis. 108.4050"
+                      value={ruteFormData.koordinat_lng ?? ''}
+                      onChange={(e) =>
+                        setRuteFormData({
+                          ...ruteFormData,
+                          koordinat_lng: e.target.value ? parseFloat(e.target.value) : undefined,
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                      Elevasi Puncak (mdpl)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Mis. 3078"
+                      value={ruteFormData.elevasi_mdpl ?? ''}
+                      onChange={(e) =>
+                        setRuteFormData({
+                          ...ruteFormData,
+                          elevasi_mdpl: e.target.value ? parseInt(e.target.value) : undefined,
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 text-xs font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                      Tingkat Kesulitan
+                    </label>
+                    <select
+                      value={ruteFormData.tingkat_kesulitan || 'sedang'}
+                      onChange={(e) =>
+                        setRuteFormData({
+                          ...ruteFormData,
+                          tingkat_kesulitan: e.target.value as any,
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 text-xs"
+                    >
+                      <option value="mudah">Mudah (Beginner)</option>
+                      <option value="sedang">Sedang (Moderate)</option>
+                      <option value="sulit">Sulit (Challenging)</option>
+                      <option value="ekstrem">Ekstrem (Technical)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                    Titik Waypoint / Pos Lintas Jalur (Opsional)
+                  </label>
+                  <p className="text-[10px] text-stone-400 mb-1">
+                    Format: <code className="font-mono bg-stone-200 dark:bg-stone-800 px-1 rounded">Nama Pos | Lat | Lng | Elevasi | Tipe(basecamp/pos/puncak/objek)</code>
+                  </p>
+                  <textarea
+                    rows={3}
+                    placeholder="Basecamp Apuy | -6.9150 | 108.3850 | 1165 | basecamp&#10;Pos 3 Tegal Masawa | -6.9050 | 108.3950 | 2050 | pos&#10;Puncak Ciremai | -6.8920 | 108.4050 | 3078 | puncak"
+                    value={waypointLines}
+                    onChange={(e) => setWaypointLines(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 font-mono text-[11px]"
+                  />
+                </div>
               </div>
 
               <div className="space-y-3">

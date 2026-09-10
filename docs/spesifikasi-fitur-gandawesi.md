@@ -182,9 +182,13 @@ Status lain (tidak termasuk jalur linear di atas):
 - Pendaftaran peserta per event
 - Presensi/kehadiran event
 
-### 4.3 Artikel/Berita
+### 4.3 Artikel/Berita & Forum Diskusi
 - Kategori: berita organisasi, laporan ekspedisi, tips
-- Draft anggota → review admin → publish
+- Draft anggota → review redaksi admin → publish
+- **Kolom Komentar & Diskusi Artikel (`/artikel/[slug]`)**:
+  - Ruang diskusi publik untuk berbagi wawasan teknis, navigasi jalur, maupun apresiasi atas ekspedisi yang dituntaskan.
+  - **Badge Keanggotaan Terverifikasi Otomatis**: Anggota yang login secara otomatis dikenali dengan lencana hijau `[Anggota Terverifikasi · NIA GW.xx.xxx.GW]`, sedangkan pembaca umum berstatus `[Tamu Publik]`.
+  - Dilengkapi fitur moderasi penghapusan komentar spam oleh admin/pengurus.
 
 ### 4.4 Direktori Anggota
 - Cari anggota by angkatan/status keanggotaan
@@ -224,9 +228,15 @@ Status lain (tidak termasuk jalur linear di atas):
 - **Laporan keuangan periodik**: transparansi ke anggota
 - **LPJ**: kepengurusan tahunan & per kegiatan/ekspedisi
 
-### 4.9 Peta Rute & Galeri Dokumentasi Ekspedisi
-- Dokumentasi rute pendakian/ekspedisi yang pernah dilakukan (galeri pencapaian ke publik).
-- Dilengkapi modul CMS Admin dengan `ImageUploader` untuk mengunggah multi-foto medan jelajah rute yang otomatis dikompresi ke format WebP di cloud storage bucket `expeditions`.
+### 4.9 Peta GIS Interaktif & Galeri Dokumentasi Ekspedisi
+- **Peta GIS Interaktif Topografi Lintas Jalur (`/ekspedisi`)**:
+  - Visualisasi berbasis Leaflet GIS & OpenStreetMap (100% open-source & gratis, tanpa limit kuota atau biaya API berbayar).
+  - Menampilkan pos survei bertingkat: *Basecamp / Titik Awal* (biru), *Pos Jalur / Camp Transit* (hijau zamrud), *Puncak / Target Survei* (merah beranimasi), dan *Objek Khusus / Sump / Jeram* (amber).
+  - Garis jejak lintasan (Polyline), pop-up koordinat GPS, elevasi mdpl, tingkat kesulitan (mudah, sedang, sulit, ekstrem), serta floating HUD ringkasan operasional.
+  - Sinkronisasi interaktif dua arah antara kartu daftar rute dan tampilan peta ("Fokus di Peta").
+- **Modul CMS Admin Ekspedisi**:
+  - Input nama rute, lokasi, tanggal, deskripsi, tim partisipan, koordinat GPS (lat/lng), elevasi puncak (mdpl), tingkat kesulitan, serta format daftar titik pos waypoint.
+  - `ImageUploader` WebP untuk mengunggah dokumentasi foto lapangan langsung ke Supabase Storage bucket `expeditions`.
 
 ### 4.10 Sponsorship/Donasi
 - Halaman informasi cara berkontribusi (individu, brand, alumni)
